@@ -1,3 +1,12 @@
-h1 {
-  color: red;
+body {
+  font: 18px Arial, sans-serif;
+}
+
+#my-stack {
+  width: 100vw;
+  height: 100vh;
+}
+
+#my-canvas {
+  background-color: yellow;
 }

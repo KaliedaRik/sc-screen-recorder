@@ -11,6 +11,14 @@
 </head>
 
 <body>
-  <h1>Hello, Rik</h1>
+  <div id="my-stack" data-scrawl-stack>
+    <canvas id="my-canvas" data-scrawl-canvas data-is-responsive="true"></canvas>
+  </div>
+
+  <script type="module">
+    import * as scrawl from 'js/scrawl.js';
+
+    console.log(scrawl.library);
+  </script>
 </body>
 </html>
