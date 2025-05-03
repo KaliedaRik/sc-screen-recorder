@@ -15,4 +15,4 @@ The page's HTML code can be found in the  in the `index.html` file, while the CS
 
 The page functionality currently lives in the `index.html` file. I'll probably move this to its own `index.js` file at some point. Though there's no rush ...
 
-The code relies on the [Scrawl-canvas]() library, the minified version of which can be found in the `js/scrawl-canvas.js` file. There's no tool chain, so updating SC to its latest version means grabbing the latest minified version of the file and slapping it into the `js/` folder.
+The code relies on the [Scrawl-canvas](https://github.com/KaliedaRik/Scrawl-canvas) library, the minified version of which can be found in the `js/scrawl-canvas.js` file. There's no tool chain, so updating SC to its latest version means grabbing the latest minified version of the file and slapping it into the `js/` folder.
