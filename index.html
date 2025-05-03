@@ -11,12 +11,28 @@
 </head>
 
 <body>
-  <div id="my-stack" data-scrawl-stack>
+  <div id="my-canvas-container">
     <canvas id="my-canvas" data-scrawl-canvas data-is-responsive="true"></canvas>
+  </div>
+
+  <div id="control-buttons">
+    <a href="https://github.com/KaliedaRik/sc-screen-recorder" target="_BLANK">Instructions</a>
+    <button id="button-1">Select target</button>
+    <button id="button-2" disabled>Record</button>
+    <button id="button-3" disabled>Download</button>
   </div>
 
   <script type="module">
     import * as scrawl from './js/scrawl.js';
+
+    const name = (n) => `canvas-${n}`;
+
+    const canvas = scrawl.findCanvas('my-canvas');
+
+    scrawl.makeRender({
+      name: name('render'),
+      target: canvas,
+    });
 
     console.log(scrawl.library);
   </script>
