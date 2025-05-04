@@ -59,15 +59,30 @@
     // - https://ai.google.dev/edge/mediapipe/solutions/guide
     // ------------------------------------------------------------------------
 
+    // Talking head can go in its own Cell
+    const talkingHeadAsset = canvas.buildCell({
+
+      name: name('talking-head-asset'),
+      dimensions: ['25%', '25%'],
+      shown: false,
+    });
+
+    // Displaying the Cell in the canvas
+    scrawl.makePicture({
+
+      name: name('talking-head'),
+      asset: talkingHeadAsset,
+      order: 1,
+
+      dimensions: ['35%', '35%'],
+      copyDimensions: ['100%', '100%'],
+
+      start: ['right', 'bottom'],
+      handle: ['right', 'bottom'],
+    });
+
     // Some convenience handles for the media stream asset
     let myMediaStream, mySegmentationModel, myBackground, myOutline;
-
-    // The talking head appears over the top of the screen recording
-    scrawl.makeGroup({
-
-      name: name('talking-head-group'),
-      host: canvas.base,
-    });
 
     // Blur filter, to make the talking head meld with the background
     scrawl.makeFilter({
@@ -139,12 +154,10 @@
         myOutline = scrawl.makePicture({
 
           name: name('mediapipe-results-outline'),
-          asset: name('mediapipe-model-interpreter'),
-          group: name('talking-head-group'),
-
-          dimensions: ['20%', '20%'],
+          group: talkingHeadAsset,
+          asset: myModelOutputWrapper,
+          dimensions: ['100%', '100%'],
           copyDimensions: ['100%', '100%'],
-
           filters: [name('body-blur')],
         });
       }
@@ -167,10 +180,11 @@
       scrawl.makePicture({
 
         name: name('body'),
+        group: talkingHeadAsset,
         asset: mycamera.name,
         order: 1,
 
-        dimensions: ['20%', '20%'],
+        dimensions: ['100%', '100%'],
         copyDimensions: ['100%', '100%'],
 
         globalCompositeOperation: 'source-in',
