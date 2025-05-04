@@ -16,3 +16,9 @@ The page's HTML code can be found in the  in the `index.html` file, while the CS
 The page functionality currently lives in the `index.html` file. I'll probably move this to its own `index.js` file at some point. Though there's no rush ...
 
 The code relies on the [Scrawl-canvas](https://github.com/KaliedaRik/Scrawl-canvas) library, the minified version of which can be found in the `js/scrawl-canvas.js` file. There's no tool chain, so updating SC to its latest version means grabbing the latest minified version of the file and slapping it into the `js/` folder.
+
+### Known issues
++ The proof-of-concept makes use of the [Media Capture and Streams](https://developer.mozilla.org/en-US/docs/Web/API/Media_Capture_and_Streams_API) API's [getDisplayMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia) function, which is not widely supported. It should work on latest desktop Chrome/Edge/Firefox/Safari, but will currently fail on Android Chrome, iOS Safari, etc. See the [Can I Use website](https://caniuse.com/?search=getDisplayMedia) for latest details.
+
++ The proof-of-concept makes use of Google's selfie-segmentation [MediaPipe solution](https://ai.google.dev/edge/mediapipe/solutions/guide). The code used in this demo was based on what worked for the [original selfie-segmentation model](https://github.com/google-ai-edge/mediapipe/blob/master/docs/solutions/selfie_segmentation.md) but that has been *"upgraded to a new MediaPipe solution in April 2023"*. Updating the code to use a new ML model to do body/background separation work (any suitable model should do, as long as its free and runs in the browser) is probably high on the list of Things To Do!
+
