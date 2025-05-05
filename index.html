@@ -33,20 +33,7 @@
     <button id="target-toggle">No Javascript running</button>
     <button id="head-toggle">Cannot show head</button>
     <button id="video-toggle" disabled>Cannot record video</button>
-    <div class="selector">
-      <label for="video-dimensions">Dimensions:</label>
-      <select id="video-dimensions">
-        <option value="landscape_1080">Landscape 1080</option>
-        <option value="landscape_720">Landscape 720</option>
-        <option value="landscape_480">Landscape 480</option>
-        <option value="square_1080">Square 1080</option>
-        <option value="square_720">Square 720</option>
-        <option value="square_480">Square 480</option>
-        <option value="portrait_1080">Portrait 1080</option>
-        <option value="portrait_720">Portrait 720</option>
-        <option value="portrait_480">Portrait 480</option>
-      </select>
-    </div>
+    <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
     <button id="background-modal-button" disabled>Cannot change background</button>
   </div>
 
@@ -66,6 +53,24 @@
   <!-- Talking head capture modal -->
 
   <!-- Canvas dimensions modal -->
+  <dialog id='dimensions-modal' closedby="any">
+    <button id="dimensions-modal-close" autofocus class="close">Close</button>
+    <h2>Canvas dimensions</h2>
+    <div class="selector">
+      <label for="video-dimensions">Dimensions:</label>
+      <select id="video-dimensions">
+        <option value="landscape_1080">Landscape 1080</option>
+        <option value="landscape_720">Landscape 720</option>
+        <option value="landscape_480">Landscape 480</option>
+        <option value="square_1080">Square 1080</option>
+        <option value="square_720">Square 720</option>
+        <option value="square_480">Square 480</option>
+        <option value="portrait_1080">Portrait 1080</option>
+        <option value="portrait_720">Portrait 720</option>
+        <option value="portrait_480">Portrait 480</option>
+      </select>
+    </div>
+  </dialog>
 
   <!-- Video capture modal -->
 

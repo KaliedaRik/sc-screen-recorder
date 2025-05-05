@@ -19,35 +19,66 @@ scrawl.makeRender({
 // ------------------------------------------------------------------------
 // Video dimensions magic numbers
 // ------------------------------------------------------------------------
-const baseMeasure = 80;
+// const baseMeasure = 80;
 
-const magicDimensions = {
+// const magicDimensions = {
 
-  // [width, height, width / baseMeasure, height / width]
-  landscape_1080: [1920, 1080, 1920 / baseMeasure, 1080 / 1920],
-  landscape_720: [1280, 720, 1280 / baseMeasure, 720 / 1280],
-  landscape_480: [854, 480, 854 / baseMeasure, 480 / 854],
-  square_1080: [1080, 1080, 1080 / baseMeasure, 1080 / 1080],
-  square_720: [720, 720, 720 / baseMeasure, 720 / 720],
-  square_480: [480, 480, 480 / baseMeasure, 480 / 480],
-  portrait_1080: [1080, 1920, 1080 / baseMeasure, 1920 / 1080],
-  portrait_720: [720, 1280, 720 / baseMeasure, 1280 / 720],
-  portrait_480: [480, 854, 480 / baseMeasure, 854 / 480],
-};
+//   // [width, height, width / baseMeasure, height / width]
+//   landscape_1080: [1920, 1080, 1920 / baseMeasure, 1080 / 1920],
+//   landscape_720: [1280, 720, 1280 / baseMeasure, 720 / 1280],
+//   landscape_480: [854, 480, 854 / baseMeasure, 480 / 854],
+//   square_1080: [1080, 1080, 1080 / baseMeasure, 1080 / 1080],
+//   square_720: [720, 720, 720 / baseMeasure, 720 / 720],
+//   square_480: [480, 480, 480 / baseMeasure, 480 / 480],
+//   portrait_1080: [1080, 1920, 1080 / baseMeasure, 1920 / 1080],
+//   portrait_720: [720, 1280, 720 / baseMeasure, 1280 / 720],
+//   portrait_480: [480, 854, 480 / baseMeasure, 854 / 480],
+// };
 
 let currentDimension = 'landscape_480';
 
-const getDimensions = (dim) => {
+// const getDimensions = (dim) => {
 
-  const [width, height] = magicDimensions[dim];
-  return [width, height];
-};
+//   const [width, height] = magicDimensions[dim];
+//   return [width, height];
+// };
+
+  // dimensionsModal = dom['dimensions-modal'],
+  // dimensionsButton = dom['dimensions-modal-button'],
+  // dimensionsCloseButton = dom['dimensions-modal-close'],
+  // dimensionsSelector = dom['video-dimensions'];
 
 const initDimensions = () => {
 
+  dimensionsButton.removeAttribute('disabled');
+  scrawl.addNativeListener('click', () => dimensionsModal.showModal(), dimensionsButton);
+  scrawl.addNativeListener('click', () => dimensionsModal.close(), dimensionsCloseButton);
+
+  const baseMeasure = 80;
+
+  const magicDimensions = {
+
+    // [width, height, width / baseMeasure, height / width]
+    landscape_1080: [1920, 1080, 1920 / baseMeasure, 1080 / 1920],
+    landscape_720: [1280, 720, 1280 / baseMeasure, 720 / 1280],
+    landscape_480: [854, 480, 854 / baseMeasure, 480 / 854],
+    square_1080: [1080, 1080, 1080 / baseMeasure, 1080 / 1080],
+    square_720: [720, 720, 720 / baseMeasure, 720 / 720],
+    square_480: [480, 480, 480 / baseMeasure, 480 / 480],
+    portrait_1080: [1080, 1920, 1080 / baseMeasure, 1920 / 1080],
+    portrait_720: [720, 1280, 720 / baseMeasure, 1280 / 720],
+    portrait_480: [480, 854, 480 / baseMeasure, 854 / 480],
+  };
+
+  const getDimensions = (dim) => {
+
+    const [width, height] = magicDimensions[dim];
+    return [width, height];
+  };
+
   const update = () => {
 
-    const newDimension = dimensionSelector.value;
+    const newDimension = dimensionsSelector.value;
 
     if (newDimension !== currentDimension) {
 
@@ -59,7 +90,9 @@ const initDimensions = () => {
     }
   };
 
-  scrawl.addNativeListener('change', update, dimensionSelector);
+  scrawl.addNativeListener('change', update, dimensionsSelector);
+
+  return { magicDimensions, getDimensions }
 };
 
 
@@ -399,39 +432,6 @@ const initVideoRecording = () => {
 
 
 // ------------------------------------------------------------------------
-// Control buttons management
-// ------------------------------------------------------------------------
-const dom = scrawl.initializeDomInputs([
-  ['button', 'target-toggle', 'Get target'],
-  ['button', 'video-toggle', 'Record'],
-  ['button', 'head-toggle', 'Show head'],
-
-  // Capture handles to the background-related HTML elements
-  ['button', 'background-modal-button', 'Background'],
-  ['button', 'background-modal-close', 'Close'],
-  ['input', 'background-upload', ''],
-  ['by-id', 'background-modal'],
-  ['by-id', 'background-upload-button'],
-  ['by-id', 'background-image-hold'],
-
-  ['select', 'video-dimensions', 2],
-]);
-
-const targetButton = dom['target-toggle'],
-  videoButton = dom['video-toggle'],
-  headButton = dom['head-toggle'],
-
-  backgroundModal = dom['background-modal'],
-  backgroundButton = dom['background-modal-button'],
-  backgroundCloseButton = dom['background-modal-close'],
-  backgroundUpload = dom['background-upload'],
-  backgroundUploadButton = dom['background-upload-button'],
-  backgroundImageHold = dom['background-image-hold'],
-
-  dimensionSelector = dom['video-dimensions'];
-
-
-// ------------------------------------------------------------------------
 // Setting the background
 // - WARNING: loading more than a few images at one time will impact page performance!
 // ------------------------------------------------------------------------
@@ -609,10 +609,51 @@ const backgroundInit = () => {
 
 
 // ------------------------------------------------------------------------
+// Control buttons management
+// ------------------------------------------------------------------------
+const dom = scrawl.initializeDomInputs([
+  ['button', 'target-toggle', 'Get target'],
+  ['button', 'video-toggle', 'Record'],
+  ['button', 'head-toggle', 'Show head'],
+
+  // Capture handles to the background-related HTML elements
+  ['button', 'background-modal-button', 'Background'],
+  ['button', 'background-modal-close', 'Close'],
+  ['input', 'background-upload', ''],
+  ['by-id', 'background-modal'],
+  ['by-id', 'background-upload-button'],
+  ['by-id', 'background-image-hold'],
+
+  // Capture handles to the dimensions-related HTML elements
+  ['button', 'dimensions-modal-button', 'Dimensions'],
+  ['button', 'dimensions-modal-close', 'Close'],
+  ['by-id', 'dimensions-modal'],
+  ['select', 'video-dimensions', 2],
+]);
+
+const targetButton = dom['target-toggle'],
+  videoButton = dom['video-toggle'],
+  headButton = dom['head-toggle'],
+
+  backgroundModal = dom['background-modal'],
+  backgroundButton = dom['background-modal-button'],
+  backgroundCloseButton = dom['background-modal-close'],
+  backgroundUpload = dom['background-upload'],
+  backgroundUploadButton = dom['background-upload-button'],
+  backgroundImageHold = dom['background-image-hold'],
+
+  dimensionsModal = dom['dimensions-modal'],
+  dimensionsButton = dom['dimensions-modal-button'],
+  dimensionsCloseButton = dom['dimensions-modal-close'],
+  dimensionsSelector = dom['video-dimensions'];
+
+
+// ------------------------------------------------------------------------
 // Start the page running
 // ------------------------------------------------------------------------
 initScreenCapture();
-initDimensions();
+
+const { magicDimensions, getDimensions } = initDimensions();
 
 const headEntity = initTalkingHead();
 

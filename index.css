@@ -40,6 +40,10 @@ body {
     padding: 0.25rem 0.5rem;
     border-radius: 5px;
     background-color: rgb(220 220 220 / 1);
+
+    &:hover {
+      cursor: pointer;
+    }
   }
 
   & a {
@@ -51,17 +55,6 @@ body {
     background-color: rgb(220 220 220 / 1);
     color: inherit;
     text-decoration: none;
-  }
-
-  & .selector {
-    font-size: 100%;
-    display: inline-block;
-    margin: 0.5rem;
-    padding: 0.25rem 0.5rem;
-
-    & option {
-      font-size: 100%;
-    }
   }
 }
 
@@ -121,6 +114,34 @@ body {
         padding: 0;
         object-fit: cover;
       }
+    }
+  }
+}
+
+#dimensions-modal {
+  max-height: 80vh;
+  border: 1px dashed black;
+  border-radius: 5px;
+
+  & #dimensions-modal-close {
+    float: right;
+    font-size: 100%;
+    background-color: rgb(220 220 220 / 1);
+    border-radius: 5px;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  & select {
+    font-size: 100%;
+    display: inline-block;
+    margin: 0.5rem;
+    padding: 0.25rem 0.5rem;
+
+    & option {
+      font-size: 100%;
     }
   }
 }
