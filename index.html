@@ -20,6 +20,7 @@
       data-is-responsive="true"
       data-base-width="854"
       data-base-height="480"
+      data-base-background-color="white"
       data-fit="contain"
     >
       <div id="image-hold" aria-hidden="true"></div>
@@ -550,30 +551,42 @@
 
       const updateBackgroundPicture = () => {
 
-        const aWidth = currentBackgroundAsset.get('width'),
-          aHeight = currentBackgroundAsset.get('height');
+        if (currentBackgroundAsset != null) {
 
-        let copyStartX = 0,
-          copyStartY = 0,
-          dim = 0;
+          const aWidth = currentBackgroundAsset.get('width'),
+            aHeight = currentBackgroundAsset.get('height');
 
-        if (aWidth > aHeight) {
+          const [dWidth, dHeight] = canvas.base.get('dimensions');
 
-          copyStartX = (aWidth - aHeight) / 2;
-          dim = aHeight;
+          const rWidth = dWidth / aWidth,
+            rHeight = dHeight / aHeight;
+          // const rWidth = aWidth / dWidth,
+          //   rHeight = aHeight / dHeight;
+
+          let cX = 0,
+            cY = 0,
+            cWidth, cHeight;
+
+          if (rWidth < rHeight) {
+
+            cX = Math.floor((aWidth - (dWidth / rHeight)) / 2);
+            cWidth = Math.floor(dWidth / rHeight);
+            cHeight = Math.floor(dHeight / rHeight);
+          }
+          else {
+
+            cY = Math.floor((aHeight - (dHeight / rWidth)) / 2);
+            cWidth = Math.floor(dWidth / rWidth);
+            cHeight = Math.floor(dHeight / rWidth);
+          }
+
+          backgroundPicture.set({
+            copyStartX: cX,
+            copyStartY: cY,
+            copyWidth: cWidth,
+            copyHeight: cHeight,
+          });
         }
-        else {
-
-          copyStartY = (aHeight - aWidth) / 2;
-          dim = aWidth;
-        }
-
-        backgroundPicture.set({
-          copyStartX,
-          copyStartY,
-          copyWidth: dim,
-          copyHeight: dim,
-        });
       };
 
       return {
