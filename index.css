@@ -58,12 +58,13 @@ body {
   }
 }
 
-#background-modal {
+dialog {
   max-height: 80vh;
+  max-width: 80vw;
   border: 1px dashed black;
   border-radius: 5px;
 
-  & #background-modal-close {
+  & button.close {
     float: right;
     font-size: 100%;
     background-color: rgb(220 220 220 / 1);
@@ -73,6 +74,9 @@ body {
       cursor: pointer;
     }
   }
+}
+
+#background-modal {
 
   & input {
     opacity: 0;
@@ -119,20 +123,6 @@ body {
 }
 
 #dimensions-modal {
-  max-height: 80vh;
-  border: 1px dashed black;
-  border-radius: 5px;
-
-  & #dimensions-modal-close {
-    float: right;
-    font-size: 100%;
-    background-color: rgb(220 220 220 / 1);
-    border-radius: 5px;
-
-    &:hover {
-      cursor: pointer;
-    }
-  }
 
   & select {
     font-size: 100%;

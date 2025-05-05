@@ -19,34 +19,7 @@ scrawl.makeRender({
 // ------------------------------------------------------------------------
 // Video dimensions magic numbers
 // ------------------------------------------------------------------------
-// const baseMeasure = 80;
-
-// const magicDimensions = {
-
-//   // [width, height, width / baseMeasure, height / width]
-//   landscape_1080: [1920, 1080, 1920 / baseMeasure, 1080 / 1920],
-//   landscape_720: [1280, 720, 1280 / baseMeasure, 720 / 1280],
-//   landscape_480: [854, 480, 854 / baseMeasure, 480 / 854],
-//   square_1080: [1080, 1080, 1080 / baseMeasure, 1080 / 1080],
-//   square_720: [720, 720, 720 / baseMeasure, 720 / 720],
-//   square_480: [480, 480, 480 / baseMeasure, 480 / 480],
-//   portrait_1080: [1080, 1920, 1080 / baseMeasure, 1920 / 1080],
-//   portrait_720: [720, 1280, 720 / baseMeasure, 1280 / 720],
-//   portrait_480: [480, 854, 480 / baseMeasure, 854 / 480],
-// };
-
 let currentDimension = 'landscape_480';
-
-// const getDimensions = (dim) => {
-
-//   const [width, height] = magicDimensions[dim];
-//   return [width, height];
-// };
-
-  // dimensionsModal = dom['dimensions-modal'],
-  // dimensionsButton = dom['dimensions-modal-button'],
-  // dimensionsCloseButton = dom['dimensions-modal-close'],
-  // dimensionsSelector = dom['video-dimensions'];
 
 const initDimensions = () => {
 
@@ -54,20 +27,20 @@ const initDimensions = () => {
   scrawl.addNativeListener('click', () => dimensionsModal.showModal(), dimensionsButton);
   scrawl.addNativeListener('click', () => dimensionsModal.close(), dimensionsCloseButton);
 
-  const baseMeasure = 80;
+  const canvasUnit = 80;
 
   const magicDimensions = {
 
     // [width, height, width / baseMeasure, height / width]
-    landscape_1080: [1920, 1080, 1920 / baseMeasure, 1080 / 1920],
-    landscape_720: [1280, 720, 1280 / baseMeasure, 720 / 1280],
-    landscape_480: [854, 480, 854 / baseMeasure, 480 / 854],
-    square_1080: [1080, 1080, 1080 / baseMeasure, 1080 / 1080],
-    square_720: [720, 720, 720 / baseMeasure, 720 / 720],
-    square_480: [480, 480, 480 / baseMeasure, 480 / 480],
-    portrait_1080: [1080, 1920, 1080 / baseMeasure, 1920 / 1080],
-    portrait_720: [720, 1280, 720 / baseMeasure, 1280 / 720],
-    portrait_480: [480, 854, 480 / baseMeasure, 854 / 480],
+    landscape_1080: [1920, 1080, 1920 / canvasUnit, 1080 / 1920],
+    landscape_720: [1280, 720, 1280 / canvasUnit, 720 / 1280],
+    landscape_480: [854, 480, 854 / canvasUnit, 480 / 854],
+    square_1080: [1080, 1080, 1080 / canvasUnit, 1080 / 1080],
+    square_720: [720, 720, 720 / canvasUnit, 720 / 720],
+    square_480: [480, 480, 480 / canvasUnit, 480 / 480],
+    portrait_1080: [1080, 1920, 1080 / canvasUnit, 1920 / 1080],
+    portrait_720: [720, 1280, 720 / canvasUnit, 1280 / 720],
+    portrait_480: [480, 854, 480 / canvasUnit, 854 / 480],
   };
 
   const getDimensions = (dim) => {
@@ -92,7 +65,7 @@ const initDimensions = () => {
 
   scrawl.addNativeListener('change', update, dimensionsSelector);
 
-  return { magicDimensions, getDimensions }
+  return { magicDimensions, getDimensions, canvasUnit }
 };
 
 
@@ -290,46 +263,21 @@ const initTalkingHead = () => {
   scrawl.addNativeListener('click', manageHead, headButton);
 
   // Return the talking head picture entity (for keyboard control)
-  return talkingHead;
+  return { talkingHead };
 };
 
 
 // ------------------------------------------------------------------------
-// Screen capture button management
+// Targets management
 // ------------------------------------------------------------------------
-const initScreenCapture = () => {
+const initTargets = () => {
 
-  let targetSelected = false,
-    cameraAsset, targetPicture;
-
-  const cleanUp = () => {
-
-    if (cameraAsset) {
-
-      cameraAsset.kill();
-      cameraAsset = null;
-    }
-
-    if (targetPicture) {
-
-      targetPicture.kill();
-      targetPicture = null;
-    }
-
-    targetSelected = false;
-  };
-
-  const updateToggle = () => {
-
-    if (targetSelected) targetButton.textContent = 'Drop target';
-    else targetButton.textContent = 'Get target';
-
-    targetButton.removeAttribute('disabled');
-  };
+  targetsButton.removeAttribute('disabled');
+  scrawl.addNativeListener('click', () => targetsModal.showModal(), targetsButton); 
+  scrawl.addNativeListener('click', () => targetsModal.close(), targetsCloseButton);
+  scrawl.addNativeListener('click', () => requestScreenCapture(), targetRequestButton);
 
   const requestScreenCapture = () => {
-
-    cleanUp();
 
     scrawl.importScreenCapture({
 
@@ -338,42 +286,128 @@ const initScreenCapture = () => {
 
     }).then(mycamera => {
 
-      cameraAsset = mycamera;
-      targetSelected = true;
+console.log('mycamera', mycamera);
+      // cameraAsset = mycamera;
+      // targetSelected = true;
 
-      targetPicture = scrawl.makePicture({
+      // const [w, h] = mycamera.get('dimensions');
 
-        name: name('background'),
+      const targetPicture = scrawl.makePicture({
+
+        name: name('target'),
         asset: mycamera.name,
 
-        dimensions: ['100%', '100%'],
+        dimensions: [1, 1],
         copyDimensions: ['100%', '100%'],
+
+        start: ['50%', '50%'],
+        handle: ['50%', '50%'],
       });
 
-      updateToggle();
+      const checker = () => {
+
+        setTimeout(() => {
+
+          if (targetPicture.sourceLoaded) {
+
+            targetPicture.set({
+              dimensions: [...targetPicture.get('copyDimensions')],
+            })
+          }
+          else checker();
+
+        }, 200);
+      }
+
+      checker();
+
+      // updateToggle();
 
     }).catch(err => {
 
-      cleanUp();
-      updateToggle();
+console.log('err', err);
+      // cleanUp();
+      // updateToggle();
     });
   };
 
-  const releaseScreenCapture = () => {
+  return { requestScreenCapture };
 
-    cleanUp();
-    updateToggle();
-  };
+  // let targetSelected = false,
+  //   cameraAsset, targetPicture;
 
-  const toggleScreenCapture = () => {
+  // const cleanUp = () => {
 
-    targetButton.setAttribute('disabled', '');
+  //   if (cameraAsset) {
 
-    if (targetSelected) releaseScreenCapture();
-    else requestScreenCapture();
-  };
+  //     cameraAsset.kill();
+  //     cameraAsset = null;
+  //   }
 
-  scrawl.addNativeListener('click', toggleScreenCapture, targetButton);
+  //   if (targetPicture) {
+
+  //     targetPicture.kill();
+  //     targetPicture = null;
+  //   }
+
+  //   targetSelected = false;
+  // };
+
+  // const updateToggle = () => {
+
+  //   if (targetSelected) targetButton.textContent = 'Drop target';
+  //   else targetButton.textContent = 'Get target';
+
+  //   targetButton.removeAttribute('disabled');
+  // };
+
+  // const requestScreenCapture = () => {
+
+  //   cleanUp();
+
+  //   scrawl.importScreenCapture({
+
+  //     name: name('my-screen-capture'),
+  //     audio: { suppressLocalAudioPlayback: true },
+
+  //   }).then(mycamera => {
+
+  //     cameraAsset = mycamera;
+  //     targetSelected = true;
+
+  //     targetPicture = scrawl.makePicture({
+
+  //       name: name('background'),
+  //       asset: mycamera.name,
+
+  //       dimensions: ['100%', '100%'],
+  //       copyDimensions: ['100%', '100%'],
+  //     });
+
+  //     updateToggle();
+
+  //   }).catch(err => {
+
+  //     cleanUp();
+  //     updateToggle();
+  //   });
+  // };
+
+  // const releaseScreenCapture = () => {
+
+  //   cleanUp();
+  //   updateToggle();
+  // };
+
+  // const toggleScreenCapture = () => {
+
+  //   targetButton.setAttribute('disabled', '');
+
+  //   if (targetSelected) releaseScreenCapture();
+  //   else requestScreenCapture();
+  // };
+
+  // scrawl.addNativeListener('click', toggleScreenCapture, targetButton);
 }
 
 
@@ -436,10 +470,6 @@ const initVideoRecording = () => {
 // - WARNING: loading more than a few images at one time will impact page performance!
 // ------------------------------------------------------------------------
 
-// Only one background image can be displayed at any time
-// - Future TODO - add in some functionality to allow users to stop showing the background image?
-let currentBackgroundAsset;
-
 // Initialize background image functionality
 const backgroundInit = () => {
 
@@ -459,6 +489,10 @@ const backgroundInit = () => {
     name: name('background'),
     dimensions: ['100%', '100%'],
   });
+
+  // Only one background image can be displayed at any time
+  // - Future TODO - add in some functionality to allow users to stop showing the background image?
+  let currentBackgroundAsset;
 
   // UX: Load background images into the canvas using mouse drag-and-drop functionality
   // - Handles multiple dragged files; the last file processed is the one that gets displayed
@@ -557,6 +591,8 @@ const backgroundInit = () => {
 
       }, 200);
     }
+
+    return { currentBackgroundAsset };
   };
 
   // Function to suitably display the background image in the canvas
@@ -612,9 +648,14 @@ const backgroundInit = () => {
 // Control buttons management
 // ------------------------------------------------------------------------
 const dom = scrawl.initializeDomInputs([
-  ['button', 'target-toggle', 'Get target'],
   ['button', 'video-toggle', 'Record'],
   ['button', 'head-toggle', 'Show head'],
+
+  // Capture handles to the targets-related HTML elements
+  ['button', 'targets-modal-button', 'Targets'],
+  ['button', 'targets-modal-close', 'Close'],
+  ['by-id', 'targets-modal'],
+  ['button', 'target-request-button', 'Request screen capture'],
 
   // Capture handles to the background-related HTML elements
   ['button', 'background-modal-button', 'Background'],
@@ -635,6 +676,11 @@ const targetButton = dom['target-toggle'],
   videoButton = dom['video-toggle'],
   headButton = dom['head-toggle'],
 
+  targetsModal = dom['targets-modal'],
+  targetsButton = dom['targets-modal-button'],
+  targetsCloseButton = dom['targets-modal-close'],
+  targetRequestButton = dom['target-request-button'],
+
   backgroundModal = dom['background-modal'],
   backgroundButton = dom['background-modal-button'],
   backgroundCloseButton = dom['background-modal-close'],
@@ -651,13 +697,26 @@ const targetButton = dom['target-toggle'],
 // ------------------------------------------------------------------------
 // Start the page running
 // ------------------------------------------------------------------------
-initScreenCapture();
+const { 
+  magicDimensions,
+  getDimensions,
+  canvasUnit,
+} = initDimensions();
 
-const { magicDimensions, getDimensions } = initDimensions();
+const { 
+  requestScreenCapture,
+} = initTargets();
 
-const headEntity = initTalkingHead();
+const { 
+  talkingHead,
+} = initTalkingHead();
 
-const { backgroundPicture, addBackgroundAsset, updateBackgroundPicture } = backgroundInit();
+const {
+  // currentBackgroundAsset,
+  // backgroundPicture,
+  // addBackgroundAsset,
+  updateBackgroundPicture
+} = backgroundInit();
 
 
 
@@ -672,7 +731,7 @@ const { backgroundPicture, addBackgroundAsset, updateBackgroundPicture } = backg
 const dragGroup = scrawl.makeGroup({
 
   name: name('drag-group'),
-  artefacts: [headEntity],
+  artefacts: [talkingHead],
 });
 
 scrawl.makeDragZone({

@@ -30,12 +30,21 @@
   <!-- User control bar buttons - these will open up modals -->
   <div id="control-buttons">
     <a href="https://github.com/KaliedaRik/sc-screen-recorder" target="_BLANK">Instructions</a>
-    <button id="target-toggle">No Javascript running</button>
+    <button id="targets-modal-button">Cannot get targets</button>
     <button id="head-toggle">Cannot show head</button>
     <button id="video-toggle" disabled>Cannot record video</button>
     <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
     <button id="background-modal-button" disabled>Cannot change background</button>
   </div>
+
+  <!-- Target management modal -->
+  <dialog id='targets-modal' closedby="any">
+    <button id="targets-modal-close" autofocus class="close">Close</button>
+    <h2>Targets management</h2>
+    <div>
+      <button id="target-request-button">Request screen capture</button>
+    </div>
+  </dialog>
 
   <!-- Background images modal -->
   <dialog id='background-modal' closedby="any">
@@ -47,8 +56,6 @@
     <p>Click on an image to use it</p>
     <div id="background-image-hold"></div>
   </dialog>
-
-  <!-- Target management modal -->
 
   <!-- Talking head capture modal -->
 
