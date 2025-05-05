@@ -430,8 +430,6 @@ const targetButton = dom['target-toggle'],
 
   dimensionSelector = dom['video-dimensions'];
 
-console.log(dom);
-
 
 // ------------------------------------------------------------------------
 // Setting the background

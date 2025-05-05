@@ -1,5 +1,5 @@
 *:focus {
-    outline: 3px solid rgb(0 215 255 / 1);
+  outline: 3px solid rgb(0 215 255 / 1);
 }
 
 body {
@@ -16,12 +16,6 @@ body {
 
 #my-canvas {
   background-color: yellow;
-
-  & #image-hold {
-
-    width: 0;
-    height: 0;
-  }
 }
 
 #control-buttons {
