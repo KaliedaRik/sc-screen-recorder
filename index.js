@@ -272,6 +272,10 @@ const initTalkingHead = () => {
 // ------------------------------------------------------------------------
 const initTargets = () => {
 
+  let targetCount = 0;
+
+  const currentTargets = {};
+
   targetsButton.removeAttribute('disabled');
   scrawl.addNativeListener('click', () => targetsModal.showModal(), targetsButton); 
   scrawl.addNativeListener('click', () => targetsModal.close(), targetsCloseButton);
@@ -279,9 +283,12 @@ const initTargets = () => {
 
   const requestScreenCapture = () => {
 
+    const targetId = name(`target-${targetCount}`);
+    targetCount++;
+
     scrawl.importScreenCapture({
 
-      name: name('my-screen-capture'),
+      name: targetId,
       audio: { suppressLocalAudioPlayback: true },
 
     }).then(mycamera => {
@@ -294,7 +301,7 @@ console.log('mycamera', mycamera);
 
       const targetPicture = scrawl.makePicture({
 
-        name: name('target'),
+        name: `${targetId}-picture`,
         asset: mycamera.name,
 
         dimensions: [1, 1],
@@ -304,17 +311,38 @@ console.log('mycamera', mycamera);
         handle: ['50%', '50%'],
       });
 
+      currentTargets[targetId] = {
+        asset: mycamera,
+        display: targetPicture,
+      };
+
+      let checkerAttempts = 0;
+
       const checker = () => {
 
         setTimeout(() => {
 
           if (targetPicture.sourceLoaded) {
 
+            const [cameraWidth, cameraHeight] = targetPicture.get('copyDimensions');
+            const [canvasWidth, canvasHeight] = getDimensions(currentDimension);
+
+            const widthRatio = canvasWidth / cameraWidth,
+              heightRatio = canvasHeight / cameraHeight;
+
+            let scale = (widthRatio < 1 || heightRatio < 1) ? Math.min(widthRatio, heightRatio) / 1.5 : 1;
+
             targetPicture.set({
-              dimensions: [...targetPicture.get('copyDimensions')],
+              dimensions: [cameraWidth, cameraHeight],
+              scale,
             })
           }
-          else checker();
+          else {
+
+            checkerAttempts++;
+
+            if (checkerAttempts < 5) checker();
+          }
 
         }, 200);
       }
@@ -331,7 +359,7 @@ console.log('err', err);
     });
   };
 
-  return { requestScreenCapture };
+  return { requestScreenCapture, currentTargets };
 
   // let targetSelected = false,
   //   cameraAsset, targetPicture;
@@ -600,7 +628,7 @@ const backgroundInit = () => {
     return { currentBackgroundAsset };
   };
 
-  // Remove background image
+  // Remove current background image
   const hideBackground = () => {
 
     currentBackgroundAsset = null;
@@ -612,7 +640,6 @@ const backgroundInit = () => {
     backgroundModal.close();
   };
   scrawl.addNativeListener('click', hideBackground, backgroundImageHide);
-
 
   // Function to suitably display the background image in the canvas
   // - This emulates the <img> DOM `object-fit: cover` attribute functionality
