@@ -482,6 +482,12 @@ const backgroundInit = () => {
   scrawl.addNativeListener('click', () => backgroundModal.close(), backgroundCloseButton);
   scrawl.addNativeListener('focus', () => backgroundUploadButton.classList.add('is-focussed'), backgroundUpload);
   scrawl.addNativeListener('blur', () => backgroundUploadButton.classList.remove('is-focussed'), backgroundUpload);
+  scrawl.addNativeListener('focus', () => backgroundColorButton.classList.add('is-focussed'), backgroundColorInput);
+  scrawl.addNativeListener('blur', () => backgroundColorButton.classList.remove('is-focussed'), backgroundColorInput);
+
+  // Background color management
+  const updateBackgroundColor = () => canvas.setBase({ backgroundColor: backgroundColorInput.value });
+  scrawl.addNativeListener(['input', 'change'], updateBackgroundColor, backgroundColorInput);
 
   // Create a Picture entity to display the background image in the canvas
   const backgroundPicture = scrawl.makePicture({
@@ -492,7 +498,7 @@ const backgroundInit = () => {
 
   // Only one background image can be displayed at any time
   // - Future TODO - add in some functionality to allow users to stop showing the background image?
-  let currentBackgroundAsset;
+  let currentBackgroundAsset = null;
 
   // UX: Load background images into the canvas using mouse drag-and-drop functionality
   // - Handles multiple dragged files; the last file processed is the one that gets displayed
@@ -591,9 +597,22 @@ const backgroundInit = () => {
 
       }, 200);
     }
-
     return { currentBackgroundAsset };
   };
+
+  // Remove background image
+  const hideBackground = () => {
+
+    currentBackgroundAsset = null;
+
+    backgroundPicture.set({
+      asset: '',
+    });
+
+    backgroundModal.close();
+  };
+  scrawl.addNativeListener('click', hideBackground, backgroundImageHide);
+
 
   // Function to suitably display the background image in the canvas
   // - This emulates the <img> DOM `object-fit: cover` attribute functionality
@@ -660,10 +679,13 @@ const dom = scrawl.initializeDomInputs([
   // Capture handles to the background-related HTML elements
   ['button', 'background-modal-button', 'Background'],
   ['button', 'background-modal-close', 'Close'],
-  ['input', 'background-upload', ''],
   ['by-id', 'background-modal'],
+  ['input', 'background-upload', ''],
   ['by-id', 'background-upload-button'],
+  ['input', 'background-color-input', '#ffffff'],
+  ['by-id', 'background-color-button'],
   ['by-id', 'background-image-hold'],
+  ['button', 'background-image-hide', 'Hide background image'],
 
   // Capture handles to the dimensions-related HTML elements
   ['button', 'dimensions-modal-button', 'Dimensions'],
@@ -686,7 +708,10 @@ const targetButton = dom['target-toggle'],
   backgroundCloseButton = dom['background-modal-close'],
   backgroundUpload = dom['background-upload'],
   backgroundUploadButton = dom['background-upload-button'],
+  backgroundColorInput = dom['background-color-input'],
+  backgroundColorButton = dom['background-color-button'],
   backgroundImageHold = dom['background-image-hold'],
+  backgroundImageHide = dom['background-image-hide'],
 
   dimensionsModal = dom['dimensions-modal'],
   dimensionsButton = dom['dimensions-modal-button'],

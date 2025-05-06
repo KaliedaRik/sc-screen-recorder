@@ -82,6 +82,13 @@ dialog {
     opacity: 0;
   }
 
+  & button#background-image-hide {
+    font-size: 100%;
+    background-color: rgb(220 220 220 / 1);
+    border-radius: 5px;
+    padding: 0.25rem;
+  }
+
   & label {
     border: 1px solid black;
     padding: 0.25rem 0.5rem;
