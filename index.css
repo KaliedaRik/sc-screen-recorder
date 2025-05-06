@@ -58,6 +58,48 @@ body {
   }
 }
 
+#entity-control-panel {
+  font-size: 90%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: rgb(255 255 255 / 0.7);
+
+  & p {
+    margin: 0;
+    border-bottom: 1px dashed black;
+    border-top: 1px solid black;
+    padding: 0.5rem;
+    padding-left: 1rem;
+  }
+
+  & #entity-controls {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    border: 0;
+    padding: 1rem;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    & div {
+      display: flex;
+      flex-direction: column;
+      padding-right: 2rem;
+    }
+  }
+}
+
+
 dialog {
   max-height: 80vh;
   max-width: 80vw;
@@ -128,6 +170,33 @@ dialog {
     }
   }
 }
+
+#targets-modal {
+
+  min-width: 50vw;
+
+  & button#target-request-button {
+    font-size: 100%;
+    background-color: rgb(220 220 220 / 1);
+    border-radius: 5px;
+    padding: 0.25rem;
+  }
+
+  & .target-list-row {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid gray;
+    padding: 0.3rem 0;
+
+    & button {
+      font-size: 100%;
+      background-color: rgb(220 220 220 / 1);
+      border-radius: 5px;
+      padding: 0.25rem;
+    }
+  }
+}
+
 
 #dimensions-modal {
 

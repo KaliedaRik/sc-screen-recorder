@@ -293,12 +293,6 @@ const initTargets = () => {
 
     }).then(mycamera => {
 
-console.log('mycamera', mycamera);
-      // cameraAsset = mycamera;
-      // targetSelected = true;
-
-      // const [w, h] = mycamera.get('dimensions');
-
       const targetPicture = scrawl.makePicture({
 
         name: `${targetId}-picture`,
@@ -335,7 +329,25 @@ console.log('mycamera', mycamera);
             targetPicture.set({
               dimensions: [cameraWidth, cameraHeight],
               scale,
-            })
+            });
+
+            dragGroup.addArtefacts(targetPicture);
+
+            const listDiv = document.createElement('div');
+            listDiv.id = `${targetId}-list-row`
+            listDiv.classList.add('target-list-row');
+
+            const itemTitle = document.createElement('div');
+            itemTitle.textContent = targetId;
+            listDiv.appendChild(itemTitle);
+
+            const itemButton = document.createElement('button');
+            itemButton.textContent = 'Remove';
+            listDiv.appendChild(itemButton);
+
+            scrawl.addNativeListener('click', () => removeTarget(targetId), itemButton);
+
+            targetsHold.appendChild(listDiv);
           }
           else {
 
@@ -349,14 +361,13 @@ console.log('mycamera', mycamera);
 
       checker();
 
-      // updateToggle();
 
-    }).catch(err => {
+    }).catch(err => console.log('err', err));
 
-console.log('err', err);
-      // cleanUp();
-      // updateToggle();
-    });
+    const removeTarget = (targetId) => {
+
+      console.log(`Request to remove ${targetId} received`);
+    };
   };
 
   return { requestScreenCapture, currentTargets };
@@ -689,11 +700,46 @@ const backgroundInit = () => {
   };
 };
 
-
+/*
+  <div id="entity-control-panel">
+    <p>Editing: <span id="entity-being-edited">nothing</span></p>
+    <div id="entity-controls">
+      <div>
+        <label for="startX">Horizontal</label>
+        <input id="startX" type="range" min="-25" max="125" value="50" step="1" disabled>
+      </div>
+      <div>
+        <label for="startY">Vertical</label>
+        <input id="startY" type="range" min="-25" max="125" value="50" step="1" disabled>
+      </div>
+      <div>
+        <label for="scale">Scale</label>
+        <input id="scale" type="range" min="0" max="2" value="1" step="0.01" disabled>
+      </div>
+      <div>
+        <label for="roll">Rotation</label>
+        <input id="roll" type="range" min="0" max="360" value="0" step="1" disabled>
+      </div>
+      <div>
+        <label for="stampOrder">Order</label>
+        <input id="stampOrder" type="range" min="0" max="100" value="0" step="1" disabled>
+      </div>
+    </div>
+  </div>
+*/
 // ------------------------------------------------------------------------
 // Control buttons management
 // ------------------------------------------------------------------------
 const dom = scrawl.initializeDomInputs([
+
+  // Capture handles to the editing controls
+  ['by-id', 'entity-being-edited'],
+  ['input', 'startX', '50'],
+  ['input', 'startY', '50'],
+  ['input', 'scale', '1'],
+  ['input', 'roll', '0'],
+  ['input', 'stampOrder', '0'],
+
   ['button', 'video-toggle', 'Record'],
   ['button', 'head-toggle', 'Show head'],
 
@@ -702,6 +748,7 @@ const dom = scrawl.initializeDomInputs([
   ['button', 'targets-modal-close', 'Close'],
   ['by-id', 'targets-modal'],
   ['button', 'target-request-button', 'Request screen capture'],
+  ['by-id', 'current-targets-hold'],
 
   // Capture handles to the background-related HTML elements
   ['button', 'background-modal-button', 'Background'],
@@ -721,7 +768,13 @@ const dom = scrawl.initializeDomInputs([
   ['select', 'video-dimensions', 2],
 ]);
 
-const targetButton = dom['target-toggle'],
+const entityBeingEdited = dom['entity-being-edited'],
+  entityStartX = dom['startX'],
+  entityStartY = dom['startY'],
+  entityScale = dom['scale'],
+  entityRotation = dom['rotation'],
+  entityOrder = dom['order'],
+
   videoButton = dom['video-toggle'],
   headButton = dom['head-toggle'],
 
@@ -729,6 +782,7 @@ const targetButton = dom['target-toggle'],
   targetsButton = dom['targets-modal-button'],
   targetsCloseButton = dom['targets-modal-close'],
   targetRequestButton = dom['target-request-button'],
+  targetsHold = dom['current-targets-hold'],
 
   backgroundModal = dom['background-modal'],
   backgroundButton = dom['background-modal-button'],
@@ -744,6 +798,8 @@ const targetButton = dom['target-toggle'],
   dimensionsButton = dom['dimensions-modal-button'],
   dimensionsCloseButton = dom['dimensions-modal-close'],
   dimensionsSelector = dom['video-dimensions'];
+
+const entityControls = [entityStartX, entityStartY, entityScale, entityRotation, entityOrder];
 
 
 // ------------------------------------------------------------------------
@@ -786,11 +842,26 @@ const dragGroup = scrawl.makeGroup({
   artefacts: [talkingHead],
 });
 
-scrawl.makeDragZone({
+const updateOnStart = () => {
+
+  console.log('dragger', dragger);
+
+  const entity = dragger.artefact;
+
+  entityControls.forEach(control => control.removeAttribute('disabled'));
+  entityBeingEdited.textContent = `${entity.name}`;
+
+
+
+};
+
+const dragger = scrawl.makeDragZone({
 
   zone: canvas,
   collisionGroup: dragGroup,
+  exposeCurrentArtefact: true,
   endOn: ['up', 'leave'],
+  updateOnStart,
 });
 
 

@@ -22,9 +22,7 @@
       data-base-height="480"
       data-base-background-color="white"
       data-fit="contain"
-    >
-      <div id="image-hold" aria-hidden="true"></div>
-    </canvas>
+    ></canvas>
   </div>
 
   <!-- User control bar buttons - these will open up modals -->
@@ -37,6 +35,33 @@
     <button id="background-modal-button" disabled>Cannot change background</button>
   </div>
 
+  <!-- User target/head entity controls -->
+  <div id="entity-control-panel">
+    <p>Editing: <span id="entity-being-edited">nothing</span></p>
+    <div id="entity-controls">
+      <div>
+        <label for="startX">Horizontal</label>
+        <input id="startX" type="range" min="-25" max="125" value="50" step="1" disabled>
+      </div>
+      <div>
+        <label for="startY">Vertical</label>
+        <input id="startY" type="range" min="-25" max="125" value="50" step="1" disabled>
+      </div>
+      <div>
+        <label for="scale">Scale</label>
+        <input id="scale" type="range" min="0" max="2" value="1" step="0.01" disabled>
+      </div>
+      <div>
+        <label for="roll">Rotation</label>
+        <input id="roll" type="range" min="0" max="360" value="0" step="1" disabled>
+      </div>
+      <div>
+        <label for="stampOrder">Order</label>
+        <input id="stampOrder" type="range" min="0" max="100" value="0" step="1" disabled>
+      </div>
+    </div>
+  </div>
+
   <!-- Target management modal -->
   <dialog id='targets-modal' closedby="any">
     <button id="targets-modal-close" autofocus class="close">Close</button>
@@ -44,6 +69,8 @@
     <div>
       <button id="target-request-button">Request screen capture</button>
     </div>
+    <h3>Current targets</h3>
+    <div id="current-targets-hold"></div>
   </dialog>
 
   <!-- Background images modal -->
