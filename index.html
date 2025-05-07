@@ -29,7 +29,7 @@
   <div id="control-buttons">
     <a href="https://github.com/KaliedaRik/sc-screen-recorder" target="_BLANK">Instructions</a>
     <button id="targets-modal-button">Cannot get targets</button>
-    <button id="head-toggle">Cannot show head</button>
+    <button id="head-modal-button">Cannot show head</button>
     <button id="video-toggle" disabled>Cannot record video</button>
     <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
     <button id="background-modal-button" disabled>Cannot change background</button>
@@ -37,7 +37,10 @@
 
   <!-- User target/head entity controls -->
   <div id="entity-control-panel">
-    <p>Editing: <span id="entity-being-edited">no target selected</span></p>
+    <div id="entity-heading">
+      <p>Editing: <span id="entity-being-edited">no target selected</span></p>
+      <p>Current dimensions: <span id="current-canvas-dimensions">Canvas dims</span></p>
+    </div>
     <div id="entity-controls">
       <div>
         <label for="startX">Horizontal</label>
@@ -88,6 +91,24 @@
   </dialog>
 
   <!-- Talking head capture modal -->
+  <dialog id='head-modal' closedby="any">
+    <button id="head-modal-close" autofocus class="close">Close</button>
+    <h2>Talking head management</h2>
+    <div>
+      <label for="use-talking-head">Use talking head:</label> <input id="use-talking-head" name="head" value="off" type="checkbox">
+    </div>
+    <h3>Talking head parameters</h3>
+    <div id="talking-head-parameters">
+      <label for="head-horizontal">Horizontal</label>
+      <input type="range" id="head-horizontal" name="head-horizontal" min="-25" max="125" value="75" disabled>
+      <label for="head-vertical">Vertical</label>
+      <input type="range" id="head-vertical" name="head-vertical" min="-25" max="125" value="75" disabled>
+      <label for="head-scale">Scale</label>
+      <input type="range" id="head-scale" name="head-scale" min="0" max="2" value="1" disabled>
+      <label for="head-rotation">Rotation</label>
+      <input type="range" id="head-rotation" name="head-rotation" min="0" max="360" value="0" disabled>
+    </div>
+  </dialog>
 
   <!-- Canvas dimensions modal -->
   <dialog id='dimensions-modal' closedby="any">

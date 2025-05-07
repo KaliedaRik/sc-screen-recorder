@@ -73,12 +73,20 @@ body {
   justify-content: space-between;
   background-color: rgb(255 255 255 / 0.7);
 
-  & p {
+  & #entity-heading {
     margin: 0;
     border-bottom: 1px dashed black;
     border-top: 1px solid black;
-    padding: 0.5rem;
-    padding-left: 1rem;
+    padding: 0.5rem 1rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    & p {
+      margin: 0;
+      border: 0;
+      padding: 0;
+    }
   }
 
   & #entity-controls {
@@ -201,7 +209,6 @@ dialog {
   }
 }
 
-
 #dimensions-modal {
 
   min-width: 50vw;
@@ -214,6 +221,20 @@ dialog {
 
     & option {
       font-size: 100%;
+    }
+  }
+}
+
+#head-modal {
+
+  min-width: 50vw;
+
+  & #talking-head-parameters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    & label {
+      margin-bottom: 0.5rem;
     }
   }
 }
