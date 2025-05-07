@@ -204,6 +204,8 @@ dialog {
 
 #dimensions-modal {
 
+  min-width: 50vw;
+
   & select {
     font-size: 100%;
     display: inline-block;

@@ -17,26 +17,29 @@ const initDimensions = () => {
   scrawl.addNativeListener('click', () => dimensionsModal.showModal(), dimensionsButton);
   scrawl.addNativeListener('click', () => dimensionsModal.close(), dimensionsCloseButton);
 
-  const canvasUnit = 80;
-
   const magicDimensions = {
 
-    // [width, height, width / baseMeasure, height / width]
-    landscape_1080: [1920, 1080, 1920 / canvasUnit, 1080 / 1920],
-    landscape_720: [1280, 720, 1280 / canvasUnit, 720 / 1280],
-    landscape_480: [854, 480, 854 / canvasUnit, 480 / 854],
-    square_1080: [1080, 1080, 1080 / canvasUnit, 1080 / 1080],
-    square_720: [720, 720, 720 / canvasUnit, 720 / 720],
-    square_480: [480, 480, 480 / canvasUnit, 480 / 480],
-    portrait_1080: [1080, 1920, 1080 / canvasUnit, 1920 / 1080],
-    portrait_720: [720, 1280, 720 / canvasUnit, 1280 / 720],
-    portrait_480: [480, 854, 480 / canvasUnit, 854 / 480],
+    // [width, height, scaler]
+    landscape_1080: [1920, 1080, 1080],
+    landscape_720: [1280, 720, 720],
+    landscape_480: [854, 480, 480],
+    square_1080: [1080, 1080, 1080],
+    square_720: [720, 720, 720],
+    square_480: [480, 480, 480],
+    portrait_1080: [1080, 1920, 1080],
+    portrait_720: [720, 1280, 720],
+    portrait_480: [480, 854, 480],
   };
 
   const getDimensions = (dim) => {
 
     const [width, height] = magicDimensions[dim];
     return [width, height];
+  };
+
+  const getScaler = (dim) => {
+
+    return magicDimensions[dim][2];
   };
 
   const update = () => {
@@ -47,15 +50,16 @@ const initDimensions = () => {
 
       canvas.setBase({ dimensions: getDimensions(newDimension) });
 
-      currentDimension = newDimension;
-
       updateBackgroundPicture();
+      updateTargetScales(getScaler(currentDimension), getScaler(newDimension));
+
+      currentDimension = newDimension;
     }
   };
 
   scrawl.addNativeListener('change', update, dimensionsSelector);
 
-  return { magicDimensions, getDimensions, canvasUnit }
+  return { magicDimensions, getDimensions, getScaler }
 };
 
 
@@ -271,6 +275,8 @@ const initTargets = () => {
   // Local target entity tracker state
   let targetCount = 0;
 
+  const targetsArray = [];
+
   // The main request screen capture function
   // - Users can add multiple screen captured targets in the canvas
   const requestScreenCapture = () => {
@@ -383,6 +389,9 @@ const initTargets = () => {
             // Make the Picture entity draggable
             dragGroup.addArtefacts(targetPicture);
 
+            // Keep track of target names
+            targetsArray.push(targetPicture.name);
+
             // Each target needs a listing in the Targets modal
             listDiv = document.createElement('div');
             listDiv.id = `${targetId}-list-row`
@@ -451,7 +460,27 @@ const initTargets = () => {
     }).catch(err => console.log('err', err));
   };
 
-  return { requestScreenCapture };
+  const updateTargetScales = (oldScaler, newScaler) => {
+
+    if (oldScaler !== newScaler) {
+
+      targetsArray.forEach(id => {
+
+        const entity = scrawl.findEntity(id);
+
+        if (entity) {
+
+          const scale = entity.get('scale');
+
+          entity.set({
+            scale: ((scale / oldScaler) * newScaler),
+          });
+        }
+      });
+    }
+  }
+
+  return { requestScreenCapture, updateTargetScales };
 };
 
 
@@ -931,20 +960,21 @@ const {
   updateGroup,
   updateEntityControls,
   areControlsEnabled,
-  enableControls,
+  // enableControls,
   disableControls,
   dragGroup,
-  dragger,
+  // dragger,
 } = initUpdates();
 
 const { 
   magicDimensions,
   getDimensions,
-  canvasUnit,
+  getScaler,
 } = initDimensions();
 
 const { 
-  requestScreenCapture,
+  // requestScreenCapture,
+  updateTargetScales,
 } = initTargets();
 
 const { 
