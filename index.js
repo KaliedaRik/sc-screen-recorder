@@ -270,7 +270,6 @@ const initTargets = () => {
 
   // Local target entity tracker state
   let targetCount = 0;
-  const currentTargets = {};
 
   // The main request screen capture function
   // - Users can add multiple screen captured targets in the canvas
@@ -279,19 +278,22 @@ const initTargets = () => {
     const targetId = name(`target-${targetCount}`);
     targetCount++;
 
+    // Screen capture streams are brittle
+    // - We need to remove associated assets and entitys from SC when they fail us
     let cleanup = () => console.log(`${targetId} - video track stream has ended`);
 
+    // The main event!
+    // - Gets the user's desired media stream (via browser functionality)
+    // - Creates an SC asset (including a hidden video element) and Picture entity from it
     scrawl.importScreenCapture({
 
       name: targetId,
       audio: { suppressLocalAudioPlayback: true },
-      // onMediaStreamEnd: () => console.log(`${targetId} - video track stream has ended`),
       onMediaStreamEnd: () => cleanup(),
 
     }).then(mycamera => {
 
-      console.log('mycamera', mycamera);
-
+      // Create a Picture entity to display the media stream on the canvas
       const targetPicture = scrawl.makePicture({
 
         name: `${targetId}-picture`,
@@ -352,13 +354,10 @@ const initTargets = () => {
         },
       });
 
-      currentTargets[targetId] = {
-        asset: mycamera,
-        display: targetPicture,
-      };
-
       // Target acquisition is asynchronous, given the need to manipulate the DOM
       // - Expect the work to complete within 1 second
+      // - We can only set the Picture dimensions and scale after the media stream starts, well, streaming
+      // - TODO: There's probably a better, more "listenery" way to achieve this
       let checkerAttempts = 0,
         listDiv;
 
@@ -381,8 +380,10 @@ const initTargets = () => {
               scale,
             });
 
+            // Make the Picture entity draggable
             dragGroup.addArtefacts(targetPicture);
 
+            // Each target needs a listing in the Targets modal
             listDiv = document.createElement('div');
             listDiv.id = `${targetId}-list-row`
             listDiv.classList.add('target-list-row');
@@ -395,7 +396,8 @@ const initTargets = () => {
             itemButton.textContent = 'Remove';
             listDiv.appendChild(itemButton);
 
-            scrawl.addNativeListener('click', () => removeTarget(targetId), itemButton);
+            // In case the user wantas to get rid of the target intentionally
+            scrawl.addNativeListener('click', removeTarget, itemButton);
 
             targetsHold.appendChild(listDiv);
           }
@@ -409,9 +411,28 @@ const initTargets = () => {
         }, 200);
       }
 
+      // Start checking
       checker();
 
+      // Clean up the mess left behind when a media stream fails
       cleanup = () => {
+
+        const currentUpdate = updateGroup.get('artefacts');
+
+        if (currentUpdate.includes(targetPicture.name)) {
+
+          // This is repeated code - needs to be refactored
+          updateGroup.setArtefacts({
+            lineDash: [],
+            method: 'fill',
+          });
+
+          updateGroup.clearArtefacts();
+
+          entityBeingEdited.textContent = 'no target selected';
+
+          if (areControlsEnabled()) disableControls();
+        }
 
         targetPicture.kill();
         mycamera.kill();
@@ -419,16 +440,18 @@ const initTargets = () => {
         if (listDiv != null) listDiv.remove();
       }
 
+      // Clean up the mess left behind when a user deliberately removes the target in the web page
+      // - Can only be done by clicking the "Remove" button in the Targets modal
       const removeTarget = () => {
 
         if (mycamera.mediaStreamTrack != null) mycamera.mediaStreamTrack.stop();
         cleanup();
       };
-      
+
     }).catch(err => console.log('err', err));
   };
 
-  return { requestScreenCapture, currentTargets };
+  return { requestScreenCapture };
 };
 
 
@@ -693,6 +716,7 @@ const initUpdates = () => {
 
   // The target entity controls are at the bottom of the screen
   let controlsEnabled = false;
+  const areControlsEnabled = () => controlsEnabled;
 
   const entityControls = [entityStartX, entityStartY, entityScale, entityRoll, entityOrder];
 
@@ -818,7 +842,7 @@ const initUpdates = () => {
   return {
     updateGroup,
     updateEntityControls,
-    controlsEnabled,
+    areControlsEnabled,
     enableControls,
     disableControls,
     dragGroup,
@@ -906,7 +930,7 @@ const entityBeingEdited = dom['entity-being-edited'],
 const {
   updateGroup,
   updateEntityControls,
-  controlsEnabled,
+  areControlsEnabled,
   enableControls,
   disableControls,
   dragGroup,
