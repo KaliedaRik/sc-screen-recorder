@@ -7,16 +7,6 @@ const canvas = scrawl.findCanvas('my-canvas');
 
 
 // ------------------------------------------------------------------------
-// Scrawl-canvas animation
-// ------------------------------------------------------------------------
-scrawl.makeRender({
-
-  name: name('render'),
-  target: canvas,
-});
-
-
-// ------------------------------------------------------------------------
 // Video dimensions magic numbers
 // ------------------------------------------------------------------------
 let currentDimension = 'landscape_480';
@@ -303,6 +293,14 @@ const initTargets = () => {
 
         start: ['50%', '50%'],
         handle: ['50%', '50%'],
+
+        strokeStyle: 'red',
+        method: 'fill',
+
+        // button: {
+        //   name: `${targetId}-button`,
+        //   description: `Focus on ${targetId}`,
+        // },
       });
 
       currentTargets[targetId] = {
@@ -510,7 +508,7 @@ const initVideoRecording = () => {
 // ------------------------------------------------------------------------
 
 // Initialize background image functionality
-const backgroundInit = () => {
+const initBackground = () => {
 
   // Initialize DOM background button and associated modal
   // - The main "Background" button opens an associated modal - all defined in HTML
@@ -700,33 +698,111 @@ const backgroundInit = () => {
   };
 };
 
-/*
-  <div id="entity-control-panel">
-    <p>Editing: <span id="entity-being-edited">nothing</span></p>
-    <div id="entity-controls">
-      <div>
-        <label for="startX">Horizontal</label>
-        <input id="startX" type="range" min="-25" max="125" value="50" step="1" disabled>
-      </div>
-      <div>
-        <label for="startY">Vertical</label>
-        <input id="startY" type="range" min="-25" max="125" value="50" step="1" disabled>
-      </div>
-      <div>
-        <label for="scale">Scale</label>
-        <input id="scale" type="range" min="0" max="2" value="1" step="0.01" disabled>
-      </div>
-      <div>
-        <label for="roll">Rotation</label>
-        <input id="roll" type="range" min="0" max="360" value="0" step="1" disabled>
-      </div>
-      <div>
-        <label for="stampOrder">Order</label>
-        <input id="stampOrder" type="range" min="0" max="100" value="0" step="1" disabled>
-      </div>
-    </div>
-  </div>
-*/
+
+// ------------------------------------------------------------------------
+// Canvas UX interaction
+// - Including drag-and-drop functionality
+// ------------------------------------------------------------------------
+
+// Build the update functionality
+const initUpdates = () => {
+
+  const entityControls = [entityStartX, entityStartY, entityScale, entityRoll, entityOrder];
+
+  const enableControls = () => entityControls.forEach(control => control.removeAttribute('disabled'));
+  const disableControls = () => entityControls.forEach(control => control.setAttribute('disabled', ''));
+
+  let controlsEnabled = false;
+
+  const updateGroup = scrawl.makeGroup({
+
+    name: name('update-group'),
+  });
+
+  scrawl.makeUpdater({
+
+    event: ['input', 'change'],
+    origin: '.target-update',
+
+    target: updateGroup,
+
+    useNativeListener: true,
+    preventDefault: true,
+
+    updates: {
+      startX: ['startX', '%'],
+      startY: ['startY', '%'],
+      scale: ['scale', 'float'],
+      roll: ['roll', 'float'],
+      order: ['order', 'int'],
+    },
+  });
+
+  const updateEntityControls = (entity) => {
+
+    if (entity) {
+
+      updateGroup.setArtefacts({
+        method: 'fill',
+      });
+
+      updateGroup.clearArtefacts();
+
+      setTimeout(() => {
+
+        const [x, y] = entity.get('start');
+        const scale = entity.get('scale');
+        const roll = entity.get('roll');
+        const order = entity.get('order');
+
+        console.log(entity.name, x, y, scale, roll, order);
+
+        entityBeingEdited.textContent = entity.name;
+        entityStartX.value = `${x}`;
+        entityStartY.value = `${y}`;
+        entityScale.value = `${scale}`;
+        entityRoll.value = `${roll}`;
+        entityOrder.value = `${order}`;
+
+        updateGroup.addArtefacts(entity);
+
+        updateGroup.setArtefacts({
+          method: 'fillThenDraw',
+        });
+
+        if (!controlsEnabled) enableControls();
+
+      }, 0);
+    }
+  };
+
+  // Build the drag functionality
+  const dragGroup = scrawl.makeGroup({
+
+    name: name('drag-group'),
+    artefacts: [talkingHead],
+  });
+
+  const dragger = scrawl.makeDragZone({
+
+    zone: canvas,
+    collisionGroup: dragGroup,
+    endOn: ['up', 'leave'],
+    exposeCurrentArtefact: true,
+    updateOnEnd: () => { updateEntityControls(dragger().artefact) }
+  });
+
+  return {
+    updateGroup,
+    updateEntityControls,
+    enableControls,
+    disableControls,
+    dragGroup,
+    dragger,
+  };
+};
+
+
 // ------------------------------------------------------------------------
 // Control buttons management
 // ------------------------------------------------------------------------
@@ -738,7 +814,7 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'startY', '50'],
   ['input', 'scale', '1'],
   ['input', 'roll', '0'],
-  ['input', 'stampOrder', '0'],
+  ['input', 'order', '0'],
 
   ['button', 'video-toggle', 'Record'],
   ['button', 'head-toggle', 'Show head'],
@@ -772,7 +848,7 @@ const entityBeingEdited = dom['entity-being-edited'],
   entityStartX = dom['startX'],
   entityStartY = dom['startY'],
   entityScale = dom['scale'],
-  entityRotation = dom['rotation'],
+  entityRoll = dom['roll'],
   entityOrder = dom['order'],
 
   videoButton = dom['video-toggle'],
@@ -799,8 +875,6 @@ const entityBeingEdited = dom['entity-being-edited'],
   dimensionsCloseButton = dom['dimensions-modal-close'],
   dimensionsSelector = dom['video-dimensions'];
 
-const entityControls = [entityStartX, entityStartY, entityScale, entityRotation, entityOrder];
-
 
 // ------------------------------------------------------------------------
 // Start the page running
@@ -823,8 +897,17 @@ const {
   // currentBackgroundAsset,
   // backgroundPicture,
   // addBackgroundAsset,
-  updateBackgroundPicture
-} = backgroundInit();
+  updateBackgroundPicture,
+} = initBackground();
+
+const {
+  updateGroup,
+  updateEntityControls,
+  enableControls,
+  disableControls,
+  dragGroup,
+  dragger,
+} = initUpdates();
 
 
 
@@ -834,34 +917,13 @@ const {
 
 
 // ------------------------------------------------------------------------
-// Drag-and-drop functionality
+// Scrawl-canvas animation
 // ------------------------------------------------------------------------
-const dragGroup = scrawl.makeGroup({
+scrawl.makeRender({
 
-  name: name('drag-group'),
-  artefacts: [talkingHead],
-});
-
-const updateOnStart = () => {
-
-  console.log('dragger', dragger);
-
-  const entity = dragger.artefact;
-
-  entityControls.forEach(control => control.removeAttribute('disabled'));
-  entityBeingEdited.textContent = `${entity.name}`;
-
-
-
-};
-
-const dragger = scrawl.makeDragZone({
-
-  zone: canvas,
-  collisionGroup: dragGroup,
-  exposeCurrentArtefact: true,
-  endOn: ['up', 'leave'],
-  updateOnStart,
+  name: name('render'),
+  target: canvas,
+  commence: () => canvas.checkHover(),
 });
 
 
