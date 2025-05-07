@@ -262,15 +262,18 @@ const initTalkingHead = () => {
 // ------------------------------------------------------------------------
 const initTargets = () => {
 
-  let targetCount = 0;
-
-  const currentTargets = {};
-
+  // Prepare page buttons for UX
   targetsButton.removeAttribute('disabled');
   scrawl.addNativeListener('click', () => targetsModal.showModal(), targetsButton); 
   scrawl.addNativeListener('click', () => targetsModal.close(), targetsCloseButton);
   scrawl.addNativeListener('click', () => requestScreenCapture(), targetRequestButton);
 
+  // Local target entity tracker state
+  let targetCount = 0;
+  const currentTargets = {};
+
+  // The main request screen capture function
+  // - Users can add multiple screen captured targets in the canvas
   const requestScreenCapture = () => {
 
     const targetId = name(`target-${targetCount}`);
@@ -295,12 +298,52 @@ const initTargets = () => {
         handle: ['50%', '50%'],
 
         strokeStyle: 'red',
+        lineWidth: 4,
+        lineJoin: 'round',
         method: 'fill',
 
-        // button: {
-        //   name: `${targetId}-button`,
-        //   description: `Focus on ${targetId}`,
-        // },
+        button: {
+
+          name: `${targetId}-button`,
+          description: `Press enter to edit ${targetId}`,
+
+          clickAction: function () {
+
+            targetPicture.set({
+              lineDash: [],
+              method: 'fillThenDraw',
+            });
+
+            updateGroup.setArtefacts({
+              lineDash: [],
+              method: 'fill',
+            });
+
+            updateGroup.clearArtefacts();
+            updateGroup.addArtefacts(targetPicture);
+
+            updateEntityControls(targetPicture);
+
+            entityBeingEdited.textContent = targetPicture.name;
+            entityStartX.focus();
+          },
+        },
+
+        onEnter: function () {
+
+          targetPicture.set({
+            lineDash: [5, 3],
+            method: 'fillThenDraw',
+          });
+        },
+
+        onLeave: function () {
+
+          targetPicture.set({
+            lineDash: [],
+            method: 'fill',
+          });
+        },
       });
 
       currentTargets[targetId] = {
@@ -308,6 +351,8 @@ const initTargets = () => {
         display: targetPicture,
       };
 
+      // Target acquisition is asynchronous, given the need to manipulate the DOM
+      // - Expect the work to complete within 1 second
       let checkerAttempts = 0;
 
       const checker = () => {
@@ -322,7 +367,7 @@ const initTargets = () => {
             const widthRatio = canvasWidth / cameraWidth,
               heightRatio = canvasHeight / cameraHeight;
 
-            let scale = (widthRatio < 1 || heightRatio < 1) ? Math.min(widthRatio, heightRatio) / 1.5 : 1;
+            const scale = (widthRatio < 1 || heightRatio < 1) ? Math.min(widthRatio, heightRatio) / 1.5 : 1;
 
             targetPicture.set({
               dimensions: [cameraWidth, cameraHeight],
@@ -359,7 +404,6 @@ const initTargets = () => {
 
       checker();
 
-
     }).catch(err => console.log('err', err));
 
     const removeTarget = (targetId) => {
@@ -369,83 +413,7 @@ const initTargets = () => {
   };
 
   return { requestScreenCapture, currentTargets };
-
-  // let targetSelected = false,
-  //   cameraAsset, targetPicture;
-
-  // const cleanUp = () => {
-
-  //   if (cameraAsset) {
-
-  //     cameraAsset.kill();
-  //     cameraAsset = null;
-  //   }
-
-  //   if (targetPicture) {
-
-  //     targetPicture.kill();
-  //     targetPicture = null;
-  //   }
-
-  //   targetSelected = false;
-  // };
-
-  // const updateToggle = () => {
-
-  //   if (targetSelected) targetButton.textContent = 'Drop target';
-  //   else targetButton.textContent = 'Get target';
-
-  //   targetButton.removeAttribute('disabled');
-  // };
-
-  // const requestScreenCapture = () => {
-
-  //   cleanUp();
-
-  //   scrawl.importScreenCapture({
-
-  //     name: name('my-screen-capture'),
-  //     audio: { suppressLocalAudioPlayback: true },
-
-  //   }).then(mycamera => {
-
-  //     cameraAsset = mycamera;
-  //     targetSelected = true;
-
-  //     targetPicture = scrawl.makePicture({
-
-  //       name: name('background'),
-  //       asset: mycamera.name,
-
-  //       dimensions: ['100%', '100%'],
-  //       copyDimensions: ['100%', '100%'],
-  //     });
-
-  //     updateToggle();
-
-  //   }).catch(err => {
-
-  //     cleanUp();
-  //     updateToggle();
-  //   });
-  // };
-
-  // const releaseScreenCapture = () => {
-
-  //   cleanUp();
-  //   updateToggle();
-  // };
-
-  // const toggleScreenCapture = () => {
-
-  //   targetButton.setAttribute('disabled', '');
-
-  //   if (targetSelected) releaseScreenCapture();
-  //   else requestScreenCapture();
-  // };
-
-  // scrawl.addNativeListener('click', toggleScreenCapture, targetButton);
-}
+};
 
 
 // ------------------------------------------------------------------------
@@ -593,7 +561,7 @@ const initBackground = () => {
         img.id = imageId;
 
         const btn = document.createElement('button');
-        btn.setAttribute('data-target', imageId)
+        btn.setAttribute('data-target', imageId);
 
         // Function to run when user clicks on an image button in the background modal
         const buttonLoad = function () {
@@ -707,15 +675,23 @@ const initBackground = () => {
 // Build the update functionality
 const initUpdates = () => {
 
-  const entityControls = [entityStartX, entityStartY, entityScale, entityRoll, entityOrder];
-
-  const enableControls = () => entityControls.forEach(control => control.removeAttribute('disabled'));
-  const disableControls = () => entityControls.forEach(control => control.setAttribute('disabled', ''));
-
+  // The target entity controls are at the bottom of the screen
   let controlsEnabled = false;
 
-  const updateGroup = scrawl.makeGroup({
+  const entityControls = [entityStartX, entityStartY, entityScale, entityRoll, entityOrder];
 
+  const enableControls = () => {
+    entityControls.forEach(control => control.removeAttribute('disabled'));
+    controlsEnabled = true;
+  };
+
+  const disableControls = () => {
+    entityControls.forEach(control => control.setAttribute('disabled', ''));
+    controlsEnabled = false;
+  };
+
+  // Use a group to handle which entity is currently editable
+  const updateGroup = scrawl.makeGroup({
     name: name('update-group'),
   });
 
@@ -738,28 +714,34 @@ const initUpdates = () => {
     },
   });
 
+  // When changing between target entitys, we need to update controls to reflect current values for that entity
   const updateEntityControls = (entity) => {
 
     if (entity) {
 
       updateGroup.setArtefacts({
         method: 'fill',
+        lineDash: [],
       });
 
       updateGroup.clearArtefacts();
 
+      // Need to use a timeout here to make sure updates happen after the latest Display cycle
       setTimeout(() => {
 
+        const [w, h] = canvas.base.get('dimensions');
         const [x, y] = entity.get('start');
         const scale = entity.get('scale');
         const roll = entity.get('roll');
         const order = entity.get('order');
 
-        console.log(entity.name, x, y, scale, roll, order);
+        // Positioning is relative to canvas dimensions
+        const pX = (x / w) * 100; 
+        const pY = (y / h) * 100; 
 
         entityBeingEdited.textContent = entity.name;
-        entityStartX.value = `${x}`;
-        entityStartY.value = `${y}`;
+        entityStartX.value = `${pX}`;
+        entityStartY.value = `${pY}`;
         entityScale.value = `${scale}`;
         entityRoll.value = `${roll}`;
         entityOrder.value = `${order}`;
@@ -780,21 +762,45 @@ const initUpdates = () => {
   const dragGroup = scrawl.makeGroup({
 
     name: name('drag-group'),
-    artefacts: [talkingHead],
   });
 
+  // Dragging a target entity makes it the current entity for editing
   const dragger = scrawl.makeDragZone({
-
     zone: canvas,
     collisionGroup: dragGroup,
-    endOn: ['up', 'leave'],
     exposeCurrentArtefact: true,
+    endOn: ['up', 'leave'],
     updateOnEnd: () => { updateEntityControls(dragger().artefact) }
   });
+
+  // Add in canvas doubleclick-to-select functionality
+  // - Selecting an entity for editing happens as part of the drag-and-drop functionality
+  // - This functionality cleans up things when user clicks anywhere on the canvas except over target or head entity
+  const checkForCanvasClick = () => {
+
+    const result = dragGroup.getArtefactAt(canvas.base.here);
+
+    if (!result) {
+
+      updateGroup.setArtefacts({
+        lineDash: [],
+        method: 'fill',
+      });
+
+      updateGroup.clearArtefacts();
+
+      entityBeingEdited.textContent = 'no target selected';
+
+      if (controlsEnabled) disableControls();
+    }
+  };
+
+  scrawl.addNativeListener('click', checkForCanvasClick, canvas.domElement);
 
   return {
     updateGroup,
     updateEntityControls,
+    controlsEnabled,
     enableControls,
     disableControls,
     dragGroup,
@@ -879,6 +885,16 @@ const entityBeingEdited = dom['entity-being-edited'],
 // ------------------------------------------------------------------------
 // Start the page running
 // ------------------------------------------------------------------------
+const {
+  updateGroup,
+  updateEntityControls,
+  controlsEnabled,
+  enableControls,
+  disableControls,
+  dragGroup,
+  dragger,
+} = initUpdates();
+
 const { 
   magicDimensions,
   getDimensions,
@@ -900,15 +916,6 @@ const {
   updateBackgroundPicture,
 } = initBackground();
 
-const {
-  updateGroup,
-  updateEntityControls,
-  enableControls,
-  disableControls,
-  dragGroup,
-  dragger,
-} = initUpdates();
-
 
 
 // ------------------------------------------------------------------------
@@ -923,7 +930,6 @@ scrawl.makeRender({
 
   name: name('render'),
   target: canvas,
-  commence: () => canvas.checkHover(),
 });
 
 
