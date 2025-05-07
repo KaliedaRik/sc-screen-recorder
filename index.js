@@ -279,12 +279,18 @@ const initTargets = () => {
     const targetId = name(`target-${targetCount}`);
     targetCount++;
 
+    let cleanup = () => console.log(`${targetId} - video track stream has ended`);
+
     scrawl.importScreenCapture({
 
       name: targetId,
       audio: { suppressLocalAudioPlayback: true },
+      // onMediaStreamEnd: () => console.log(`${targetId} - video track stream has ended`),
+      onMediaStreamEnd: () => cleanup(),
 
     }).then(mycamera => {
+
+      console.log('mycamera', mycamera);
 
       const targetPicture = scrawl.makePicture({
 
@@ -353,7 +359,8 @@ const initTargets = () => {
 
       // Target acquisition is asynchronous, given the need to manipulate the DOM
       // - Expect the work to complete within 1 second
-      let checkerAttempts = 0;
+      let checkerAttempts = 0,
+        listDiv;
 
       const checker = () => {
 
@@ -376,7 +383,7 @@ const initTargets = () => {
 
             dragGroup.addArtefacts(targetPicture);
 
-            const listDiv = document.createElement('div');
+            listDiv = document.createElement('div');
             listDiv.id = `${targetId}-list-row`
             listDiv.classList.add('target-list-row');
 
@@ -404,12 +411,21 @@ const initTargets = () => {
 
       checker();
 
+      cleanup = () => {
+
+        targetPicture.kill();
+        mycamera.kill();
+
+        if (listDiv != null) listDiv.remove();
+      }
+
+      const removeTarget = () => {
+
+        if (mycamera.mediaStreamTrack != null) mycamera.mediaStreamTrack.stop();
+        cleanup();
+      };
+      
     }).catch(err => console.log('err', err));
-
-    const removeTarget = (targetId) => {
-
-      console.log(`Request to remove ${targetId} received`);
-    };
   };
 
   return { requestScreenCapture, currentTargets };
@@ -720,8 +736,8 @@ const initUpdates = () => {
     if (entity) {
 
       updateGroup.setArtefacts({
-        method: 'fill',
         lineDash: [],
+        method: 'fill',
       });
 
       updateGroup.clearArtefacts();
@@ -749,6 +765,7 @@ const initUpdates = () => {
         updateGroup.addArtefacts(entity);
 
         updateGroup.setArtefacts({
+          lineDash: [],
           method: 'fillThenDraw',
         });
 
@@ -766,14 +783,15 @@ const initUpdates = () => {
 
   // Dragging a target entity makes it the current entity for editing
   const dragger = scrawl.makeDragZone({
+
     zone: canvas,
     collisionGroup: dragGroup,
     exposeCurrentArtefact: true,
     endOn: ['up', 'leave'],
-    updateOnEnd: () => { updateEntityControls(dragger().artefact) }
+    updateOnEnd: () => { updateEntityControls(dragger().artefact) },
   });
 
-  // Add in canvas doubleclick-to-select functionality
+  // Add in canvas click-to-unselect functionality
   // - Selecting an entity for editing happens as part of the drag-and-drop functionality
   // - This functionality cleans up things when user clicks anywhere on the canvas except over target or head entity
   const checkForCanvasClick = () => {
