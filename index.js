@@ -21,7 +21,7 @@ const initDimensions = () => {
   dimensionsButton.removeAttribute('disabled');
   scrawl.addNativeListener('click', () => dimensionsModal.showModal(), dimensionsButton);
   scrawl.addNativeListener('click', () => dimensionsModal.close(), dimensionsCloseButton);
-  currentCanvasDimensions.textContent = currentDimension;
+  currentCanvasDimensions.textContent = '854 by 480px';
 
   const magicDimensions = {
 
@@ -60,7 +60,10 @@ const initDimensions = () => {
       updateTargetScales(getScaler(currentDimension), getScaler(newDimension));
 
       currentDimension = newDimension;
-      currentCanvasDimensions.textContent = currentDimension;
+
+      const [w, h] = getDimensions(currentDimension);
+
+      currentCanvasDimensions.textContent = `${w} by ${h}px`;
     }
   };
 
@@ -194,12 +197,16 @@ const initTalkingHead = () => {
   });
 
   // Finally we can grab the composited output and display it on the main canvas
+  let headIsDisplayed;
+
   const outputPicture = scrawl.makePicture({
 
     name: name('talking-head-output-picture'),
     asset: talkingHeadOutput,
     dimensions: [768, 768],
     copyDimensions: ['100%', '100%'],
+
+    order: 200,
 
     start: ['75%', '75%'],
     handle: ['center', 'center'],
@@ -211,6 +218,8 @@ const initTalkingHead = () => {
     lineWidth: 4,
     lineJoin: 'round',
     method: 'fill',
+
+    visibility: false,
   });
 
   // Capture the device camera output - but only after the user agrees
@@ -226,13 +235,25 @@ const initTalkingHead = () => {
       audio: false,
       width: 768,
       height: 768,
+      onMediaStreamEnd: () => stopCamera(),
 
     }).then(res => {
 
       mycamera = res;
 
+      talkingHeadInput.set({
+        cleared: true,
+        compiled: true,
+      });
+
+      talkingHeadOutput.set({
+        cleared: true,
+        compiled: true,
+      });
+
       inputPicture.set({ asset: mycamera });
       overlayPicture.set({ asset: mycamera });
+      outputPicture.set ({ visibility: true });
 
       // We need to feed input data into the model discretely, via an SC animation object
       myCameraAnimation = scrawl.makeAnimation({
@@ -247,61 +268,123 @@ const initTalkingHead = () => {
         }
       });
 
+      headShowCheckbox.removeAttribute('disabled');
+
     }).catch(err => console.log(err.message));
   };
 
-  startCamera();
+  const stopCamera = () => {
 
-  // Displaying the talking head
-  let headIsDisplayed = false;
+    headShowCheckbox.setAttribute('disabled', '');
 
+    console.log(mycamera);
+
+    mycamera.source.srcObject = null;
+
+    if (mycamera.mediaStreamTrack != null) mycamera.mediaStreamTrack.stop();
+
+    myCameraAnimation.kill();
+
+    talkingHeadInput.set({
+      cleared: false,
+      compiled: false,
+    });
+
+    talkingHeadOutput.set({
+      cleared: false,
+      compiled: false,
+    });
+
+    inputPicture.set({ asset: '' });
+    overlayPicture.set({ asset: '' });
+    outputPicture.set ({ visibility: false });
+
+    mycamera.kill();
+  };
+
+  // Displaying and removing the talking head
   const toggleHead = (toggle) => {
 
     if (modelIsRunning) {
 
-      talkingHead.set({
-        visibility: toggle,
-      });
+      if (toggle && !headIsDisplayed) {
 
-      headIsDisplayed = toggle;
-
-      if (toggle) {
+        startCamera();
 
         headHorizontal.removeAttribute('disabled');
         headVertical.removeAttribute('disabled');
         headScale.removeAttribute('disabled');
         headRotation.removeAttribute('disabled');
+
+        headIsDisplayed = true;
       }
-      else {
+      else if (!toggle && headIsDisplayed) {
+
+        stopCamera();
 
         headHorizontal.setAttribute('disabled', '');
         headVertical.setAttribute('disabled', '');
         headScale.setAttribute('disabled', '');
         headRotation.setAttribute('disabled', '');
+
+        headIsDisplayed = false;
       }
     }
     else {
 
-      headIsDisplayed = false;
+      if (headIsDisplayed) stopCamera();
 
       headHorizontal.setAttribute('disabled', '');
       headVertical.setAttribute('disabled', '');
       headScale.setAttribute('disabled', '');
       headRotation.setAttribute('disabled', '');
+
+      headIsDisplayed = false;
     }
   }
-  // headModal = dom['head-modal'],
-  // headButton = dom['head-modal-button'],
-  // headCloseButton = dom['head-modal-close'],
-  // headUseCheckbox = dom['use-talking-head'],
-  // headShowCheckbox = dom['show-talking-head'],
-  // headQualitySelector = dom['talking-head-quality'],
-  // headHorizontal = dom['head-horizontal'],
-  // headVertical = dom['head-vertical'],
-  // headScale = dom['head-scale'],
-  // headRotation = dom['head-rotation'],
 
+  // More event listeners
+  scrawl.addNativeListener('change', () => {
 
+    if (headUseCheckbox.checked) toggleHead(true);
+    else toggleHead(false);
+
+  }, headUseCheckbox);
+
+  scrawl.addNativeListener('change', () => {
+
+    if (myCameraAnimation) {
+
+      if (headShowCheckbox.checked && !headIsDisplayed) {
+
+        outputPicture.set ({ visibility: true });
+        headIsDisplayed = true;
+      }
+      else if (!headShowCheckbox.checked && headIsDisplayed) {
+
+        outputPicture.set ({ visibility: false });
+        headIsDisplayed = false;
+      }
+    }
+  }, headShowCheckbox);
+
+  scrawl.makeUpdater({
+
+    event: ['input', 'change'],
+    origin: '.head-controls',
+
+    target: outputPicture,
+
+    useNativeListener: true,
+    preventDefault: true,
+
+    updates: {
+      ['head-horizontal']: ['startX', '%'],
+      ['head-vertical']: ['startY', '%'],
+      ['head-scale']: ['scale', 'float'],
+      ['head-rotation']: ['roll', 'float'],
+    },
+  });
 };
 
 
@@ -943,7 +1026,6 @@ const dom = scrawl.initializeDomInputs([
   ['by-id', 'head-modal'],
   ['input', 'use-talking-head', 'off'],
   ['input', 'show-talking-head', 'on'],
-  ['select', 'talking-head-quality', 1],
   ['input', 'head-horizontal', '75'],
   ['input', 'head-vertical', '75'],
   ['input', 'head-scale', '1'],
@@ -989,7 +1071,6 @@ const entityBeingEdited = dom['entity-being-edited'],
   headCloseButton = dom['head-modal-close'],
   headUseCheckbox = dom['use-talking-head'],
   headShowCheckbox = dom['show-talking-head'],
-  headQualitySelector = dom['talking-head-quality'],
   headHorizontal = dom['head-horizontal'],
   headVertical = dom['head-vertical'],
   headScale = dom['head-scale'],
