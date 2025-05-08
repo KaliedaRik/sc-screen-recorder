@@ -7,6 +7,11 @@ const canvas = scrawl.findCanvas('my-canvas');
 
 
 // ------------------------------------------------------------------------
+// MediaPipe imports
+// ------------------------------------------------------------------------
+import * as MediaPipe from './js/mediapipe-vision-bundle.js';
+
+// ------------------------------------------------------------------------
 // Video dimensions magic numbers
 // ------------------------------------------------------------------------
 let currentDimension = 'landscape_480';
@@ -75,44 +80,132 @@ const initTalkingHead = () => {
   scrawl.addNativeListener('click', () => headModal.showModal(), headButton);
   scrawl.addNativeListener('click', () => headModal.close(), headCloseButton);
 
-  // Initialize the code that will display the talking head
-  // - Even though we prepare for the head, the functionality for capturing it is separate
-  // - Users have to explicitly request the talking head before we download and use the ML code
+  // Google MediaPipe ML model code
+  let imageSegmenter,
+    modelIsRunning = false;
 
-  // Some convenience handles for the media stream asset
-  let myMediaStream, mySegmentationModel;
+  const startModel = async () => {
 
-  const quality = {
-    low: 480,
-    medium: 720,
-    high: 1080,
+    const vision = await MediaPipe.FilesetResolver.forVisionTasks();
+
+    // For reasons, the vision attributes don't match the file structure laid out in this repo
+    vision.wasmBinaryPath = `js/mediapipe/wasm${vision.wasmBinaryPath}`;
+    vision.wasmLoaderPath = `js/mediapipe/wasm${vision.wasmLoaderPath}`;
+
+    imageSegmenter = await MediaPipe.ImageSegmenter.createFromOptions(vision, {
+      baseOptions: {
+        modelAssetPath: 'js/mediapipe/model/selfie_segmenter.tflite',
+      },
+      outputCategoryMask: true,
+      outputConfidenceMasks: false,
+      runningMode: 'LIVE_STREAM',
+    });
+
+    modelIsRunning = true;
   };
 
-  let currentQuality = 'medium';
+  // We can start the model code running straight away
+  // - It's the camera for which we need user permission
+  startModel();
 
-  // The talking head goes in its own Cell
-  const talkingHeadAsset = canvas.buildCell({
+  // Set up some hidden Cells to process the camera data and create the desired output
+  // - This first Cell receives the camera data
+  const talkingHeadInput = canvas.buildCell({
 
-    name: name('talking-head-asset'),
-    dimensions: [720, 720],
+    name: name('talking-head-input'),
+    dimensions: [768, 768],
     shown: false,
   });
 
-  // Displaying the talking head Cell in the canvas
-  const talkingHead = scrawl.makePicture({
+  // We also need a Cell where we can composite the final head image output
+  const talkingHeadOutput = canvas.buildCell({
 
-    name: name('talking-head'),
-    asset: talkingHeadAsset,
-    order: 200,
+    name: name('talking-head-output'),
+    dimensions: [768, 768],
+    shown: false,
+  });
 
-    dimensions: [720, 720],
+  // We process the model's output in a dedicated mask Cell
+  // - We do this using direct manipulation of the Cell's image data
+  const talkingHeadMask = canvas.buildCell({
+
+    name: name('talking-head-mask'),
+    dimensions: [768, 768],
+    cleared: false,
+    compiled: false,
+    shown: false,
+  });
+
+  const maskData = talkingHeadMask.getCellData(true),
+    pixels = maskData.pixelState;
+
+  // This function gets consumed by the model's imageSegmenter object
+  // - imageSegmenter doesn't start its work until it has something to segment
+  const processModelData = (results) => {
+
+    const data = results.categoryMask.containers[0];
+
+    if (data && data.length) {
+
+      data.forEach((val, index) => pixels[index].alpha = 255 - val);
+
+      talkingHeadMask.paintCellData(maskData);
+    }
+  };
+
+  // The inputPicture's asset will be the camera feed, in due course
+  const inputPicture = scrawl.makePicture({
+
+    name: name('talking-head-input-picture'),
+    group: talkingHeadInput,
+    dimensions: ['100%', '100%'],
+    copyDimensions: ['100%', '100%'],
+  });
+
+  // The maskPicture displays the mask Cell in the output Cell 
+  // - We can blur it a bit to make it appear less harsh
+  const headBlur = scrawl.makeFilter({
+
+    name: name('head-blur'),
+    method: 'gaussianBlur',
+    radius: 2,
+  });
+
+  const maskPicture = scrawl.makePicture({
+
+    name: name('talking-head-mask-picture'),
+    group: talkingHeadOutput,
+    asset: talkingHeadMask,
+    dimensions: ['100%', '100%'],
+    copyDimensions: ['100%', '100%'],
+    filters: [headBlur],
+  });
+
+  // The overlayPicture's asset will also be the camera feed
+  // - This time, it goes to the output Cell
+  const overlayPicture = scrawl.makePicture({
+
+    name: name('talking-head-overlay-picture'),
+    group: talkingHeadOutput,
+    dimensions: ['100%', '100%'],
+    copyDimensions: ['100%', '100%'],
+    globalCompositeOperation: 'source-in',
+    order: 1,
+  });
+
+  // Finally we can grab the composited output and display it on the main canvas
+  const outputPicture = scrawl.makePicture({
+
+    name: name('talking-head-output-picture'),
+    asset: talkingHeadOutput,
+    dimensions: [768, 768],
     copyDimensions: ['100%', '100%'],
 
     start: ['75%', '75%'],
     handle: ['center', 'center'],
 
     flipReverse: true,
-    visibility: false,
+    scale: 0.5,
 
     strokeStyle: 'red',
     lineWidth: 4,
@@ -120,155 +213,44 @@ const initTalkingHead = () => {
     method: 'fill',
   });
 
-  // Blur filter, to make the talking head meld with the background
-  scrawl.makeFilter({
+  // Capture the device camera output - but only after the user agrees
+  // - Assumes the user is on a laptop-type device with a built-in camera!
+  let mycamera,
+    myCameraAnimation;
 
-    name: name('body-blur'),
-    method: 'gaussianBlur',
-    radius: 5,
-  });
-
-  // MediaPipe outputs its results to a WebGL canvas element - SC can use that as an asset source
-  // But because we want to manipulate that data we can route it through an SC raw asset wrapper
-  const myModelOutputWrapper = scrawl.makeRawAsset({
-
-    name: name('mediapipe-model-interpreter'),
-
-    userAttributes: [
-      {
-
-        key: 'mask',
-        defaultValue: [],
-        setter: function (item) {
-
-          item = (item.segmentationMask) ? item.segmentationMask : false;
-
-          if (item) {
-
-            this.canvasWidth = item.width;
-            this.canvasHeight = item.height;
-            this.mask = item;
-            this.dirtyData = true;
-          }
-        },
-
-      },{
-
-        key: 'canvasWidth',
-        defaultValue: 720,
-        setter: () => {},
-
-      },{
-
-        key: 'canvasHeight',
-        defaultValue: 720,
-        setter: () => {},
-      }
-    ],
-
-    updateSource: function (assetWrapper) {
-
-      // const { element, engine, canvasWidth, canvasHeight, mask } = assetWrapper;
-      const { element, engine, mask } = assetWrapper;
-
-      if (mask) {
-
-        const dim = quality[currentQuality];
-
-        engine.clearRect(0, 0, dim, dim);
-        engine.drawImage(mask, 0, 0, dim, dim);
-      }
-    },
-  });
-
-  const myOutline = scrawl.makePicture({
-
-    name: name('mediapipe-results-outline'),
-    group: talkingHeadAsset,
-    dimensions: [720, 720],
-    copyDimensions: ['100%', '100%'],
-    filters: [name('body-blur')],
-    visibility: false,
-  });
-
-  const myFiller = scrawl.makePicture({
-
-    name: name('body'),
-    group: talkingHeadAsset,
-    order: 1,
-    dimensions: [720, 720],
-    copyDimensions: ['100%', '100%'],
-    globalCompositeOperation: 'source-in',
-    visibility: false,
-  });
-
-  // The forever loop function captures the MediaPipe model's output and passes it on to our raw asset for processing
-  const updateModelOutputWrapper = (mask) => myModelOutputWrapper.set({ mask });
-
-  let modelIsRunning = false;
-
-  const startModel = () => {
+  const startCamera = () => {
 
     scrawl.importMediaStream({
 
-      name: name('device-camera'),
+      name: name('camera-feed'),
       audio: false,
+      width: 768,
+      height: 768,
 
-    }).then(mycamera => {
+    }).then(res => {
 
-      myMediaStream = mycamera;
+      mycamera = res;
 
-      const dim = quality[currentQuality];
+      inputPicture.set({ asset: mycamera });
+      overlayPicture.set({ asset: mycamera });
 
-      // Firefox bugfix
-      myMediaStream.source.width = `${dim}`;
-      myMediaStream.source.height = `${dim}`;
+      // We need to feed input data into the model discretely, via an SC animation object
+      myCameraAnimation = scrawl.makeAnimation({
 
-      // Start the MediaPipe model
-      // The SelfieSegmentation object/class comes from the mediapipe-selfie-segmentation.js code
-      mySegmentationModel = new SelfieSegmentation({
+        name: name('head-segmenter'),
+        fn: () => {
 
-        locateFile: (file) => `js/${file}`,
-      });
+          if (imageSegmenter && imageSegmenter.segmentForVideo) {
 
-      mySegmentationModel.setOptions({ modelSelection: 0 });
-      mySegmentationModel.onResults(updateModelOutputWrapper);
-
-      // The Camera object/class comes from the mediapipe-camera-utils.js code
-      const mediaPipeCamera = new Camera(myMediaStream.source, {
-
-        onFrame: async () => {
-
-          await mySegmentationModel.send({image: myMediaStream.source});
-        },
-
-        width: dim,
-        height: dim,
-      });
-
-      mediaPipeCamera.start();
-
-      modelIsRunning = true;
-
-      myOutline.set({ 
-        asset: myModelOutputWrapper,
-        visibility: true,
-      });
-
-      myFiller.set({ 
-        asset: mycamera.name,
-        visibility: true,
+            imageSegmenter.segmentForVideo(talkingHeadInput.element, performance.now(), processModelData);
+          }
+        }
       });
 
     }).catch(err => console.log(err.message));
   };
 
-  const stopModel = () => {
-
-    modelIsRunning = false;
-
-    toggleHead(false);
-  };
+  startCamera();
 
   // Displaying the talking head
   let headIsDisplayed = false;
@@ -306,20 +288,6 @@ const initTalkingHead = () => {
       headVertical.setAttribute('disabled', '');
       headScale.setAttribute('disabled', '');
       headRotation.setAttribute('disabled', '');
-
-      talkingHead.set({
-        visibility: false,
-      });
-
-      myOutline.set({ 
-        asset: '',
-        visibility: false,
-      });
-
-      myFiller.set({ 
-        asset: '',
-        visibility: false,
-      });
     }
   }
   // headModal = dom['head-modal'],

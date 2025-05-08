@@ -236,17 +236,6 @@ dialog {
     align-items: center;
   }
 
-  & select {
-    font-size: 100%;
-    display: inline-block;
-    margin: 0.5rem;
-    padding: 0.25rem 0.5rem;
-
-    & option {
-      font-size: 100%;
-    }
-  }
-
   & input[type="checkbox"] {
     width: 1.5rem;
     height: 1.5rem;

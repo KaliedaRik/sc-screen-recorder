@@ -101,12 +101,6 @@
       <input id="use-talking-head" name="load" value="off" type="checkbox">
       <label for="show-talking-head">Show talking head:</label>
       <input id="show-talking-head" name="head" value="on" type="checkbox" checked disabled>
-      <label for="talking-head-quality">Talking head quality:</label>
-      <select id="talking-head-quality">
-        <option value="low">Low</option>
-        <option value="medium">Medium</option>
-        <option value="high">High</option>
-      </select>
     </div>
     <h3>Talking head parameters</h3>
     <div class="talking-head-parameters">
@@ -145,17 +139,8 @@
 
   <!-- Video download modal -->
 
-  <!-- 
-    This is the mediapipe code, for getting the user's face into the screen capture video
-
-    mediapipe-camera-utils.js - taken from https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js on 3 May 2025. Copyright The Closure Library Authors. SPDX-License-Identifier: Apache-2.0
-
-    mediapipe-selfie-segmentation.js - taken from https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js on 3 May 2025. Copyright The Closure Library Authors. SPDX-License-Identifier: Apache-2.0
-  -->
-  <script src="js/mediapipe-camera-utils.js"></script>
-  <script src="js/mediapipe-selfie-segmentation.js"></script>
-
   <!-- Page functionality code -->
+
   <script type="module" src="index.js"></script>
 </body>
 </html>
