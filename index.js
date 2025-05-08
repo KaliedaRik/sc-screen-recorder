@@ -71,210 +71,269 @@ const initDimensions = () => {
 // ------------------------------------------------------------------------
 const initTalkingHead = () => {
 
+  headButton.removeAttribute('disabled');
+  scrawl.addNativeListener('click', () => headModal.showModal(), headButton);
+  scrawl.addNativeListener('click', () => headModal.close(), headCloseButton);
+
+  // Initialize the code that will display the talking head
+  // - Even though we prepare for the head, the functionality for capturing it is separate
+  // - Users have to explicitly request the talking head before we download and use the ML code
+
+  // Some convenience handles for the media stream asset
+  let myMediaStream, mySegmentationModel;
+
+  const quality = {
+    low: 480,
+    medium: 720,
+    high: 1080,
+  };
+
+  let currentQuality = 'medium';
+
+  // The talking head goes in its own Cell
+  const talkingHeadAsset = canvas.buildCell({
+
+    name: name('talking-head-asset'),
+    dimensions: [720, 720],
+    shown: false,
+  });
+
+  // Displaying the talking head Cell in the canvas
+  const talkingHead = scrawl.makePicture({
+
+    name: name('talking-head'),
+    asset: talkingHeadAsset,
+    order: 200,
+
+    dimensions: [720, 720],
+    copyDimensions: ['100%', '100%'],
+
+    start: ['75%', '75%'],
+    handle: ['center', 'center'],
+
+    flipReverse: true,
+    visibility: false,
+
+    strokeStyle: 'red',
+    lineWidth: 4,
+    lineJoin: 'round',
+    method: 'fill',
+  });
+
+  // Blur filter, to make the talking head meld with the background
+  scrawl.makeFilter({
+
+    name: name('body-blur'),
+    method: 'gaussianBlur',
+    radius: 5,
+  });
+
+  // MediaPipe outputs its results to a WebGL canvas element - SC can use that as an asset source
+  // But because we want to manipulate that data we can route it through an SC raw asset wrapper
+  const myModelOutputWrapper = scrawl.makeRawAsset({
+
+    name: name('mediapipe-model-interpreter'),
+
+    userAttributes: [
+      {
+
+        key: 'mask',
+        defaultValue: [],
+        setter: function (item) {
+
+          item = (item.segmentationMask) ? item.segmentationMask : false;
+
+          if (item) {
+
+            this.canvasWidth = item.width;
+            this.canvasHeight = item.height;
+            this.mask = item;
+            this.dirtyData = true;
+          }
+        },
+
+      },{
+
+        key: 'canvasWidth',
+        defaultValue: 720,
+        setter: () => {},
+
+      },{
+
+        key: 'canvasHeight',
+        defaultValue: 720,
+        setter: () => {},
+      }
+    ],
+
+    updateSource: function (assetWrapper) {
+
+      // const { element, engine, canvasWidth, canvasHeight, mask } = assetWrapper;
+      const { element, engine, mask } = assetWrapper;
+
+      if (mask) {
+
+        const dim = quality[currentQuality];
+
+        engine.clearRect(0, 0, dim, dim);
+        engine.drawImage(mask, 0, 0, dim, dim);
+      }
+    },
+  });
+
+  const myOutline = scrawl.makePicture({
+
+    name: name('mediapipe-results-outline'),
+    group: talkingHeadAsset,
+    dimensions: [720, 720],
+    copyDimensions: ['100%', '100%'],
+    filters: [name('body-blur')],
+    visibility: false,
+  });
+
+  const myFiller = scrawl.makePicture({
+
+    name: name('body'),
+    group: talkingHeadAsset,
+    order: 1,
+    dimensions: [720, 720],
+    copyDimensions: ['100%', '100%'],
+    globalCompositeOperation: 'source-in',
+    visibility: false,
+  });
+
+  // The forever loop function captures the MediaPipe model's output and passes it on to our raw asset for processing
+  const updateModelOutputWrapper = (mask) => myModelOutputWrapper.set({ mask });
+
+  let modelIsRunning = false;
+
+  const startModel = () => {
+
+    scrawl.importMediaStream({
+
+      name: name('device-camera'),
+      audio: false,
+
+    }).then(mycamera => {
+
+      myMediaStream = mycamera;
+
+      const dim = quality[currentQuality];
+
+      // Firefox bugfix
+      myMediaStream.source.width = `${dim}`;
+      myMediaStream.source.height = `${dim}`;
+
+      // Start the MediaPipe model
+      // The SelfieSegmentation object/class comes from the mediapipe-selfie-segmentation.js code
+      mySegmentationModel = new SelfieSegmentation({
+
+        locateFile: (file) => `js/${file}`,
+      });
+
+      mySegmentationModel.setOptions({ modelSelection: 0 });
+      mySegmentationModel.onResults(updateModelOutputWrapper);
+
+      // The Camera object/class comes from the mediapipe-camera-utils.js code
+      const mediaPipeCamera = new Camera(myMediaStream.source, {
+
+        onFrame: async () => {
+
+          await mySegmentationModel.send({image: myMediaStream.source});
+        },
+
+        width: dim,
+        height: dim,
+      });
+
+      mediaPipeCamera.start();
+
+      modelIsRunning = true;
+
+      myOutline.set({ 
+        asset: myModelOutputWrapper,
+        visibility: true,
+      });
+
+      myFiller.set({ 
+        asset: mycamera.name,
+        visibility: true,
+      });
+
+    }).catch(err => console.log(err.message));
+  };
+
+  const stopModel = () => {
+
+    modelIsRunning = false;
+
+    toggleHead(false);
+  };
+
+  // Displaying the talking head
+  let headIsDisplayed = false;
+
+  const toggleHead = (toggle) => {
+
+    if (modelIsRunning) {
+
+      talkingHead.set({
+        visibility: toggle,
+      });
+
+      headIsDisplayed = toggle;
+
+      if (toggle) {
+
+        headHorizontal.removeAttribute('disabled');
+        headVertical.removeAttribute('disabled');
+        headScale.removeAttribute('disabled');
+        headRotation.removeAttribute('disabled');
+      }
+      else {
+
+        headHorizontal.setAttribute('disabled', '');
+        headVertical.setAttribute('disabled', '');
+        headScale.setAttribute('disabled', '');
+        headRotation.setAttribute('disabled', '');
+      }
+    }
+    else {
+
+      headIsDisplayed = false;
+
+      headHorizontal.setAttribute('disabled', '');
+      headVertical.setAttribute('disabled', '');
+      headScale.setAttribute('disabled', '');
+      headRotation.setAttribute('disabled', '');
+
+      talkingHead.set({
+        visibility: false,
+      });
+
+      myOutline.set({ 
+        asset: '',
+        visibility: false,
+      });
+
+      myFiller.set({ 
+        asset: '',
+        visibility: false,
+      });
+    }
+  }
   // headModal = dom['head-modal'],
   // headButton = dom['head-modal-button'],
   // headCloseButton = dom['head-modal-close'],
   // headUseCheckbox = dom['use-talking-head'],
+  // headShowCheckbox = dom['show-talking-head'],
+  // headQualitySelector = dom['talking-head-quality'],
   // headHorizontal = dom['head-horizontal'],
   // headVertical = dom['head-vertical'],
   // headScale = dom['head-scale'],
   // headRotation = dom['head-rotation'],
 
-  headButton.removeAttribute('disabled');
-  scrawl.addNativeListener('click', () => headModal.showModal(), headButton);
-  scrawl.addNativeListener('click', () => headModal.close(), headCloseButton);
 
-
-
-  // // Talking head can go in its own Cell
-  // const talkingHeadAsset = canvas.buildCell({
-
-  //   name: name('talking-head-asset'),
-  //   dimensions: ['25%', '25%'],
-  //   shown: false,
-  // });
-
-  // // Displaying the Cell in the canvas
-  // const talkingHead = scrawl.makePicture({
-
-  //   name: name('talking-head'),
-  //   asset: talkingHeadAsset,
-  //   order: 1,
-
-  //   dimensions: ['40%', '40%'],
-  //   copyDimensions: ['100%', '100%'],
-
-  //   start: ['80%', '80%'],
-  //   handle: ['center', 'center'],
-
-  //   flipReverse: true,
-
-  //   visibility: false,
-
-  //   lineDash: [2, 2],
-  //   lineWidth: 1,
-  //   strokeStyle: 'rgb(100 100 100 / 0.5)',
-  //   method: 'fillThenDraw',
-  // });
-
-  // // Some convenience handles for the media stream asset
-  // let myMediaStream, mySegmentationModel, myBackground, myOutline;
-
-  // // Blur filter, to make the talking head meld with the background
-  // scrawl.makeFilter({
-
-  //   name: name('body-blur'),
-  //   method: 'gaussianBlur',
-  //   radius: 5,
-  // });
-
-  // // MediaPipe outputs its results to a WebGL canvas element - SC can use that as an asset source
-  // // But because we want to manipulate that data we can route it through an SC raw asset wrapper
-  // const myModelOutputWrapper = scrawl.makeRawAsset({
-
-  //   name: name('mediapipe-model-interpreter'),
-
-  //   userAttributes: [
-  //     {
-
-  //       key: 'mask',
-  //       defaultValue: [],
-  //       setter: function (item) {
-
-  //         item = (item.segmentationMask) ? item.segmentationMask : false;
-
-  //         if (item) {
-
-  //           this.canvasWidth = item.width;
-  //           this.canvasHeight = item.height;
-  //           this.mask = item;
-  //           this.dirtyData = true;
-  //         }
-  //       },
-
-  //     },{
-
-  //       key: 'canvasWidth',
-  //       defaultValue: 0,
-  //       setter: () => {},
-
-  //     },{
-
-  //       key: 'canvasHeight',
-  //       defaultValue: 0,
-  //       setter: () => {},
-  //     }
-  //   ],
-
-  //   updateSource: function (assetWrapper) {
-
-  //     const { element, engine, canvasWidth, canvasHeight, mask } = assetWrapper;
-
-  //     if (canvasWidth && canvasHeight && mask) {
-
-  //       element.width = canvasWidth;
-  //       element.height = canvasHeight;
-
-  //       engine.drawImage(mask, 0, 0, canvasWidth, canvasHeight);
-  //     }
-  //   },
-  // });
-
-  // // The forever loop function captures the MediaPipe model's output and passes it on to our raw asset for processing
-  // const updateModelOutputWrapper = function (mask) {
-
-  //   myModelOutputWrapper.set({ mask });
-
-  //   if (!myOutline) {
-
-  //     myOutline = scrawl.makePicture({
-
-  //       name: name('mediapipe-results-outline'),
-  //       group: talkingHeadAsset,
-  //       asset: myModelOutputWrapper,
-  //       dimensions: ['100%', '100%'],
-  //       copyDimensions: ['100%', '100%'],
-  //       filters: [name('body-blur')],
-  //     });
-  //   }
-  // };
-
-  // // Capture the user's device media stream
-  // scrawl.importMediaStream({
-
-  //   name: name('device-camera'),
-  //   audio: false,
-
-  // }).then(mycamera => {
-
-  //   myMediaStream = mycamera;
-
-  //   // Firefox bugfix
-  //   myMediaStream.source.width = "1280";
-  //   myMediaStream.source.height = "720";
-
-  //   scrawl.makePicture({
-
-  //     name: name('body'),
-  //     group: talkingHeadAsset,
-  //     asset: mycamera.name,
-  //     order: 1,
-
-  //     dimensions: ['100%', '100%'],
-  //     copyDimensions: ['100%', '100%'],
-
-  //     globalCompositeOperation: 'source-in',
-  //   });
-
-  //   // Start the MediaPipe model
-  //   // The SelfieSegmentation object/class comes from the mediapipe-selfie-segmentation.js code
-  //   mySegmentationModel = new SelfieSegmentation({
-
-  //     // Have to go outside for this because I don't understand what the model wants
-  //     locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
-  //   });
-
-  //   mySegmentationModel.setOptions({ modelSelection: 1 });
-  //   mySegmentationModel.onResults(updateModelOutputWrapper);
-
-  //   // The Camera object/class comes from the mediapipe-camera-utils.js code
-  //   const mediaPipeCamera = new Camera(myMediaStream.source, {
-
-  //     onFrame: async () => {
-
-  //       await mySegmentationModel.send({image: myMediaStream.source});
-  //     },
-
-  //     width: 1280,
-  //     height: 720,
-  //   });
-
-  //   mediaPipeCamera.start();
-
-  // }).catch(err => console.log(err.message));
-
-  // // Displaying the talking head
-  // let headIsVisible = false;
-
-  // const manageHead = () => {
-
-  //   headIsVisible = !headIsVisible;
-
-  //   if (headIsVisible) {
-
-  //     headButton.textContent = 'Hide head';
-  //     talkingHead.set({ visibility: true});
-  //   }
-  //   else {
-
-  //     headButton.textContent = 'Show head';
-  //     talkingHead.set({ visibility: false});
-  //   }
-  // };
-  // scrawl.addNativeListener('click', manageHead, headButton);
-
-  // // Return the talking head picture entity (for keyboard control)
-  // return { talkingHead };
 };
 
 
@@ -915,8 +974,10 @@ const dom = scrawl.initializeDomInputs([
   ['button', 'head-modal-close', 'Close'],
   ['by-id', 'head-modal'],
   ['input', 'use-talking-head', 'off'],
-  ['input', 'head-horizontal', '50'],
-  ['input', 'head-vertical', '50'],
+  ['input', 'show-talking-head', 'on'],
+  ['select', 'talking-head-quality', 1],
+  ['input', 'head-horizontal', '75'],
+  ['input', 'head-vertical', '75'],
   ['input', 'head-scale', '1'],
   ['input', 'head-rotation', '0'],
 
@@ -959,6 +1020,8 @@ const entityBeingEdited = dom['entity-being-edited'],
   headButton = dom['head-modal-button'],
   headCloseButton = dom['head-modal-close'],
   headUseCheckbox = dom['use-talking-head'],
+  headShowCheckbox = dom['show-talking-head'],
+  headQualitySelector = dom['talking-head-quality'],
   headHorizontal = dom['head-horizontal'],
   headVertical = dom['head-vertical'],
   headScale = dom['head-scale'],
@@ -1023,7 +1086,6 @@ const {
   // addBackgroundAsset,
   updateBackgroundPicture,
 } = initBackground();
-
 
 
 // ------------------------------------------------------------------------

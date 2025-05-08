@@ -22,6 +22,8 @@
       data-base-height="480"
       data-base-background-color="white"
       data-fit="contain"
+      data-label="Scrawl-canvas screen recorder canvas."
+      data-description="Record your local screen using your browser. This is a proof-of-concept project."
     ></canvas>
   </div>
 
@@ -31,8 +33,8 @@
     <button id="targets-modal-button">Cannot get targets</button>
     <button id="head-modal-button">Cannot show head</button>
     <button id="video-toggle" disabled>Cannot record video</button>
-    <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
     <button id="background-modal-button" disabled>Cannot change background</button>
+    <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
   </div>
 
   <!-- User target/head entity controls -->
@@ -94,11 +96,20 @@
   <dialog id='head-modal' closedby="any">
     <button id="head-modal-close" autofocus class="close">Close</button>
     <h2>Talking head management</h2>
-    <div>
-      <label for="use-talking-head">Use talking head:</label> <input id="use-talking-head" name="head" value="off" type="checkbox">
+    <div class="talking-head-parameters">
+      <label for="use-talking-head">Use talking head:</label>
+      <input id="use-talking-head" name="load" value="off" type="checkbox">
+      <label for="show-talking-head">Show talking head:</label>
+      <input id="show-talking-head" name="head" value="on" type="checkbox" checked disabled>
+      <label for="talking-head-quality">Talking head quality:</label>
+      <select id="talking-head-quality">
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
     </div>
     <h3>Talking head parameters</h3>
-    <div id="talking-head-parameters">
+    <div class="talking-head-parameters">
       <label for="head-horizontal">Horizontal</label>
       <input type="range" id="head-horizontal" name="head-horizontal" min="-25" max="125" value="75" disabled>
       <label for="head-vertical">Vertical</label>
