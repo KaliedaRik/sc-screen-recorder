@@ -56,10 +56,11 @@ const initDimensions = () => {
 
       canvas.setBase({ dimensions: getDimensions(newDimension) });
 
-      updateBackgroundPicture();
       updateTargetScales(getScaler(currentDimension), getScaler(newDimension));
 
       currentDimension = newDimension;
+
+      updateBackgroundPicture();
 
       const [w, h] = getDimensions(currentDimension);
 
@@ -69,7 +70,9 @@ const initDimensions = () => {
 
   scrawl.addNativeListener('change', update, dimensionsSelector);
 
-  return { magicDimensions, getDimensions, getScaler }
+  return { 
+    getDimensions,
+  };
 };
 
 
@@ -276,8 +279,6 @@ const initTalkingHead = () => {
   const stopCamera = () => {
 
     headShowCheckbox.setAttribute('disabled', '');
-
-    console.log(mycamera);
 
     mycamera.source.srcObject = null;
 
@@ -536,6 +537,21 @@ const initTargets = () => {
             scrawl.addNativeListener('click', removeTarget, itemButton);
 
             targetsHold.appendChild(listDiv);
+
+            updateGroup.setArtefacts({
+              lineDash: [],
+              method: 'fill',
+            });
+
+            updateGroup.clearArtefacts();
+            updateGroup.addArtefacts(targetPicture);
+
+            updateGroup.setArtefacts({
+              lineDash: [],
+              method: 'fillThenDraw',
+            });
+
+            updateEntityControls(targetPicture);
           }
           else {
 
@@ -607,7 +623,9 @@ const initTargets = () => {
     }
   }
 
-  return { requestScreenCapture, updateTargetScales };
+  return { 
+    updateTargetScales,
+  };
 };
 
 
@@ -616,52 +634,62 @@ const initTargets = () => {
 // ------------------------------------------------------------------------
 const initVideoRecording = () => {
 
-  let recorder, recordedChunks;
+  let availableAudio = [];
 
-  videoButton.addEventListener("click", () => {
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => availableAudio = stream.getAudioTracks());
 
-    isRecordingVideo = !isRecordingVideo;
+  // Initialize DOM recording button and associated modal
+  recordingButton.removeAttribute('disabled');
+  scrawl.addNativeListener('click', () => recordingModal.showModal(), recordingButton);
+  scrawl.addNativeListener('click', () => recordingModal.close(), recordingCloseButton);
 
-    if (isRecordingVideo) {
 
-      videoButton.textContent = "Stop";
+  // let recorder, recordedChunks;
 
-      const stream = canvas.domElement.captureStream(25);
+  // videoButton.addEventListener("click", () => {
 
-      recorder = new MediaRecorder(stream, {
-        mimeType: "video/webm;codecs=vp8"
-      });
+  //   isRecordingVideo = !isRecordingVideo;
 
-      recordedChunks = [];
+  //   if (isRecordingVideo) {
 
-      recorder.ondataavailable = (e) => {
+  //     videoButton.textContent = "Stop";
 
-        if (e.data.size > 0) recordedChunks.push(e.data);
-      };
+  //     const stream = canvas.domElement.captureStream(25);
 
-        recorder.start();
-      }
-    else {
+  //     recorder = new MediaRecorder(stream, {
+  //       mimeType: "video/webm;codecs=vp8"
+  //     });
 
-      videoButton.textContent = "Record";
+  //     recordedChunks = [];
 
-      recorder.stop();
+  //     recorder.ondataavailable = (e) => {
 
-      setTimeout(() => {
+  //       if (e.data.size > 0) recordedChunks.push(e.data);
+  //     };
 
-        const blob = new Blob(recordedChunks, { type: "video/webm" });
+  //       recorder.start();
+  //     }
+  //   else {
 
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
+  //     videoButton.textContent = "Record";
 
-        a.href = url;
-        a.download = `SC-screen-recording_${Date().slice(4, 24)}.webm`;
-        a.click();
+  //     recorder.stop();
 
-        URL.revokeObjectURL(url);
-      }, 0);
-    }
-  });
+  //     setTimeout(() => {
+
+  //       const blob = new Blob(recordedChunks, { type: "video/webm" });
+
+  //       const url = URL.createObjectURL(blob);
+  //       const a = document.createElement("a");
+
+  //       a.href = url;
+  //       a.download = `SC-screen-recording_${Date().slice(4, 24)}.webm`;
+  //       a.click();
+
+  //       URL.revokeObjectURL(url);
+  //     }, 0);
+  //   }
+  // });
 };
 
 
@@ -823,7 +851,7 @@ const initBackground = () => {
       const aWidth = currentBackgroundAsset.get('width'),
         aHeight = currentBackgroundAsset.get('height');
 
-      const [dWidth, dHeight] = canvas.base.get('dimensions');
+      const [dWidth, dHeight] = getDimensions(currentDimension);
 
       const rWidth = dWidth / aWidth,
         rHeight = dHeight / aHeight;
@@ -855,8 +883,6 @@ const initBackground = () => {
   };
 
   return {
-    backgroundPicture,
-    addBackgroundAsset,
     updateBackgroundPicture,
   };
 };
@@ -999,10 +1025,8 @@ const initUpdates = () => {
     updateGroup,
     updateEntityControls,
     areControlsEnabled,
-    enableControls,
     disableControls,
     dragGroup,
-    dragger,
   };
 };
 
@@ -1021,6 +1045,7 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'roll', '0'],
   ['input', 'order', '0'],
 
+  // Capture handles to the talking head controls
   ['button', 'head-modal-button', 'Head'],
   ['button', 'head-modal-close', 'Close'],
   ['by-id', 'head-modal'],
@@ -1031,7 +1056,10 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'head-scale', '1'],
   ['input', 'head-rotation', '0'],
 
-  ['button', 'video-toggle', 'Record'],
+  // Capture handles to the recording controls
+  ['button', 'recording-modal-button', 'Record'],
+  ['button', 'recording-modal-close', 'Close'],
+  ['by-id', 'recording-modal'],
 
   // Capture handles to the targets-related HTML elements
   ['button', 'targets-modal-button', 'Targets'],
@@ -1076,7 +1104,9 @@ const entityBeingEdited = dom['entity-being-edited'],
   headScale = dom['head-scale'],
   headRotation = dom['head-rotation'],
 
-  videoButton = dom['video-toggle'],
+  recordingModal = dom['recording-modal'],
+  recordingButton = dom['recording-modal-button'],
+  recordingCloseButton = dom['recording-modal-close'],
 
   targetsModal = dom['targets-modal'],
   targetsButton = dom['targets-modal-button'],
@@ -1107,39 +1137,25 @@ const {
   updateGroup,
   updateEntityControls,
   areControlsEnabled,
-  // enableControls,
   disableControls,
   dragGroup,
-  // dragger,
 } = initUpdates();
 
 const { 
-  // magicDimensions,
   getDimensions,
-  // getScaler,
 } = initDimensions();
 
 const { 
-  // requestScreenCapture,
   updateTargetScales,
 } = initTargets();
 
-// const { 
-//   talkingHead,
-// } = initTalkingHead();
 initTalkingHead();
 
 const {
-  // currentBackgroundAsset,
-  // backgroundPicture,
-  // addBackgroundAsset,
   updateBackgroundPicture,
 } = initBackground();
 
-
-// ------------------------------------------------------------------------
-// Keyboard accessibility
-// ------------------------------------------------------------------------
+initVideoRecording();
 
 
 // ------------------------------------------------------------------------

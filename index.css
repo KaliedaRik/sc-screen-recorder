@@ -111,7 +111,6 @@ body {
   }
 }
 
-
 dialog {
   max-height: 80vh;
   max-width: 80vw;
@@ -226,6 +225,24 @@ dialog {
 }
 
 #head-modal {
+
+  min-width: 50vw;
+
+  & .talking-head-parameters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap: 0.5rem;
+    align-items: center;
+  }
+
+  & input[type="checkbox"] {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-left: 0.5rem;
+  }
+}
+
+#recording-modal {
 
   min-width: 50vw;
 

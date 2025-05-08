@@ -32,7 +32,7 @@
     <a href="https://github.com/KaliedaRik/sc-screen-recorder" target="_BLANK">Instructions</a>
     <button id="targets-modal-button">Cannot get targets</button>
     <button id="head-modal-button">Cannot show head</button>
-    <button id="video-toggle" disabled>Cannot record video</button>
+    <button id="recording-modal-button" disabled>Cannot record video</button>
     <button id="background-modal-button" disabled>Cannot change background</button>
     <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
   </div>
@@ -136,6 +136,10 @@
   </dialog>
 
   <!-- Video capture modal -->
+  <dialog id='recording-modal' closedby="any">
+    <button id="recording-modal-close" autofocus class="close">Close</button>
+    <h2>Record screen</h2>
+  </dialog>
 
   <!-- Video download modal -->
 
