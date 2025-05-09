@@ -206,6 +206,17 @@ dialog {
       padding: 0.25rem;
     }
   }
+
+  & .border-parameters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap: 0.5rem;
+    align-items: center;
+
+    & #target-border-color {
+      width: 100%;
+    }
+  }
 }
 
 #dimensions-modal {

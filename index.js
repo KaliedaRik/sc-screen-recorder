@@ -119,7 +119,7 @@ const initTalkingHead = () => {
   const talkingHeadInput = canvas.buildCell({
 
     name: name('talking-head-input'),
-    dimensions: [768, 768],
+    dimensions: [256, 256],
     shown: false,
   });
 
@@ -136,7 +136,7 @@ const initTalkingHead = () => {
   const talkingHeadMask = canvas.buildCell({
 
     name: name('talking-head-mask'),
-    dimensions: [768, 768],
+    dimensions: [256, 256],
     cleared: false,
     compiled: false,
     shown: false,
@@ -174,7 +174,7 @@ const initTalkingHead = () => {
 
     name: name('head-blur'),
     method: 'gaussianBlur',
-    radius: 2,
+    radius: 6,
   });
 
   const maskPicture = scrawl.makePicture({
@@ -262,6 +262,7 @@ const initTalkingHead = () => {
       myCameraAnimation = scrawl.makeAnimation({
 
         name: name('head-segmenter'),
+        order: 0,
         fn: () => {
 
           if (imageSegmenter && imageSegmenter.segmentForVideo) {
@@ -452,12 +453,10 @@ const initTargets = () => {
           clickAction: function () {
 
             targetPicture.set({
-              lineDash: [],
               method: 'fillThenDraw',
             });
 
             updateGroup.setArtefacts({
-              lineDash: [],
               method: 'fill',
             });
 
@@ -474,7 +473,6 @@ const initTargets = () => {
         onEnter: function () {
 
           targetPicture.set({
-            lineDash: [5, 3],
             method: 'fillThenDraw',
           });
         },
@@ -482,7 +480,6 @@ const initTargets = () => {
         onLeave: function () {
 
           targetPicture.set({
-            lineDash: [],
             method: 'fill',
           });
         },
@@ -539,7 +536,6 @@ const initTargets = () => {
             targetsHold.appendChild(listDiv);
 
             updateGroup.setArtefacts({
-              lineDash: [],
               method: 'fill',
             });
 
@@ -547,7 +543,6 @@ const initTargets = () => {
             updateGroup.addArtefacts(targetPicture);
 
             updateGroup.setArtefacts({
-              lineDash: [],
               method: 'fillThenDraw',
             });
 
@@ -622,6 +617,23 @@ const initTargets = () => {
       });
     }
   }
+
+  scrawl.makeUpdater({
+
+    event: ['input', 'change'],
+    origin: '.target-border-controls',
+
+    target: updateGroup,
+
+    useNativeListener: true,
+    preventDefault: true,
+
+    updates: {
+      ['target-border-width']: ['lineWidth', 'int'],
+      ['target-border-style']: ['lineDash', 'parse'],
+      ['target-border-color']: ['strokeStyle', 'raw'],
+    },
+  });
 
   return { 
     updateTargetScales,
@@ -1067,6 +1079,9 @@ const dom = scrawl.initializeDomInputs([
   ['by-id', 'targets-modal'],
   ['button', 'target-request-button', 'Request screen capture'],
   ['by-id', 'current-targets-hold'],
+  ['input', 'target-border-width', '3'],
+  ['select', 'target-border-style', 0],
+  ['input', 'target-border-color', '#ff0000'],
 
   // Capture handles to the background-related HTML elements
   ['button', 'background-modal-button', 'Background'],
@@ -1113,6 +1128,9 @@ const entityBeingEdited = dom['entity-being-edited'],
   targetsCloseButton = dom['targets-modal-close'],
   targetRequestButton = dom['target-request-button'],
   targetsHold = dom['current-targets-hold'],
+  targetBorderWidth = dom['target-border-width'],
+  targetBorderStyle = dom['target-border-style'],
+  targetBorderColor = dom['target-border-color'],
 
   backgroundModal = dom['background-modal'],
   backgroundButton = dom['background-modal-button'],
