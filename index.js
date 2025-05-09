@@ -11,6 +11,96 @@ const canvas = scrawl.findCanvas('my-canvas');
 // ------------------------------------------------------------------------
 import * as MediaPipe from './js/mediapipe-vision-bundle.js';
 
+
+// ------------------------------------------------------------------------
+// Camera and Audio device discovery
+// ------------------------------------------------------------------------
+const canWeEnumerateDevices = !!navigator.mediaDevices?.enumerateDevices;
+console.log('canWeEnumerateDevices', canWeEnumerateDevices)
+
+const availableAudioInputs = [],
+  availableAudioIds = [],
+  availableCameraInputs = [],
+  availableCameraIds = [];
+
+let selectedAudio = 'none',
+  selectedCamera = 'none';
+
+const findAudioInputDevices = () => {
+
+  availableAudioInputs.length = [];
+  availableAudioIds.length = [];
+
+  return new Promise ((resolve, reject) => {
+
+    if (canWeEnumerateDevices) {
+
+      navigator.mediaDevices.enumerateDevices()
+      .then((devices) => {
+
+        devices.forEach((device) => {
+
+          if (device.kind === 'audioinput') {
+
+            availableAudioInputs.push([
+              device.deviceId, 
+              device.label, 
+              device.label.toLowerCase().includes('default') ? true : false,
+            ]);
+
+            availableAudioIds.push(device.deviceId);
+          }
+        });
+
+        if (!availableAudioIds.includes(selectedAudio)) selectedAudio = 'none';
+
+        resolve('Audio input devices discovered');
+      })
+      .catch(err => reject(`${err.name}: ${err.message}`));
+    }
+    
+    else reject(`Unable to find audio input devices: canWeEnumerateDevices = ${canWeEnumerateDevices}`);
+  });
+};
+
+const findCameraInputDevices = async () => {
+
+  availableCameraInputs.length = [];
+  availableCameraIds.length = [];
+
+  return new Promise ((resolve, reject) => {
+
+    if (canWeEnumerateDevices) {
+
+      navigator.mediaDevices.enumerateDevices()
+      .then((devices) => {
+
+        devices.forEach((device) => {
+
+          if (device.kind === 'videoinput') {
+
+            availableCameraInputs.push([
+              device.deviceId, 
+              device.label, 
+              device.label.toLowerCase().includes('default') ? true : false,
+            ]);
+
+            availableCameraIds.push(device.deviceId);
+          }
+        });
+
+        if (!availableCameraIds.includes(selectedCamera)) selectedCamera = 'none';
+
+        resolve('Camera input devices discovered');
+      })
+      .catch(err => reject(`${err.name}: ${err.message}`));
+    }
+    
+    else reject(`Unable to find camera input devices: canWeEnumerateDevices = ${canWeEnumerateDevices}`);
+  });
+};
+
+
 // ------------------------------------------------------------------------
 // Video dimensions magic numbers
 // ------------------------------------------------------------------------
@@ -85,6 +175,8 @@ const initTalkingHead = () => {
   headButton.removeAttribute('disabled');
   scrawl.addNativeListener('click', () => headModal.showModal(), headButton);
   scrawl.addNativeListener('click', () => headModal.close(), headCloseButton);
+
+  findCameraInputDevices().then(() => console.log('Cameras available for initTalkingHead', availableCameraIds, availableCameraInputs));
 
   // Google MediaPipe ML model code
   let imageSegmenter,
@@ -217,9 +309,6 @@ const initTalkingHead = () => {
     flipReverse: true,
     scale: 0.5,
 
-    strokeStyle: 'red',
-    lineWidth: 4,
-    lineJoin: 'round',
     method: 'fill',
 
     visibility: false,
@@ -440,8 +529,9 @@ const initTargets = () => {
         start: ['50%', '50%'],
         handle: ['50%', '50%'],
 
-        strokeStyle: 'red',
-        lineWidth: 4,
+        strokeStyle: targetBorderColor.value,
+        lineWidth: parseInt(targetBorderWidth.value, 10),
+        lineDash: JSON.parse(targetBorderStyle.value),
         lineJoin: 'round',
         method: 'fill',
 
@@ -570,7 +660,6 @@ const initTargets = () => {
 
           // This is repeated code - needs to be refactored
           updateGroup.setArtefacts({
-            lineDash: [],
             method: 'fill',
           });
 
@@ -646,14 +735,12 @@ const initTargets = () => {
 // ------------------------------------------------------------------------
 const initVideoRecording = () => {
 
-  let availableAudio = [];
-
-  navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => availableAudio = stream.getAudioTracks());
-
   // Initialize DOM recording button and associated modal
   recordingButton.removeAttribute('disabled');
   scrawl.addNativeListener('click', () => recordingModal.showModal(), recordingButton);
   scrawl.addNativeListener('click', () => recordingModal.close(), recordingCloseButton);
+
+  findAudioInputDevices().then(() => console.log('Microphones available for initVideoRecording', availableAudioIds, availableAudioInputs));
 
 
   // let recorder, recordedChunks;
@@ -954,7 +1041,6 @@ const initUpdates = () => {
     if (entity) {
 
       updateGroup.setArtefacts({
-        lineDash: [],
         method: 'fill',
       });
 
@@ -983,7 +1069,6 @@ const initUpdates = () => {
         updateGroup.addArtefacts(entity);
 
         updateGroup.setArtefacts({
-          lineDash: [],
           method: 'fillThenDraw',
         });
 
@@ -1019,7 +1104,6 @@ const initUpdates = () => {
     if (!result) {
 
       updateGroup.setArtefacts({
-        lineDash: [],
         method: 'fill',
       });
 
@@ -1065,7 +1149,7 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'show-talking-head', 'on'],
   ['input', 'head-horizontal', '75'],
   ['input', 'head-vertical', '75'],
-  ['input', 'head-scale', '1'],
+  ['input', 'head-scale', '0.5'],
   ['input', 'head-rotation', '0'],
 
   // Capture handles to the recording controls
@@ -1151,6 +1235,8 @@ const entityBeingEdited = dom['entity-being-edited'],
 // ------------------------------------------------------------------------
 // Start the page running
 // ------------------------------------------------------------------------
+
+// Start by initializing functionality for each button/modal
 const {
   updateGroup,
   updateEntityControls,
@@ -1174,6 +1260,16 @@ const {
 } = initBackground();
 
 initVideoRecording();
+
+
+// ------------------------------------------------------------------------
+// Keyboard
+// ------------------------------------------------------------------------
+// TODO: want the canvas to accept the ESC or BACKSPACE key to remove focus from a target entity
+// - Everything else should already have keyboard functionality built-in 
+//   - Mainly TAB, SHIFT+TAB and ENTER, plus ARROW keys for range and color inputs
+//   - This includes tabbing through and selecting existing target entitys on the canvas
+// - TO CONSIDER: include T, H, R, B and D keys on the window/body to open respective modals?
 
 
 // ------------------------------------------------------------------------

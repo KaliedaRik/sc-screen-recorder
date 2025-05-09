@@ -257,16 +257,33 @@ dialog {
 
   min-width: 50vw;
 
-  & .talking-head-parameters {
+  & .recording-parameters {
     display: grid;
     grid-template-columns: 1fr 1fr;
     row-gap: 0.5rem;
     align-items: center;
+
+    & select {
+      font-size: 100%;
+      display: inline-block;
+      margin: 0.5rem;
+      padding: 0.25rem 0.5rem;
+
+      & option {
+        font-size: 100%;
+      }
+    }
   }
 
-  & input[type="checkbox"] {
-    width: 1.5rem;
-    height: 1.5rem;
-    margin-left: 0.5rem;
+  & #recording-start-button {
+    font-size: 120%;
+    width: 100%;
+    background-color: rgb(220 220 220 / 1);
+    border-radius: 5px;
+    padding: 0.25rem;
+
+    &:hover, &:focus {
+      background-color: rgb(80 255 80 / 1);
+    }
   }
 }
