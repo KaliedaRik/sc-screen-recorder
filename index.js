@@ -173,10 +173,73 @@ const initDimensions = () => {
 const initTalkingHead = () => {
 
   headButton.removeAttribute('disabled');
-  scrawl.addNativeListener('click', () => headModal.showModal(), headButton);
+
+  scrawl.addNativeListener('click', () => {
+
+    cameraDiscovery();
+    headModal.showModal();
+
+  }, headButton);
+
   scrawl.addNativeListener('click', () => headModal.close(), headCloseButton);
 
-  findCameraInputDevices().then(() => console.log('Cameras available for initTalkingHead', availableCameraIds, availableCameraInputs));
+  const cameraDiscovery = () => {
+
+    findCameraInputDevices()
+    .then(res => {
+
+      console.log(res);
+      console.log('Cameras available for initTalkingHead', availableCameraIds, availableCameraInputs);
+
+      const children = headCamera.querySelectorAll('option');
+
+      [...children].forEach(child => child.remove());
+
+      const frag = document.createDocumentFragment();
+
+      if (availableCameraInputs.length) {
+
+        if (availableCameraInputs.length === 1) {
+
+          const [id, label, def] = availableCameraInputs[0];
+
+          selectedCamera = id;
+
+          const opt = document.createElement('option');
+          opt.value = id
+          opt.textContent = label;
+          opt.setAttribute('selected', '');
+          frag.appendChild(opt);
+        }
+
+        else {
+
+          availableCameraInputs.forEach(item => {
+
+            const opt = document.createElement('option');
+            opt.value = id
+            opt.textContent = label;
+
+            if (id === selectedCamera) opt.setAttribute('selected', '');
+
+            frag.appendChild(opt);
+          });
+        }
+      }
+      else {
+
+        selectedCamera = 'none';
+
+        const opt = document.createElement('option');
+        opt.value = 'none'
+        opt.textContent = 'No cameras currently available';
+        frag.appendChild(opt);
+      }
+
+      headCamera.appendChild(frag);
+    })
+    .catch(err => console.log('talkingHead error', err));
+  };
 
   // Google MediaPipe ML model code
   let imageSegmenter,
@@ -269,7 +332,7 @@ const initTalkingHead = () => {
     radius: 6,
   });
 
-  const maskPicture = scrawl.makePicture({
+  scrawl.makePicture({
 
     name: name('talking-head-mask-picture'),
     group: talkingHeadOutput,
@@ -324,9 +387,11 @@ const initTalkingHead = () => {
     scrawl.importMediaStream({
 
       name: name('camera-feed'),
-      audio: false,
-      width: 768,
-      height: 768,
+      video: {
+        width: { ideal: 768 },
+        height: { ideal: 768 },
+        facingMode: 'user',
+      },
       onMediaStreamEnd: () => stopCamera(),
 
     }).then(res => {
@@ -1145,6 +1210,7 @@ const dom = scrawl.initializeDomInputs([
   ['button', 'head-modal-button', 'Head'],
   ['button', 'head-modal-close', 'Close'],
   ['by-id', 'head-modal'],
+  ['select', 'talking-head-camera', 0],
   ['input', 'use-talking-head', 'off'],
   ['input', 'show-talking-head', 'on'],
   ['input', 'head-horizontal', '75'],
@@ -1197,6 +1263,7 @@ const entityBeingEdited = dom['entity-being-edited'],
   headButton = dom['head-modal-button'],
   headCloseButton = dom['head-modal-close'],
   headUseCheckbox = dom['use-talking-head'],
+  headCamera = dom['talking-head-camera'],
   headShowCheckbox = dom['show-talking-head'],
   headHorizontal = dom['head-horizontal'],
   headVertical = dom['head-vertical'],

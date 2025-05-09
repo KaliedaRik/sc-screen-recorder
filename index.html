@@ -110,9 +110,13 @@
     <button id="head-modal-close" autofocus class="close">Close</button>
     <h2>Talking head management</h2>
     <div class="talking-head-parameters">
-      <label for="use-talking-head">Use talking head:</label>
+      <label for="talking-head-camera">Selected camera</label>
+      <select id="talking-head-camera">
+        <option value="none">None</option>
+      </select>
+      <label for="use-talking-head">Use talking head</label>
       <input id="use-talking-head" name="load" value="off" type="checkbox">
-      <label for="show-talking-head">Show talking head:</label>
+      <label for="show-talking-head">Show talking head</label>
       <input id="show-talking-head" name="head" value="on" type="checkbox" checked disabled>
     </div>
     <h3>Talking head parameters</h3>
