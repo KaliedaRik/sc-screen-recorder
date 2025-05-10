@@ -9,7 +9,7 @@ The main use case for this product is for **bug reporting**. When a user encount
 + Record their report in their preferred dimensions and resolutions: landscape (16:9); square (1:1); portrait (9:16).
 + Once the recording is done, the video downloads to the user's local device for further processing (if required) and sharing.
 
-This code is supplied as a Minimum Viable Product. It has not been built for the generation of proffessional-grade video assets. You have been warned!
+This code is supplied as a Minimum Viable Product. It has not been built for the generation of professional-grade video assets. You have been warned!
 
 ## Instructions
 TODO: write up a simple guide
@@ -23,10 +23,11 @@ TODO: write up a simple guide
 
 ### Self hosting the web page
 The web page is hosted on GitHub - [kaliedarik.github.io/sc-screen-recorder](https://kaliedarik.github.io/sc-screen-recorder/):
-+ Built in vanilla HTML, CSS and Javascript.
-+ No sign-in or registration required. The page is offered free under the MIT licence.
-+ No tracking!
-+ The web page can be self hosted by forking this repo and deploying to the user's own servers or, alternatively, run locally on the user's device.
++ Designed for use on the desktop; use on mobile devices is not in-scope for this MVP.
++ Keyboard accessibility is definitely in-scope!
++ Built in vanilla HTML, CSS and Javascript. No frameworks. No toolchains.
++ No sign-in or registration required. Also: no tracking!
++ The web page can be self hosted by forking this repo and deploying to the user's own servers or, alternatively, run locally on the user's device. The code is offered free under the MIT licence.
 + Users are free to develop and improve the code in any way they see fit. If anyone wants to build a better product from this code (and monetise it) ... go for it!
 
 ### Key files
