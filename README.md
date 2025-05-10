@@ -15,9 +15,24 @@ There's probably other use cases for the web page. But I only care about bug rep
 The code in this repo is supplied as a Minimum Viable Product. It has not been built for the generation of professional-grade video assets. You have been warned!
 
 ## Instructions
+The following instructions assume the user is using a desktop (or laptop) setup. Note that the web page is designed to be keyboard accessible: navigate around the controls and modals using the TAB, SHIFT+TAB and ENTER keys. Input controls should also accept ARROW keystrokes (dependent on the user's operating system and browser). Tab navigation also includes the targets displayed in the canvas recording area.
 
+| Image | Description |
 |---|---|
-
+| ![repo-01-onload](https://github.com/user-attachments/assets/f31d8ba4-0bc5-45d6-aca8-1fdecfa27d00) | Initial page load. Control buttons across the top will open dialog modals. The controls across the bottom of the screen are currently disabled. The recording area is in white, fitted into the responsive canvas. |
+| ![repo-02-dimensions](https://github.com/user-attachments/assets/9b4a1fe4-c428-421a-9e1a-3b6bc5b5629f) | To set the recording area's dimensions, click on the **Dimensions** button. When changing dimensions, targets and background images will automatically update to accommodate the change (though the talking head, which has fixed dimensions, will not). Landscape, square and portrait dimensions are supported. |
+| ![repo-03-target](https://github.com/user-attachments/assets/56c78016-9557-4db9-ac84-2953a81a2f9f) | Targets are areas of the user's display screen(s) to be real-time captured in the recording area. To aquire and manage targets, click on the **Targets** button. |
+| ![repo-04-target](https://github.com/user-attachments/assets/ef669453-81a7-4b91-a543-0e9037f58fe0) | Click on the **Request screen capture** button to launch the browser's native screen-capture sharing modal. Select the desired target and press the **Share** (or equivalent) button. |
+| ![repo-05-target](https://github.com/user-attachments/assets/8b166c5a-6760-4dc2-8a14-429ffadf8fa1) | Once a target has been selected an entry for it will appear in the Targets modal. Each screen capture can be halted by the user at any time, either by clicking on the target's **Remove** button, or by clicking on any other button the user's browser or operating system may supply. |
+| ![repo-06-target](https://github.com/user-attachments/assets/fa6e941b-8d77-4100-8ba3-a335c4e1da57) | The user can drag-and-drop each target into the desired position on the recording area. Clicking on a target will enable the bottom controls for the target. Horizontal and vertical position ranges have been included for accessibility.  |
+| ![repo-07-target](https://github.com/user-attachments/assets/f6a62c85-900e-42f8-8413-6e7cd1d9a6c8) | The target display in the recording area can be scaled and rotated as required. The display order of overlapping targets can also be controlled here. |
+| ![repo-08-background](https://github.com/user-attachments/assets/98495616-b721-41bd-b275-6392496c0b62) | The recording area's background defaults to white. Click on the **Background** button to open the modal, and then the **Change background color** button to set the background color. |
+| ![repo-09-background](https://github.com/user-attachments/assets/3a36d7a2-762a-4bc3-b580-19a9ec7ee260) | The recording area can also display a background image. To add an image, drag it into the web page - for success, make sure no modal is displaying at the time of the drag-drop action! Multiple images can be added using this method. Alternatively, click on the **Browse for image files** button to open a file selection modal. |
+| ![repo-10-background](https://github.com/user-attachments/assets/15ae9ff2-d2dd-485c-bd65-dfc55b539c89) | Only one background image can be displayed at any time. To remove the current background image click on the **Hide background image** button. If multiple images have been uploaded, then the background image can be easily updated by clicking on the desired image. |
+| ![repo-11-head](https://github.com/user-attachments/assets/96e14504-1e43-4132-944e-2cb4c35a7b0a) | By default the "talking head" functionality is disabled. To add a talking head, click on the **Head** button, select the desired camera in the drop-down selection box, then click on the **Use talking head** checkbox. |
+| ![repo-12-head](https://github.com/user-attachments/assets/7a70b6df-d42f-46d1-869f-979f21c57d63) | Once the talking head appears, it can be positioned, scaled and rotated using the controls in the modal (note that it cannot be repositioned using drag-and-drop). The head can be hidden by unchecking the **Show talking head** checkbox. The video stream capturing the talking head can be halted at any time by unchecking the **Use talking head** checkbox, or stopping it using any other facility the user's browser or operating system may supply |
+| ![repo-13-record](https://github.com/user-attachments/assets/7ab8bca4-3792-468f-867f-337d348852d5) | To record, click on the **Record** button, then select a microphone to use for audio capture. Note that resulting video's format (currently "webm" or "mp4") needs to be set before recording starts. Then click on the **Start recording** button. |
+| Final image | Stop recording button |
 
 ## Self hosting the web page
 The web page is hosted on GitHub - [kaliedarik.github.io/sc-screen-recorder](https://kaliedarik.github.io/sc-screen-recorder/):
@@ -46,4 +61,8 @@ The code relies on the [Scrawl-canvas](https://github.com/KaliedaRik/Scrawl-canv
 + The MVP makes use of the [Media Capture and Streams](https://developer.mozilla.org/en-US/docs/Web/API/Media_Capture_and_Streams_API) API's [getDisplayMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia) function, which is not widely supported. It should work on latest desktop Chrome/Edge/Firefox/Safari, but will currently fail on Android Chrome, iOS Safari, etc. See the [Can I Use website](https://caniuse.com/?search=getDisplayMedia) for latest details.
 
 + The MVP makes use of Google's selfie-segmentation [MediaPipe solution](https://ai.google.dev/edge/mediapipe/solutions/guide). The code is not very efficient at the moment ... but needs must.
+
++ Shutting down the talking head video capture stream doesn't seem to shut down the camera (at least in Chrome on my machine). This is an important security flaw that needs to be fixed urgently!
+
+
 
