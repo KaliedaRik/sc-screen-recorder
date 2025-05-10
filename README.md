@@ -17,14 +17,7 @@ The code in this repo is supplied as a Minimum Viable Product. It has not been b
 ## Instructions
 TODO: write up a simple guide
 
-## Development (aka: running the page locally)
-1. Fork or clone this repo
-2. Navigate to the downloaded folder
-3. Don't bother installing anything - there's no build chain because: it's just a web page
-4. Start a local server to serve the page locally - for example, [live-server](https://github.com/tapio/live-server) seems to do a decent job.
-5. Hack away!
-
-### Self hosting the web page
+## Self hosting the web page
 The web page is hosted on GitHub - [kaliedarik.github.io/sc-screen-recorder](https://kaliedarik.github.io/sc-screen-recorder/):
 + Designed for use on the desktop; use on mobile devices is not in-scope for this MVP.
 + Keyboard accessibility is definitely in-scope!
@@ -32,6 +25,13 @@ The web page is hosted on GitHub - [kaliedarik.github.io/sc-screen-recorder](htt
 + No sign-in or registration required. Also: no tracking!
 + The web page can be self hosted by forking this repo and deploying to the user's own servers or, alternatively, run locally on the user's device. The code is offered free under the MIT licence.
 + Users are free to develop and improve the code in any way they see fit. If anyone wants to build a better product from this code (and monetise it) ... go for it!
+
+### Running the page locally
+1. Fork or clone this repo
+2. Navigate to the downloaded folder
+3. Don't bother installing anything - there's no build chain because: it's just a web page
+4. Start a local server to serve the page locally - for example, [live-server](https://github.com/tapio/live-server) seems to do a decent job.
+5. Hack away!
 
 ### Key files
 The page's HTML code can be found in the  in the `index.html` file, while the CSS code lurks in the `index.css` file.
@@ -41,7 +41,7 @@ The page functionality lives in the `index.js` file. There's no tool chain or bu
 The code relies on the [Scrawl-canvas](https://github.com/KaliedaRik/Scrawl-canvas) library, the minified version of which can be found in the `js/scrawl-canvas.js` file. Because there's no tool chain, updating SC means grabbing the latest minified version of the file and slapping it into the `js/` folder.
 
 ### Known issues
-+ The proof-of-concept makes use of the [Media Capture and Streams](https://developer.mozilla.org/en-US/docs/Web/API/Media_Capture_and_Streams_API) API's [getDisplayMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia) function, which is not widely supported. It should work on latest desktop Chrome/Edge/Firefox/Safari, but will currently fail on Android Chrome, iOS Safari, etc. See the [Can I Use website](https://caniuse.com/?search=getDisplayMedia) for latest details.
++ The MVP makes use of the [Media Capture and Streams](https://developer.mozilla.org/en-US/docs/Web/API/Media_Capture_and_Streams_API) API's [getDisplayMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia) function, which is not widely supported. It should work on latest desktop Chrome/Edge/Firefox/Safari, but will currently fail on Android Chrome, iOS Safari, etc. See the [Can I Use website](https://caniuse.com/?search=getDisplayMedia) for latest details.
 
-+ The proof-of-concept makes use of Google's selfie-segmentation [MediaPipe solution](https://ai.google.dev/edge/mediapipe/solutions/guide). The code is not very efficient at the moment ... but needs must.
++ The MVP makes use of Google's selfie-segmentation [MediaPipe solution](https://ai.google.dev/edge/mediapipe/solutions/guide). The code is not very efficient at the moment ... but needs must.
 
