@@ -97,8 +97,8 @@
     <h2>Background color management</h2>
     <p><label id="background-color-button" for="background-color-input">Change background color</label> <input id="background-color-input" type="color" value="#000000"></p>
     <h2>Background image management</h2>
-    <p>Add a background image by dragging it onto the browser window</p>
-    <p>Alternatively, <label id="background-upload-button" for="background-upload">browse for image files to display:</label> <input type="file" id="background-upload" name="background-upload" accept="image/png, image/jpeg, image/jpg, image/webp" multiple></p>
+    <p>Add a background image by dragging it onto the browser window.</p>
+    <p><label id="background-upload-button" for="background-upload">Browse for image files</label> <input type="file" id="background-upload" name="background-upload" accept="image/png, image/jpeg, image/jpg, image/webp" multiple></p>
     <p><button id='background-image-hide'>Hide background image</button></p>
     <h3>Recent uploads</h3>
     <p>Click on an image to use it:</p>
@@ -157,11 +157,11 @@
     <button id="recording-modal-close" autofocus class="close">Close</button>
     <h2>Record screen</h2>
     <button id="recording-start-button">Start recording</button>
-    <h3>Audio input</h3>
+    <h3>Microphone management</h3>
     <div class="recording-parameters">
-      <label for="audio-input-stream">Select audio input</label>
-      <select id="audio-input-stream">
-        <option value="">None</option>
+      <label for="recording-microphone">Selected microphone</label>
+      <select id="recording-microphone">
+        <option value="none">None</option>
       </select>
     </div>
     <h3>Video output</h3>

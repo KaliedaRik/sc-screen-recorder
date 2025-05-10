@@ -18,18 +18,18 @@ import * as MediaPipe from './js/mediapipe-vision-bundle.js';
 const canWeEnumerateDevices = !!navigator.mediaDevices?.enumerateDevices;
 console.log('canWeEnumerateDevices', canWeEnumerateDevices)
 
-const availableAudioInputs = [],
-  availableAudioIds = [],
+const availableMicrophoneInputs = [],
+  availableMicrophoneIds = [],
   availableCameraInputs = [],
   availableCameraIds = [];
 
-let selectedAudio = 'none',
+let selectedMicrophone = 'none',
   selectedCamera = 'none';
 
-const findAudioInputDevices = () => {
+const findMicrophoneDevices = () => {
 
-  availableAudioInputs.length = [];
-  availableAudioIds.length = [];
+  availableMicrophoneInputs.length = [];
+  availableMicrophoneIds.length = [];
 
   return new Promise ((resolve, reject) => {
 
@@ -42,17 +42,17 @@ const findAudioInputDevices = () => {
 
           if (device.kind === 'audioinput') {
 
-            availableAudioInputs.push([
+            availableMicrophoneInputs.push([
               device.deviceId, 
               device.label, 
               device.label.toLowerCase().includes('default') ? true : false,
             ]);
 
-            availableAudioIds.push(device.deviceId);
+            availableMicrophoneIds.push(device.deviceId);
           }
         });
 
-        if (!availableAudioIds.includes(selectedAudio)) selectedAudio = 'none';
+        if (!availableMicrophoneIds.includes(selectedMicrophone)) selectedMicrophone = 'none';
 
         resolve('Audio input devices discovered');
       })
@@ -183,17 +183,12 @@ const initTalkingHead = () => {
 
   scrawl.addNativeListener('click', () => headModal.close(), headCloseButton);
 
+  scrawl.addNativeListener('change', () => selectedCamera = headCamera.value, headCamera);
+
   const cameraDiscovery = () => {
 
     findCameraInputDevices()
     .then(res => {
-
-      console.log(res);
-      console.log('Cameras available for initTalkingHead', availableCameraIds, availableCameraInputs);
-
-      const children = headCamera.querySelectorAll('option');
-
-      [...children].forEach(child => child.remove());
 
       const frag = document.createDocumentFragment();
 
@@ -236,9 +231,9 @@ const initTalkingHead = () => {
         frag.appendChild(opt);
       }
 
-      headCamera.appendChild(frag);
+      headCamera.replaceChildren(...frag.querySelectorAll('option'));
     })
-    .catch(err => console.log('talkingHead error', err));
+    .catch(err => console.log('talkingHead camera listing error', err));
   };
 
   // Google MediaPipe ML model code
@@ -390,7 +385,7 @@ const initTalkingHead = () => {
       video: {
         width: { ideal: 768 },
         height: { ideal: 768 },
-        facingMode: 'user',
+        deviceId: selectedCamera,
       },
       onMediaStreamEnd: () => stopCamera(),
 
@@ -802,10 +797,74 @@ const initVideoRecording = () => {
 
   // Initialize DOM recording button and associated modal
   recordingButton.removeAttribute('disabled');
-  scrawl.addNativeListener('click', () => recordingModal.showModal(), recordingButton);
+
+  scrawl.addNativeListener('click', () => {
+
+    microphoneDiscovery();
+    recordingModal.showModal();
+
+  }, recordingButton);
+
   scrawl.addNativeListener('click', () => recordingModal.close(), recordingCloseButton);
 
-  findAudioInputDevices().then(() => console.log('Microphones available for initVideoRecording', availableAudioIds, availableAudioInputs));
+  scrawl.addNativeListener('change', () => selectedMicrophone = recordingMicrophone.value, recordingMicrophone);
+
+  const microphoneDiscovery = () => {
+
+    findMicrophoneDevices()
+    .then(() => {
+
+      const frag = document.createDocumentFragment();
+
+      if (availableMicrophoneInputs.length) {
+
+        if (availableMicrophoneInputs.length === 1) {
+
+          const [id, label] = availableMicrophoneInputs[0];
+
+          selectedMicrophone = id;
+
+          const opt = document.createElement('option');
+          opt.value = id
+          opt.textContent = label;
+          opt.setAttribute('selected', '');
+          frag.appendChild(opt);
+        }
+
+        else {
+
+          availableMicrophoneInputs.forEach((item, index) => {
+
+            const [id, label] = item;
+
+            const opt = document.createElement('option');
+            opt.value = id
+            opt.textContent = label;
+
+            if (id === selectedMicrophone) {
+
+              opt.setAttribute('selected', '');
+              // opt.value = index;
+            }
+
+            frag.appendChild(opt);
+          });
+        }
+      }
+      else {
+
+        selectedMicrophone = 'none';
+
+        const opt = document.createElement('option');
+        opt.value = 'none'
+        opt.textContent = 'No microphones currently available';
+        frag.appendChild(opt);
+      }
+
+      recordingMicrophone.replaceChildren(...frag.querySelectorAll('option'));
+    })
+    .catch(err => console.log('recording microphone listing error', err));
+  };
 
 
   // let recorder, recordedChunks;
@@ -1222,6 +1281,7 @@ const dom = scrawl.initializeDomInputs([
   ['button', 'recording-modal-button', 'Record'],
   ['button', 'recording-modal-close', 'Close'],
   ['by-id', 'recording-modal'],
+  ['select', 'recording-microphone', 0],
 
   // Capture handles to the targets-related HTML elements
   ['button', 'targets-modal-button', 'Targets'],
@@ -1273,6 +1333,7 @@ const entityBeingEdited = dom['entity-being-edited'],
   recordingModal = dom['recording-modal'],
   recordingButton = dom['recording-modal-button'],
   recordingCloseButton = dom['recording-modal-close'],
+  recordingMicrophone = dom['recording-microphone'],
 
   targetsModal = dom['targets-modal'],
   targetsButton = dom['targets-modal-button'],
