@@ -2,14 +2,17 @@
 Record your local screen using your browser.
 
 ### Use case(s)
-The main use case for this product is for **bug reporting**. When a user encounters an issue with a website (or other product) they can navigate to this web page and screen capture the issue:
+The main use case for this product is for **bug reporting**. When a user encounters an issue with a website (or other product) they can navigate to this web page and screen capture the issue and:
 + Add multiple "targets" (screen captures of various parts of their display) and rearrange them on the canvas to best demonstrate the issue they are facing.
 + Change the canvas background color, or use an image to act as the background (in case they don't want people to see their real screen background).
 + Include a "talking head" of themselves describing the problem.
 + Record their report in their preferred dimensions and resolutions: landscape (16:9); square (1:1); portrait (9:16).
-+ Once the recording is done, the video downloads to the user's local device for further processing (if required) and sharing.
 
-This code is supplied as a Minimum Viable Product. It has not been built for the generation of professional-grade video assets. You have been warned!
+Once the recording is done, the video downloads to the user's local device for further processing (if required) and sharing.
+
+There's probably other use cases for the web page. But I only care about bug reporting. If people can show me the issue they think is a bug, and describe it to me as they're showing it, then I'm more likely to believe them and (maybe) do something about it.
+
+The code in this repo is supplied as a Minimum Viable Product. It has not been built for the generation of professional-grade video assets. You have been warned!
 
 ## Instructions
 TODO: write up a simple guide
