@@ -15,21 +15,23 @@ There's probably other use cases for the web page. But I only care about bug rep
 The code in this repo is supplied as a Minimum Viable Product. It has not been built for the generation of professional-grade video assets. You have been warned!
 
 ## Instructions
-TODO: write up a simple guide
+
+|---|---|
+
 
 ## Self hosting the web page
 The web page is hosted on GitHub - [kaliedarik.github.io/sc-screen-recorder](https://kaliedarik.github.io/sc-screen-recorder/):
 + Designed for use on the desktop; use on mobile devices is not in-scope for this MVP.
 + Keyboard accessibility is definitely in-scope!
 + Built in vanilla HTML, CSS and Javascript. No frameworks. No toolchains.
-+ No sign-in or registration required. Also: no tracking!
++ Everything happens on the client-side. No sign-in or registration required. Also: no tracking!
 + The web page can be self hosted by forking this repo and deploying to the user's own servers or, alternatively, run locally on the user's device. The code is offered free under the MIT licence.
 + Users are free to develop and improve the code in any way they see fit. If anyone wants to build a better product from this code (and monetise it) ... go for it!
 
-### Running the page locally
-1. Fork or clone this repo
-2. Navigate to the downloaded folder
-3. Don't bother installing anything - there's no build chain because: it's just a web page
+### Running the web page locally
+1. Fork or clone this repo.
+2. Navigate to the downloaded folder.
+3. Don't bother installing anything - there's no build chain because: it's just a web page.
 4. Start a local server to serve the page locally - for example, [live-server](https://github.com/tapio/live-server) seems to do a decent job.
 5. Hack away!
 
