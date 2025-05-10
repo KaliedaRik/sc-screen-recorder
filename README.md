@@ -2,7 +2,7 @@
 Record your local screen using your browser.
 
 ### Use case(s)
-The main use case for this product is for **bug reporting**. When a user encounters an issue with a website (or other product) they can navigate to this web page and screen capture the issue and:
+The main use case for this product is for **bug reporting**. When a user encounters an issue with a website (or other product) they can navigate to this web page and screen capture the issue. Using the page they can:
 + Add multiple "targets" (screen captures of various parts of their display) and rearrange them on the canvas to best demonstrate the issue they are facing.
 + Change the canvas background color, or use an image to act as the background (in case they don't want people to see their real screen background).
 + Include a "talking head" of themselves describing the problem.
