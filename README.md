@@ -34,6 +34,32 @@ The following instructions assume the user is using a desktop (or laptop) setup.
 | ![repo-13-record](https://github.com/user-attachments/assets/7ab8bca4-3792-468f-867f-337d348852d5) | To record, click on the **Record** button, then select a microphone to use for audio capture. Note that resulting video's format (currently "webm" or "mp4") needs to be set before recording starts. Then click on the **Start recording** button. |
 | Final image | Stop recording button |
 
+### Keyboard shortcuts
+The web page supports the following keyboard controls and shortcuts.
+
+#### Keyboard Navigation: 
++ TAB to navigate forwards
++ SHIFT+TAB to navigate backwards
++ ENTER to select
+ 
+#### Additional input controls:
++ For "select" inputs - UP-ARROW, DOWN-ARROW
++ For "range" inputs -  RIGHT-ARROW, LEFT-ARROW 
++ For "color" inputs - UP-ARROW, RIGHT-ARROW, DOWN-ARROW, LEFT-ARROW
++ For checkboxes - SPACE
+
+#### Keyboard shortcuts:
++ 'b' - show the Background modal
++ 'd' - show the Dimensions modal
++ 'h' - show the Head modal
++ 'r' - show the Record modal
++ 't' - show the Targets modal
+
+#### Additional keyboard shortcuts:
++ 'u' - unselect the currently selected target (removes the taget border)
++ 'e' - if the editing controls are enabled, focus on the scale range input
+
+
 ## Self hosting the web page
 The web page is hosted on GitHub - [kaliedarik.github.io/sc-screen-recorder](https://kaliedarik.github.io/sc-screen-recorder/):
 + Designed for use on the desktop; use on mobile devices is not in-scope for this MVP.

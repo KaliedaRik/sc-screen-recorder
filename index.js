@@ -102,15 +102,52 @@ const findCameraInputDevices = async () => {
 
 
 // ------------------------------------------------------------------------
+// Modal management
+// ------------------------------------------------------------------------
+let currentModal;
+// const actionKeys = ['t', 'h', 'r', 'b', 'd'];
+
+const openModal = (modal, fn = null) => {
+
+  console.log('openModal', modal, fn);
+
+  if (currentModal) closeModal();
+
+  if (fn) fn();
+
+  // Needs to be in a timeout because the keypress itself will launch a modal close event
+  setTimeout(() => {
+
+    if (!currentModal) {
+
+      modal.showModal();
+      currentModal = modal;
+    }
+  }, 100);
+};
+
+const closeModal = () => {
+
+  const m = currentModal;
+  currentModal = null;
+
+  if (m) m.close();
+};
+
+
+// ------------------------------------------------------------------------
 // Video dimensions magic numbers
 // ------------------------------------------------------------------------
 let currentDimension = 'landscape_480';
 
 const initDimensions = () => {
 
+  // Initialize DOM dimensions button and associated modal
   dimensionsButton.removeAttribute('disabled');
-  scrawl.addNativeListener('click', () => dimensionsModal.showModal(), dimensionsButton);
-  scrawl.addNativeListener('click', () => dimensionsModal.close(), dimensionsCloseButton);
+  scrawl.addNativeListener('click', () => openModal(dimensionsModal), dimensionsButton);
+  scrawl.addNativeListener('click', closeModal, dimensionsCloseButton);
+  scrawl.addNativeListener('close', closeModal, dimensionsModal);
+
   currentCanvasDimensions.textContent = '854 by 480px';
 
   const magicDimensions = {
@@ -155,6 +192,15 @@ const initDimensions = () => {
       const [w, h] = getDimensions(currentDimension);
 
       currentCanvasDimensions.textContent = `${w} by ${h}px`;
+
+      // If a target is being edited, the scale edit control needs updating
+      // - Has to be done in a timeout as SC entity updates are batched to requestAnimationFrame calls
+      const editInProgress = updateGroup.get('artefacts');
+      if (editInProgress.length) {
+
+        const ent = scrawl.findEntity(editInProgress[0]);
+        if (ent) setTimeout(() => entityScale.value = `${ent.get('scale')}`, 50);
+      }
     }
   };
 
@@ -172,23 +218,12 @@ const initDimensions = () => {
 // ------------------------------------------------------------------------
 const initTalkingHead = () => {
 
-  headButton.removeAttribute('disabled');
-
-  scrawl.addNativeListener('click', () => {
-
-    cameraDiscovery();
-    headModal.showModal();
-
-  }, headButton);
-
-  scrawl.addNativeListener('click', () => headModal.close(), headCloseButton);
-
-  scrawl.addNativeListener('change', () => selectedCamera = headCamera.value, headCamera);
-
+  // Camera discovery
+  // - Runs every time the modal opens, to capture any changes in available cameras
   const cameraDiscovery = () => {
 
     findCameraInputDevices()
-    .then(res => {
+    .then(() => {
 
       const frag = document.createDocumentFragment();
 
@@ -235,6 +270,14 @@ const initTalkingHead = () => {
     })
     .catch(err => console.log('talkingHead camera listing error', err));
   };
+
+  // Initialize DOM head button and associated modal
+  headButton.removeAttribute('disabled');
+  scrawl.addNativeListener('click', () => openModal(headModal, cameraDiscovery), headButton);
+  scrawl.addNativeListener('click', closeModal, headCloseButton);
+  scrawl.addNativeListener('close', closeModal, headModal);
+
+  scrawl.addNativeListener('change', () => selectedCamera = headCamera.value, headCamera);
 
   // Google MediaPipe ML model code
   let imageSegmenter,
@@ -536,6 +579,8 @@ const initTalkingHead = () => {
       ['head-rotation']: ['roll', 'float'],
     },
   });
+
+  return { cameraDiscovery };
 };
 
 
@@ -544,10 +589,12 @@ const initTalkingHead = () => {
 // ------------------------------------------------------------------------
 const initTargets = () => {
 
-  // Prepare page buttons for UX
+  // Initialize DOM targets button and associated modal
   targetsButton.removeAttribute('disabled');
-  scrawl.addNativeListener('click', () => targetsModal.showModal(), targetsButton); 
-  scrawl.addNativeListener('click', () => targetsModal.close(), targetsCloseButton);
+  scrawl.addNativeListener('click', () => openModal(targetsModal), targetsButton);
+  scrawl.addNativeListener('click', closeModal, targetsCloseButton);
+  scrawl.addNativeListener('close', closeModal, targetsModal);
+
   scrawl.addNativeListener('click', () => requestScreenCapture(), targetRequestButton);
 
   // Local target entity tracker state
@@ -616,7 +663,6 @@ const initTargets = () => {
             updateEntityControls(targetPicture);
 
             entityBeingEdited.textContent = targetPicture.name;
-            entityStartX.focus();
           },
         },
 
@@ -697,6 +743,7 @@ const initTargets = () => {
             });
 
             updateEntityControls(targetPicture);
+            closeModal();
           }
           else {
 
@@ -762,6 +809,8 @@ const initTargets = () => {
           entity.set({
             scale: ((scale / oldScaler) * newScaler),
           });
+
+          // TODO: if the entity is currently being edited, need to adjust entityScale input
         }
       });
     }
@@ -772,7 +821,7 @@ const initTargets = () => {
     event: ['input', 'change'],
     origin: '.target-border-controls',
 
-    target: updateGroup,
+    target: dragGroup,
 
     useNativeListener: true,
     preventDefault: true,
@@ -795,20 +844,8 @@ const initTargets = () => {
 // ------------------------------------------------------------------------
 const initVideoRecording = () => {
 
-  // Initialize DOM recording button and associated modal
-  recordingButton.removeAttribute('disabled');
-
-  scrawl.addNativeListener('click', () => {
-
-    microphoneDiscovery();
-    recordingModal.showModal();
-
-  }, recordingButton);
-
-  scrawl.addNativeListener('click', () => recordingModal.close(), recordingCloseButton);
-
-  scrawl.addNativeListener('change', () => selectedMicrophone = recordingMicrophone.value, recordingMicrophone);
-
+  // Microphone discovery
+  // - Runs every time the modal opens, to capture any changes in available microphones
   const microphoneDiscovery = () => {
 
     findMicrophoneDevices()
@@ -866,6 +903,14 @@ const initVideoRecording = () => {
     .catch(err => console.log('recording microphone listing error', err));
   };
 
+  // Initialize DOM recording button and associated modal
+  recordingButton.removeAttribute('disabled');
+  scrawl.addNativeListener('click', () => openModal(recordingModal, microphoneDiscovery), recordingButton);
+  scrawl.addNativeListener('click', closeModal, recordingCloseButton);
+  scrawl.addNativeListener('close', closeModal, recordingModal)
+
+  scrawl.addNativeListener('change', () => selectedMicrophone = recordingMicrophone.value, recordingMicrophone);
+
 
   // let recorder, recordedChunks;
 
@@ -913,6 +958,8 @@ const initVideoRecording = () => {
   //     }, 0);
   //   }
   // });
+
+  return { microphoneDiscovery };
 };
 
 
@@ -929,8 +976,10 @@ const initBackground = () => {
   // - Users can use the modal to upload new background images, or select an image loaded earlier
   // - Users can also drag-drop image files onto the canvas to upload/display them
   backgroundButton.removeAttribute('disabled');
-  scrawl.addNativeListener('click', () => backgroundModal.showModal(), backgroundButton);
-  scrawl.addNativeListener('click', () => backgroundModal.close(), backgroundCloseButton);
+  scrawl.addNativeListener('click', () => openModal(backgroundModal), backgroundButton);
+  scrawl.addNativeListener('click', closeModal, backgroundCloseButton);
+  scrawl.addNativeListener('close', closeModal, backgroundModal);
+
   scrawl.addNativeListener('focus', () => backgroundUploadButton.classList.add('is-focussed'), backgroundUpload);
   scrawl.addNativeListener('blur', () => backgroundUploadButton.classList.remove('is-focussed'), backgroundUpload);
   scrawl.addNativeListener('focus', () => backgroundColorButton.classList.add('is-focussed'), backgroundColorInput);
@@ -1381,23 +1430,93 @@ const {
   updateTargetScales,
 } = initTargets();
 
-initTalkingHead();
+const {
+  cameraDiscovery,
+} = initTalkingHead();
 
 const {
   updateBackgroundPicture,
 } = initBackground();
 
-initVideoRecording();
+const {
+  microphoneDiscovery,
+} = initVideoRecording();
 
 
 // ------------------------------------------------------------------------
-// Keyboard
+// Keyboard Navigation: 
+// - TAB to navigate forwards
+// - SHIFT+TAB to navigate backwards
+// - ENTER to select
+// 
+// Additional input controls:
+// - For "select" inputs - UP-ARROW, DOWN-ARROW
+// - For "range" inputs -  RIGHT-ARROW, LEFT-ARROW 
+// - For "color" inputs - UP-ARROW, RIGHT-ARROW, DOWN-ARROW, LEFT-ARROW
+// - For checkboxes - SPACE
+//
+// Keyboard shortcuts:
+// - 'b' - show the Background modal
+// - 'd' - show the Dimensions modal
+// - 'h' - show the Head modal
+// - 'r' - show the Record modal
+// - 't' - show the Targets modal
+//
+// Additional keyboard shortcuts:
+// - 'u' - unselect the currently selected target
+// - 'e' - if the editing controls are enabled, focus on the scale range input
 // ------------------------------------------------------------------------
-// TODO: want the canvas to accept the ESC or BACKSPACE key to remove focus from a target entity
-// - Everything else should already have keyboard functionality built-in 
-//   - Mainly TAB, SHIFT+TAB and ENTER, plus ARROW keys for range and color inputs
-//   - This includes tabbing through and selecting existing target entitys on the canvas
-// - TO CONSIDER: include T, H, R, B and D keys on the window/body to open respective modals?
+const actionKeys = ['t', 'h', 'r', 'b', 'd'];
+
+scrawl.addNativeListener('keydown', (e) => {
+
+  const { key } = e;
+
+  if (key) {
+
+    // Unselect currently selected target (if any)
+    if (key === 'u') {
+
+      console.log('User wants to unselect target')
+      updateGroup.setArtefacts({
+        method: 'fill',
+      });
+
+      updateGroup.clearArtefacts();
+
+      entityBeingEdited.textContent = 'no target selected';
+
+      if (areControlsEnabled()) disableControls();
+    }
+
+    // Focus on the editing scale range (if active)
+    else if (key === 'e') {
+
+      if (areControlsEnabled()) entityScale.focus();
+    }
+
+    else if (actionKeys.includes(key)) {
+
+      switch (key) {
+
+        // Show targets modal
+        case 't' : openModal(targetsModal); break;
+
+        // Show talking head modal
+        case 'h' : openModal(headModal, cameraDiscovery); break;
+
+        // Show recording modal
+        case 'r' : openModal(recordingModal, microphoneDiscovery); break;
+
+        // Show background modal
+        case 'b' : openModal(backgroundModal); break;
+
+        // Show dimansions modal
+        case 'd' : openModal(dimensionsModal); break;
+      }
+    }
+  }
+}, document.body);
 
 
 // ------------------------------------------------------------------------
