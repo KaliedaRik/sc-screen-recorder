@@ -1,7 +1,18 @@
 # Scrawl-canvas screen recorder
 Record your local screen using your browser.
 
-This is a proof-of-concept project. Feel free to fork-and-amend to suit your own requirements!
+### Use case(s)
+The main use case for this product is for **bug reporting**. When a user encounters an issue with a website (or other product) they can navigate to this web page and screen capture the issue:
++ Add multiple "targets" (screen captures of various parts of their display) and rearrange them on the canvas to best demonstrate the issue they are facing.
++ Change the canvas background color, or use an image to act as the background (in case they don't want people to see their real screen background).
++ Include a "talking head" of themselves describing the problem.
++ Record their report in their preferred dimensions and resolutions: landscape (16:9); square (1:1); portrait (9:16).
++ Once the recording is done, the video downloads to the user's local device for further processing (if required) and sharing.
+
+This code is supplied as a Minimum Viable Product. It has not been built for the generation of proffessional-grade video assets. You have been warned!
+
+## Instructions
+TODO: write up a simple guide
 
 ## Development (aka: running the page locally)
 1. Fork or clone this repo
@@ -9,6 +20,14 @@ This is a proof-of-concept project. Feel free to fork-and-amend to suit your own
 3. Don't bother installing anything - there's no build chain because: it's just a web page
 4. Start a local server to serve the page locally - for example, [live-server](https://github.com/tapio/live-server) seems to do a decent job.
 5. Hack away!
+
+### Self hosting the web page
+The web page is hosted on GitHub - [kaliedarik.github.io/sc-screen-recorder](https://kaliedarik.github.io/sc-screen-recorder/):
++ Built in vanilla HTML, CSS and Javascript.
++ No sign-in or registration required. The page is offered free under the MIT licence.
++ No tracking!
++ The web page can be self hosted by forking this repo and deploying to the user's own servers or, alternatively, run locally on the user's device.
++ Users are free to develop and improve the code in any way they see fit. If anyone wants to build a better product from this code (and monetise it) ... go for it!
 
 ### Key files
 The page's HTML code can be found in the  in the `index.html` file, while the CSS code lurks in the `index.css` file.
