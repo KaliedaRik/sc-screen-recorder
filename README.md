@@ -77,6 +77,3 @@ The code relies on the [Scrawl-canvas](https://github.com/KaliedaRik/Scrawl-canv
 + The MVP makes use of Google's selfie-segmentation [MediaPipe solution](https://ai.google.dev/edge/mediapipe/solutions/guide). The code is not very efficient at the moment ... don't shake your head too vigorously! ... but needs must.
 
 + The video recording functionality is primitive - the video output is restricted to `video/webm` and `video/mp4`. No encoding codec metadata has been added, so resulting video files will be larger than necessary. Users can solve the issue with the help of some robust video editing software or, for the more adventurous, [FFmpeg](https://www.ffmpeg.org/). Of course nowadays there's things like [ffmpeg.wasm](https://github.com/ffmpegwasm/ffmpeg.wasm) which allows ffmpeg to run in the client but that (almost certainly) overkill for this MVP.
-
-+ The only way to unselect 
-
