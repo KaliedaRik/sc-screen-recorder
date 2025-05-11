@@ -15,7 +15,7 @@ There's probably other use cases for the web page. But I only care about bug rep
 The code in this repo is supplied as a Minimum Viable Product. It has not been built for the generation of professional-grade video assets. You have been warned!
 
 ## Instructions
-The following instructions assume the user is using a desktop (or laptop) setup. Note that the web page is designed to be keyboard accessible: navigate around the controls and modals using the TAB, SHIFT+TAB and ENTER keys. Input controls should also accept ARROW keystrokes (dependent on the user's operating system and browser). Tab navigation also includes the targets displayed in the canvas recording area.
+The following instructions assume the user is using a desktop (or laptop) setup.
 
 | Image | Description |
 |---|---|
@@ -78,5 +78,5 @@ The code relies on the [Scrawl-canvas](https://github.com/KaliedaRik/Scrawl-canv
 
 + The video recording functionality is primitive - the video output is restricted to `video/webm` and `video/mp4`. No encoding codec metadata has been added, so resulting video files will be larger than necessary. Users can solve the issue with the help of some robust video editing software or, for the more adventurous, [FFmpeg](https://www.ffmpeg.org/). Of course nowadays there's things like [ffmpeg.wasm](https://github.com/ffmpegwasm/ffmpeg.wasm) which allows ffmpeg to run in the client but that (almost certainly) overkill for this MVP.
 
-
++ The only way to unselect 
 
