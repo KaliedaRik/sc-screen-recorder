@@ -165,17 +165,16 @@
       </select>
       <label for="video-output-filetype">Video output format</label>
       <select id="video-output-filetype">
-        <option value="webm">webm</option>
         <option value="mp4">mp4</option>
+        <option value="webm">webm</option>
       </select>
+      <div>
+        <label for="video-output-codec">Video output codec</label>
+        <div class="warning-message">(Only use this field if you <strong><em>really</em></strong> know what you're doing! See the MDN <a href="https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/codecs_parameter" target="_BLANK">codecs in common media types</a> page for more clues)</div>
+      </div>
+      <input type="text" id="video-output-codec" value="">
     </div>
-    <h3>Video output</h3>
-    <div id="recorded-videos"></div>
   </dialog>
-
-  <!-- Video download modal -->
-
-  <!-- Page functionality code -->
 
   <script type="module" src="index.js"></script>
 </body>

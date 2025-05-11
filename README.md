@@ -32,7 +32,7 @@ The following instructions assume the user is using a desktop (or laptop) setup.
 | ![repo-11-head](https://github.com/user-attachments/assets/96e14504-1e43-4132-944e-2cb4c35a7b0a) | By default the "talking head" functionality is disabled. To add a talking head, click on the **Head** button, select the desired camera in the drop-down selection box, then click on the **Use talking head** checkbox. |
 | ![repo-12-head](https://github.com/user-attachments/assets/7a70b6df-d42f-46d1-869f-979f21c57d63) | Once the talking head appears, it can be positioned, scaled and rotated using the controls in the modal (note that it cannot be repositioned using drag-and-drop). The head can be hidden by unchecking the **Show talking head** checkbox. The video stream capturing the talking head can be halted at any time by unchecking the **Use talking head** checkbox, or stopping it using any other facility the user's browser or operating system may supply |
 | ![repo-13-record](https://github.com/user-attachments/assets/7ab8bca4-3792-468f-867f-337d348852d5) | To record, click on the **Record** button, then select a microphone to use for audio capture. Note that resulting video's format (currently "webm" or "mp4") needs to be set before recording starts. Then click on the **Start recording** button. |
-| Final image | Stop recording button |
+| Final image | While recording, the **Record** button changes to a red **Stop recording** button. Click it to, well, stop recording. The recorded video will automatically download to the device where the web page is running. |
 
 ### Keyboard shortcuts
 The web page supports the following (hopefully cross-browser standard) keyboard controls and shortcuts.
@@ -76,4 +76,4 @@ The code relies on the [Scrawl-canvas](https://github.com/KaliedaRik/Scrawl-canv
 
 + The MVP makes use of Google's selfie-segmentation [MediaPipe solution](https://ai.google.dev/edge/mediapipe/solutions/guide). The code is not very efficient at the moment ... don't shake your head too vigorously! ... but needs must.
 
-+ The video recording functionality is primitive - the video output is restricted to `video/webm` and `video/mp4`. No encoding codec metadata has been added, so resulting video files will be larger than necessary. Users can solve the issue with the help of some robust video editing software or, for the more adventurous, [FFmpeg](https://www.ffmpeg.org/). Of course nowadays there's things like [ffmpeg.wasm](https://github.com/ffmpegwasm/ffmpeg.wasm) which allows ffmpeg to run in the client but that (almost certainly) overkill for this MVP.
++ The MVP video recording functionality is primitive - the video output is restricted to `video/webm` and `video/mp4`. Adding codec metadata to the mix is manual (and risky!)

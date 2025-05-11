@@ -664,7 +664,7 @@ const initTargets = () => {
             if (updateGroup.get('artefacts').includes(targetPicture.name)) cleanupAction();
 
             else {
-              
+
               targetPicture.set({
                 method: 'fillThenDraw',
               });
@@ -863,7 +863,7 @@ const initTargets = () => {
 // ------------------------------------------------------------------------
 const initVideoRecording = () => {
 
-  let selectedFiletype = 'webm';
+  let selectedFiletype = 'mp4';
 
   // Microphone discovery
   // - Runs every time the modal opens, to capture any changes in available microphones
@@ -902,7 +902,6 @@ const initVideoRecording = () => {
             if (id === selectedMicrophone) {
 
               opt.setAttribute('selected', '');
-              // opt.value = index;
             }
 
             frag.appendChild(opt);
@@ -934,6 +933,50 @@ const initVideoRecording = () => {
 
   scrawl.addNativeListener('change', () => selectedFiletype = recordingFiletype.value, recordingFiletype);
 
+  // Capture and release the microphone feed
+  let myMicrophone;
+
+  // Get the microphone media stream
+  const startMicrophone = () => {
+
+    return new Promise ((resolve, reject) => {
+
+      if (!myMicrophone) {
+
+        scrawl.importMediaStream({
+
+          name: name('microphone-feed'),
+          audio: {
+            deviceId: selectedMicrophone,
+          },
+          onMediaStreamEnd: () => stopMicrophone(),
+        })
+        .then(res => {
+
+          myMicrophone = res;
+
+          resolve(myMicrophone.mediaStreamTrack);
+        })
+        .catch(err => {
+
+          console.log(err.message);
+          reject('Failed to capture microphone');
+        });
+      }
+    });
+  };
+
+  // Kill the camera media stream and all associated SC objects
+  const stopMicrophone = () => {
+
+    myMicrophone.source.srcObject = null;
+
+    if (myMicrophone.mediaStreamTrack != null) myMicrophone.mediaStreamTrack.stop();
+
+    myMicrophone.kill();
+    myMicrophone = null;
+  };
+
   // Local variables used by both startRecording and stopRecording functions
   let recorder, recordedChunks, stopListener;
 
@@ -945,29 +988,38 @@ const initVideoRecording = () => {
 
     if (!isRecording) {
 
-      isRecording = true;
+      startMicrophone()
+      .then(microphoneTrack => {
 
-      recordingStartButton.setAttribute('disabled', '');
-      closeModal();
+        isRecording = true;
 
-      stopListener = scrawl.addNativeListener('click', stopRecording, recordingButton);
-      recordingButton.classList.add('is-recording');
-      recordingButton.textContent = 'Stop recording';
+        recordingStartButton.setAttribute('disabled', '');
+        closeModal();
 
-      const stream = canvas.base.element.captureStream(25);
+        stopListener = scrawl.addNativeListener('click', stopRecording, recordingButton);
+        recordingButton.classList.add('is-recording');
+        recordingButton.textContent = 'Stop recording';
 
-      recorder = new MediaRecorder(stream, {
-        mimeType: `video/${selectedFiletype}`,
-      });
+        const stream = canvas.base.element.captureStream(25);
+        stream.addTrack(microphoneTrack);
 
-      recordedChunks = [];
+        let mimeType = `video/${selectedFiletype}`;
+        if (recordingCodec.value) mimeType += `; codecs="${recordingCodec.value}"`;
 
-      recorder.ondataavailable = (e) => {
+        recorder = new MediaRecorder(stream, {
+          mimeType,
+        });
 
-        if (e.data.size > 0) recordedChunks.push(e.data);
-      };
+        recordedChunks = [];
 
-      recorder.start();
+        recorder.ondataavailable = (e) => {
+
+          if (e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        recorder.start();
+      })
+      .catch(err => console.log(err));
     }
   };
 
@@ -977,6 +1029,8 @@ const initVideoRecording = () => {
 
       stopListener();
       stopListener = null;
+
+      stopMicrophone();
 
       recorder.stop();
       recorder = null;
@@ -1367,8 +1421,8 @@ const dom = scrawl.initializeDomInputs([
   ['by-id', 'recording-modal'],
   ['select', 'recording-microphone', 0],
   ['select', 'video-output-filetype', 0],
+  ['input', 'video-output-codec', ''],
   ['button', 'recording-start-button', 'Start recording'],
-  ['by-id', 'recorded-videos'],
 
   // Capture handles to the targets-related HTML elements
   ['button', 'targets-modal-button', 'Targets'],
@@ -1422,8 +1476,8 @@ const entityBeingEdited = dom['entity-being-edited'],
   recordingCloseButton = dom['recording-modal-close'],
   recordingMicrophone = dom['recording-microphone'],
   recordingFiletype = dom['video-output-filetype'],
+  recordingCodec = dom['video-output-codec'],
   recordingStartButton = dom['recording-start-button'],
-  recordedVideos = dom['recorded-videos'],
 
   targetsModal = dom['targets-modal'],
   targetsButton = dom['targets-modal-button'],

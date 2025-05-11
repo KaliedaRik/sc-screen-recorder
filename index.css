@@ -295,6 +295,17 @@ dialog {
         font-size: 100%;
       }
     }
+
+    & input {
+      font-size: 100%;
+      margin: 0 0.5rem;
+    }
+
+    & .warning-message {
+      font-size: 90%;
+      margin-right: 2rem;
+      color: rgb(160 0 0 / 1);
+    }
   }
 
   & #recording-start-button {
