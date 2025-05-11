@@ -46,6 +46,11 @@ body {
     &:hover {
       cursor: pointer;
     }
+
+    &.is-recording {
+      background-color: red;
+      color: yellow;
+    }
   }
 
   & a {

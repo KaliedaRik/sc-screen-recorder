@@ -157,24 +157,20 @@
     <button id="recording-modal-close" autofocus class="close">Close</button>
     <h2>Record screen</h2>
     <button id="recording-start-button">Start recording</button>
-    <h3>Microphone management</h3>
+    <h3>Video settings</h3>
     <div class="recording-parameters">
       <label for="recording-microphone">Selected microphone</label>
       <select id="recording-microphone">
         <option value="none">None</option>
       </select>
-    </div>
-    <h3>Video output</h3>
-    <p>Once recording stops the video will download immediately<br>to your device, using a name in the format:<br>
-      <code>SC-screen-recording_&lt;date-time-stamp&gt;</code>
-    </p>
-    <div class="recording-parameters">
       <label for="video-output-filetype">Video output format</label>
       <select id="video-output-filetype">
         <option value="webm">webm</option>
         <option value="mp4">mp4</option>
       </select>
     </div>
+    <h3>Video output</h3>
+    <div id="recorded-videos"></div>
   </dialog>
 
   <!-- Video download modal -->

@@ -35,30 +35,18 @@ The following instructions assume the user is using a desktop (or laptop) setup.
 | Final image | Stop recording button |
 
 ### Keyboard shortcuts
-The web page supports the following keyboard controls and shortcuts.
+The web page supports the following (hopefully cross-browser standard) keyboard controls and shortcuts.
 
 #### Keyboard Navigation: 
-+ TAB to navigate forwards
-+ SHIFT+TAB to navigate backwards
-+ ENTER to select
++ `TAB` to navigate forwards
++ `SHIFT+TAB` to navigate backwards
++ `ENTER` to select
  
 #### Additional input controls:
-+ For "select" inputs - UP-ARROW, DOWN-ARROW
-+ For "range" inputs -  RIGHT-ARROW, LEFT-ARROW 
-+ For "color" inputs - UP-ARROW, RIGHT-ARROW, DOWN-ARROW, LEFT-ARROW
-+ For checkboxes - SPACE
-
-#### Keyboard shortcuts:
-+ 'b' - show the Background modal
-+ 'd' - show the Dimensions modal
-+ 'h' - show the Head modal
-+ 'r' - show the Record modal
-+ 't' - show the Targets modal
-
-#### Additional keyboard shortcuts:
-+ 'u' - unselect the currently selected target (removes the taget border)
-+ 'e' - if the editing controls are enabled, focus on the scale range input
-
++ For "select" inputs - `UP-ARROW`, `DOWN-ARROW`
++ For "range" inputs -  `RIGHT-ARROW`, `LEFT-ARROW` 
++ For "color" inputs - `UP-ARROW`, `RIGHT-ARROW`, `DOWN-ARROW`, `LEFT-ARROW`
++ For checkboxes - `SPACE`
 
 ## Self hosting the web page
 The web page is hosted on GitHub - [kaliedarik.github.io/sc-screen-recorder](https://kaliedarik.github.io/sc-screen-recorder/):
@@ -86,9 +74,9 @@ The code relies on the [Scrawl-canvas](https://github.com/KaliedaRik/Scrawl-canv
 ### Known issues
 + The MVP makes use of the [Media Capture and Streams](https://developer.mozilla.org/en-US/docs/Web/API/Media_Capture_and_Streams_API) API's [getDisplayMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia) function, which is not widely supported. It should work on latest desktop Chrome/Edge/Firefox/Safari, but will currently fail on Android Chrome, iOS Safari, etc. See the [Can I Use website](https://caniuse.com/?search=getDisplayMedia) for latest details.
 
-+ The MVP makes use of Google's selfie-segmentation [MediaPipe solution](https://ai.google.dev/edge/mediapipe/solutions/guide). The code is not very efficient at the moment ... but needs must.
++ The MVP makes use of Google's selfie-segmentation [MediaPipe solution](https://ai.google.dev/edge/mediapipe/solutions/guide). The code is not very efficient at the moment ... don't shake your head too vigorously! ... but needs must.
 
-+ Shutting down the talking head video capture stream doesn't seem to shut down the camera (at least in Chrome on my machine). This is an important security flaw that needs to be fixed urgently!
++ The video recording functionality is primitive - the video output is restricted to `video/webm` and `video/mp4`. No encoding codec metadata has been added, so resulting video files will be larger than necessary. Users can solve the issue with the help of some robust video editing software or, for the more adventurous, [FFmpeg](https://www.ffmpeg.org/). Of course nowadays there's things like [ffmpeg.wasm](https://github.com/ffmpegwasm/ffmpeg.wasm) which allows ffmpeg to run in the client but that (almost certainly) overkill for this MVP.
 
 
 

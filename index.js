@@ -16,7 +16,6 @@ import * as MediaPipe from './js/mediapipe-vision-bundle.js';
 // Camera and Audio device discovery
 // ------------------------------------------------------------------------
 const canWeEnumerateDevices = !!navigator.mediaDevices?.enumerateDevices;
-console.log('canWeEnumerateDevices', canWeEnumerateDevices)
 
 const availableMicrophoneInputs = [],
   availableMicrophoneIds = [],
@@ -59,7 +58,7 @@ const findMicrophoneDevices = () => {
       .catch(err => reject(`${err.name}: ${err.message}`));
     }
     
-    else reject(`Unable to find audio input devices: canWeEnumerateDevices = ${canWeEnumerateDevices}`);
+    else reject('Unable to find audio input devices');
   });
 };
 
@@ -96,7 +95,7 @@ const findCameraInputDevices = async () => {
       .catch(err => reject(`${err.name}: ${err.message}`));
     }
     
-    else reject(`Unable to find camera input devices: canWeEnumerateDevices = ${canWeEnumerateDevices}`);
+    else reject('Unable to find camera input devices');
   });
 };
 
@@ -105,7 +104,6 @@ const findCameraInputDevices = async () => {
 // Modal management
 // ------------------------------------------------------------------------
 let currentModal;
-// const actionKeys = ['t', 'h', 'r', 'b', 'd'];
 
 const openModal = (modal, fn = null) => {
 
@@ -134,7 +132,8 @@ const closeModal = () => {
 
 
 // ------------------------------------------------------------------------
-// Video dimensions magic numbers
+// Dimensions management modal
+// - Defines 9 video output options, with the help of some magic numbers
 // ------------------------------------------------------------------------
 let currentDimension = 'landscape_480';
 
@@ -146,11 +145,13 @@ const initDimensions = () => {
   scrawl.addNativeListener('click', closeModal, dimensionsCloseButton);
   scrawl.addNativeListener('close', closeModal, dimensionsModal);
 
+  // We display the currently selected dimensions in the bottom right of the page
   currentCanvasDimensions.textContent = '854 by 480px';
 
+  // Define the supported video dimensions
+  // - Eack key has an array of three numbers representing [width, height, scaler]
   const magicDimensions = {
 
-    // [width, height, scaler]
     landscape_1080: [1920, 1080, 1080],
     landscape_720: [1280, 720, 720],
     landscape_480: [854, 480, 480],
@@ -162,6 +163,7 @@ const initDimensions = () => {
     portrait_480: [480, 854, 480],
   };
 
+  // Some helper functions
   const getDimensions = (dim) => {
 
     const [width, height] = magicDimensions[dim];
@@ -173,6 +175,7 @@ const initDimensions = () => {
     return magicDimensions[dim][2];
   };
 
+  // The main dimensions update function
   const update = () => {
 
     const newDimension = dimensionsSelector.value;
@@ -202,6 +205,7 @@ const initDimensions = () => {
     }
   };
 
+  // Add the update function to the modal's dimensionsSelector element
   scrawl.addNativeListener('change', update, dimensionsSelector);
 
   return { 
@@ -211,13 +215,15 @@ const initDimensions = () => {
 
 
 // ------------------------------------------------------------------------
-// Talking head - with the help of a Google MediaPipe solution
+// Head management modal
+// - generates a talking head - with the help of a Google MediaPipe solution
 // - https://ai.google.dev/edge/mediapipe/solutions/guide
 // ------------------------------------------------------------------------
 const initTalkingHead = () => {
 
   // Camera discovery
   // - Runs every time the modal opens, to capture any changes in available cameras
+  // - Discovers cameras, then lists them in the 'Selected camera' dropdown
   const cameraDiscovery = () => {
 
     findCameraInputDevices()
@@ -225,8 +231,10 @@ const initTalkingHead = () => {
 
       const frag = document.createDocumentFragment();
 
+      // Have we found any cameras?
       if (availableCameraInputs.length) {
 
+        // We've found only one camera
         if (availableCameraInputs.length === 1) {
 
           const [id, label, def] = availableCameraInputs[0];
@@ -240,6 +248,7 @@ const initTalkingHead = () => {
           frag.appendChild(opt);
         }
 
+        // We have more than one camera
         else {
 
           availableCameraInputs.forEach(item => {
@@ -254,6 +263,8 @@ const initTalkingHead = () => {
           });
         }
       }
+
+      // No cameras found
       else {
 
         selectedCamera = 'none';
@@ -413,8 +424,8 @@ const initTalkingHead = () => {
     visibility: false,
   });
 
-  // Capture the device camera output - but only after the user agrees
-  // - Assumes the user is on a laptop-type device with a built-in camera!
+  // Capture the device camera output
+  // - But only after the user agrees
   let mycamera,
     myCameraAnimation;
 
@@ -461,7 +472,6 @@ const initTalkingHead = () => {
             imageSegmenter.segmentForVideo(talkingHeadInput.element, performance.now(), processModelData);
           }
         }
-
       });
 
       headShowCheckbox.removeAttribute('disabled');
@@ -469,6 +479,7 @@ const initTalkingHead = () => {
     }).catch(err => console.log(err.message));
   };
 
+  // Kill the camera media stream and all associated SC objects
   const stopCamera = () => {
 
     headShowCheckbox.setAttribute('disabled', '');
@@ -497,6 +508,7 @@ const initTalkingHead = () => {
   };
 
   // Displaying and removing the talking head
+  // - Option only appears after a camera media stream capture starts
   const toggleHead = (toggle) => {
 
     if (modelIsRunning) {
@@ -537,7 +549,8 @@ const initTalkingHead = () => {
     }
   }
 
-  // More event listeners
+  // More event listeners for the 'head' modal's user interaction
+  // ... 'Use talking head' checkbox (keyboard: SPACE)
   scrawl.addNativeListener('change', () => {
 
     if (headUseCheckbox.checked) toggleHead(true);
@@ -545,6 +558,7 @@ const initTalkingHead = () => {
 
   }, headUseCheckbox);
 
+  // ... 'Show talking head' checkbox (keyboard: SPACE)
   scrawl.addNativeListener('change', () => {
 
     if (myCameraAnimation) {
@@ -562,6 +576,7 @@ const initTalkingHead = () => {
     }
   }, headShowCheckbox);
 
+  // All the other talking head parameters (which are ranges, thus keyboard: ARROW keys)
   scrawl.makeUpdater({
 
     event: ['input', 'change'],
@@ -579,13 +594,11 @@ const initTalkingHead = () => {
       ['head-rotation']: ['roll', 'float'],
     },
   });
-
-  return { cameraDiscovery };
 };
 
 
 // ------------------------------------------------------------------------
-// Targets management
+// Targets management modal
 // ------------------------------------------------------------------------
 const initTargets = () => {
 
@@ -597,13 +610,12 @@ const initTargets = () => {
 
   scrawl.addNativeListener('click', () => requestScreenCapture(), targetRequestButton);
 
-  // Local target entity tracker state
+  // Local state
   let targetCount = 0;
-
   const targetsArray = [];
 
   // The main request screen capture function
-  // - Users can add multiple screen captured targets in the canvas
+  // - Users can add multiple screen-captured targets to the canvas
   const requestScreenCapture = () => {
 
     const targetId = name(`target-${targetCount}`);
@@ -649,20 +661,25 @@ const initTargets = () => {
 
           clickAction: function () {
 
-            targetPicture.set({
-              method: 'fillThenDraw',
-            });
+            if (updateGroup.get('artefacts').includes(targetPicture.name)) cleanupAction();
 
-            updateGroup.setArtefacts({
-              method: 'fill',
-            });
+            else {
+              
+              targetPicture.set({
+                method: 'fillThenDraw',
+              });
 
-            updateGroup.clearArtefacts();
-            updateGroup.addArtefacts(targetPicture);
+              updateGroup.setArtefacts({
+                method: 'fill',
+              });
 
-            updateEntityControls(targetPicture);
+              updateGroup.clearArtefacts();
+              updateGroup.addArtefacts(targetPicture);
 
-            entityBeingEdited.textContent = targetPicture.name;
+              updateEntityControls(targetPicture);
+
+              entityBeingEdited.textContent = targetPicture.name;
+            }
           },
         },
 
@@ -763,19 +780,7 @@ const initTargets = () => {
 
         const currentUpdate = updateGroup.get('artefacts');
 
-        if (currentUpdate.includes(targetPicture.name)) {
-
-          // This is repeated code - needs to be refactored
-          updateGroup.setArtefacts({
-            method: 'fill',
-          });
-
-          updateGroup.clearArtefacts();
-
-          entityBeingEdited.textContent = 'no target selected';
-
-          if (areControlsEnabled()) disableControls();
-        }
+        if (currentUpdate.includes(targetPicture.name)) cleanupAction();
 
         targetPicture.kill();
         mycamera.kill();
@@ -793,6 +798,19 @@ const initTargets = () => {
 
     }).catch(err => console.log('err', err));
   };
+
+  const cleanupAction = () => {
+
+    updateGroup.setArtefacts({
+      method: 'fill',
+    });
+
+    updateGroup.clearArtefacts();
+
+    entityBeingEdited.textContent = 'no target selected';
+
+    if (areControlsEnabled()) disableControls();
+  }
 
   const updateTargetScales = (oldScaler, newScaler) => {
 
@@ -835,6 +853,7 @@ const initTargets = () => {
 
   return { 
     updateTargetScales,
+    cleanupAction,
   };
 };
 
@@ -843,6 +862,8 @@ const initTargets = () => {
 // Video recording and download functionality
 // ------------------------------------------------------------------------
 const initVideoRecording = () => {
+
+  let selectedFiletype = 'webm';
 
   // Microphone discovery
   // - Runs every time the modal opens, to capture any changes in available microphones
@@ -911,55 +932,80 @@ const initVideoRecording = () => {
 
   scrawl.addNativeListener('change', () => selectedMicrophone = recordingMicrophone.value, recordingMicrophone);
 
+  scrawl.addNativeListener('change', () => selectedFiletype = recordingFiletype.value, recordingFiletype);
 
-  // let recorder, recordedChunks;
+  // Local variables used by both startRecording and stopRecording functions
+  let recorder, recordedChunks, stopListener;
 
-  // videoButton.addEventListener("click", () => {
+  // Keeping track of whether the page is currently recording, or not
+  let isRecording = false;
 
-  //   isRecordingVideo = !isRecordingVideo;
+  // Setup and start recording the canvas
+  const startRecording = () => {
 
-  //   if (isRecordingVideo) {
+    if (!isRecording) {
 
-  //     videoButton.textContent = "Stop";
+      isRecording = true;
 
-  //     const stream = canvas.domElement.captureStream(25);
+      recordingStartButton.setAttribute('disabled', '');
+      closeModal();
 
-  //     recorder = new MediaRecorder(stream, {
-  //       mimeType: "video/webm;codecs=vp8"
-  //     });
+      stopListener = scrawl.addNativeListener('click', stopRecording, recordingButton);
+      recordingButton.classList.add('is-recording');
+      recordingButton.textContent = 'Stop recording';
 
-  //     recordedChunks = [];
+      const stream = canvas.base.element.captureStream(25);
 
-  //     recorder.ondataavailable = (e) => {
+      recorder = new MediaRecorder(stream, {
+        mimeType: `video/${selectedFiletype}`,
+      });
 
-  //       if (e.data.size > 0) recordedChunks.push(e.data);
-  //     };
+      recordedChunks = [];
 
-  //       recorder.start();
-  //     }
-  //   else {
+      recorder.ondataavailable = (e) => {
 
-  //     videoButton.textContent = "Record";
+        if (e.data.size > 0) recordedChunks.push(e.data);
+      };
 
-  //     recorder.stop();
+      recorder.start();
+    }
+  };
 
-  //     setTimeout(() => {
+  const stopRecording = () => {
 
-  //       const blob = new Blob(recordedChunks, { type: "video/webm" });
+    if (isRecording) {
 
-  //       const url = URL.createObjectURL(blob);
-  //       const a = document.createElement("a");
+      stopListener();
+      stopListener = null;
 
-  //       a.href = url;
-  //       a.download = `SC-screen-recording_${Date().slice(4, 24)}.webm`;
-  //       a.click();
+      recorder.stop();
+      recorder = null;
 
-  //       URL.revokeObjectURL(url);
-  //     }, 0);
-  //   }
-  // });
+      setTimeout(() => {
 
-  return { microphoneDiscovery };
+        const blob = new Blob(recordedChunks, { type: `video/${selectedFiletype}` });
+        recordedChunks = null;
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+
+        a.href = url;
+        a.download = `SC-screen-recording_${Date().slice(4, 24)}.${selectedFiletype}`;
+        a.click();
+
+        URL.revokeObjectURL(url);
+
+        recordingButton.classList.remove('is-recording');
+        recordingButton.textContent = 'Record';
+
+        recordingStartButton.removeAttribute('disabled');
+
+        isRecording = false;
+      }, 0);
+    }
+  };
+
+  scrawl.addNativeListener('click', startRecording, recordingStartButton);
 };
 
 
@@ -1274,18 +1320,7 @@ const initUpdates = () => {
 
     const result = dragGroup.getArtefactAt(canvas.base.here);
 
-    if (!result) {
-
-      updateGroup.setArtefacts({
-        method: 'fill',
-      });
-
-      updateGroup.clearArtefacts();
-
-      entityBeingEdited.textContent = 'no target selected';
-
-      if (controlsEnabled) disableControls();
-    }
+    if (!result) cleanupAction();
   };
 
   scrawl.addNativeListener('click', checkForCanvasClick, canvas.domElement);
@@ -1331,6 +1366,9 @@ const dom = scrawl.initializeDomInputs([
   ['button', 'recording-modal-close', 'Close'],
   ['by-id', 'recording-modal'],
   ['select', 'recording-microphone', 0],
+  ['select', 'video-output-filetype', 0],
+  ['button', 'recording-start-button', 'Start recording'],
+  ['by-id', 'recorded-videos'],
 
   // Capture handles to the targets-related HTML elements
   ['button', 'targets-modal-button', 'Targets'],
@@ -1383,6 +1421,9 @@ const entityBeingEdited = dom['entity-being-edited'],
   recordingButton = dom['recording-modal-button'],
   recordingCloseButton = dom['recording-modal-close'],
   recordingMicrophone = dom['recording-microphone'],
+  recordingFiletype = dom['video-output-filetype'],
+  recordingStartButton = dom['recording-start-button'],
+  recordedVideos = dom['recorded-videos'],
 
   targetsModal = dom['targets-modal'],
   targetsButton = dom['targets-modal-button'],
@@ -1428,95 +1469,16 @@ const {
 
 const { 
   updateTargetScales,
+  cleanupAction,
 } = initTargets();
 
-const {
-  cameraDiscovery,
-} = initTalkingHead();
+initTalkingHead();
 
 const {
   updateBackgroundPicture,
 } = initBackground();
 
-const {
-  microphoneDiscovery,
-} = initVideoRecording();
-
-
-// ------------------------------------------------------------------------
-// Keyboard Navigation: 
-// - TAB to navigate forwards
-// - SHIFT+TAB to navigate backwards
-// - ENTER to select
-// 
-// Additional input controls:
-// - For "select" inputs - UP-ARROW, DOWN-ARROW
-// - For "range" inputs -  RIGHT-ARROW, LEFT-ARROW 
-// - For "color" inputs - UP-ARROW, RIGHT-ARROW, DOWN-ARROW, LEFT-ARROW
-// - For checkboxes - SPACE
-//
-// Keyboard shortcuts:
-// - 'b' - show the Background modal
-// - 'd' - show the Dimensions modal
-// - 'h' - show the Head modal
-// - 'r' - show the Record modal
-// - 't' - show the Targets modal
-//
-// Additional keyboard shortcuts:
-// - 'u' - unselect the currently selected target
-// - 'e' - if the editing controls are enabled, focus on the scale range input
-// ------------------------------------------------------------------------
-const actionKeys = ['t', 'h', 'r', 'b', 'd'];
-
-scrawl.addNativeListener('keydown', (e) => {
-
-  const { key } = e;
-
-  if (key) {
-
-    // Unselect currently selected target (if any)
-    if (key === 'u') {
-
-      console.log('User wants to unselect target')
-      updateGroup.setArtefacts({
-        method: 'fill',
-      });
-
-      updateGroup.clearArtefacts();
-
-      entityBeingEdited.textContent = 'no target selected';
-
-      if (areControlsEnabled()) disableControls();
-    }
-
-    // Focus on the editing scale range (if active)
-    else if (key === 'e') {
-
-      if (areControlsEnabled()) entityScale.focus();
-    }
-
-    else if (actionKeys.includes(key)) {
-
-      switch (key) {
-
-        // Show targets modal
-        case 't' : openModal(targetsModal); break;
-
-        // Show talking head modal
-        case 'h' : openModal(headModal, cameraDiscovery); break;
-
-        // Show recording modal
-        case 'r' : openModal(recordingModal, microphoneDiscovery); break;
-
-        // Show background modal
-        case 'b' : openModal(backgroundModal); break;
-
-        // Show dimansions modal
-        case 'd' : openModal(dimensionsModal); break;
-      }
-    }
-  }
-}, document.body);
+initVideoRecording();
 
 
 // ------------------------------------------------------------------------
@@ -1527,10 +1489,3 @@ scrawl.makeRender({
   name: name('render'),
   target: canvas,
 });
-
-
-// ------------------------------------------------------------------------
-// Development and troubleshooting
-// ------------------------------------------------------------------------
-console.log(scrawl.library);
-
