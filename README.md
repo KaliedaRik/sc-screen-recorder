@@ -77,3 +77,5 @@ The code relies on the [Scrawl-canvas](https://github.com/KaliedaRik/Scrawl-canv
 + The MVP makes use of Google's selfie-segmentation [MediaPipe solution](https://ai.google.dev/edge/mediapipe/solutions/guide). The code is not very efficient at the moment ... don't shake your head too vigorously! ... but needs must.
 
 + The MVP video recording functionality is primitive - the video output is restricted to `video/webm` and `video/mp4`. Adding codec metadata to the mix is manual (and risky!)
+
++ On the first visit to the page, clicking on "record", no microphones show up. This is because the page only accesses the microphone stream at the point of starting a video - at which point the system will ask the useer for permission to use the microphone. I expect similar things happen when first trying to show the head? It all works (video with audio track gets generated) but it's not the best UX.
