@@ -109,8 +109,6 @@ let currentModal;
 
 const openModal = (modal, fn = null) => {
 
-  console.log('openModal', modal, fn);
-
   if (currentModal) closeModal();
 
   if (fn) fn();
@@ -425,6 +423,7 @@ const initTalkingHead = () => {
     scrawl.importMediaStream({
 
       name: name('camera-feed'),
+      audio: false,
       video: {
         width: { ideal: 768 },
         height: { ideal: 768 },
@@ -462,6 +461,7 @@ const initTalkingHead = () => {
             imageSegmenter.segmentForVideo(talkingHeadInput.element, performance.now(), processModelData);
           }
         }
+
       });
 
       headShowCheckbox.removeAttribute('disabled');
