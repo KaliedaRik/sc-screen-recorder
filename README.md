@@ -1,6 +1,8 @@
 # Scrawl-canvas screen recorder
 Record your local screen using your browser.
 
+**tl;dr:** It Works On My Machine (specifically Chrome running on MacBook Pro M2)! There needs to be a lot more work done to get the page working on desktop Firefox/Safari browsers. Support to get the page working on mobile browsers is out-of-scope for this side project.
+
 ### Use case(s)
 The main use case for this product is for **bug reporting**. When a user encounters an issue with a website (or other product) they can navigate to this web page and screen capture the issue. Using the page they can:
 + Add multiple "targets" (screen captures of various parts of their display) and rearrange them on the canvas to best demonstrate the issue they are facing.
@@ -79,3 +81,19 @@ The code relies on the [Scrawl-canvas](https://github.com/KaliedaRik/Scrawl-canv
 + The MVP video recording functionality is primitive - the video output is restricted to `video/webm` and `video/mp4`. Adding codec metadata to the mix is manual (and risky!)
 
 + On initial visit to the web page the "Head" modal camera dropdown, and the "Record" modal microphone dropdown appear empty. This is because we don't request access to these things until further action is taken ("use head" and "start recording"). Everything seems to work, but it's not a nice UX.
+
+#### Issues specific to Chrome desktop (Macbook Pro)
++ Everything works as expected (except for the above comments) ... but that is expected as the web page was only tested on Chrome during initial development.
+
+#### Issues specific to Safari desktop (Macbook Pro)
++ The MediaPipe remove background thing isn't working, though you still get a talking head.
++ Clicking outside a modal doesn't close the modal (esc key and close buttons do work).
++ Target acquisition is very different to the Chrome experience (though maybe better? It's a shock on first encounter).
++ The video recording functionality pretends that it's working, but the files that get downloaded are zero-byte-length files. This is a serious bug!
+
+#### Issues specific to Firefox desktop (Macbook Pro)
++ The talking head works, except it displays as much narrower than expected.
++ Target acquisitioon is the same as for Safari (maybe it's Chrome that's breaking the rules here?)
++ Clicking outside a modal doesn't close the modal (esc key and close buttons do work).
++ Drag-and-drop background image upload is buggy - files get loaded into the page, but don't display correctly. Same with file upload. User has to open the Background modal and click on the image to display it.
++ Video recording is borked. Error message: "DOMException: MediaRecorder constructor: video/mp4 indicates an unsupported container". Needs investigation/fixing.
