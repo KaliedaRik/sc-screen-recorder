@@ -76,24 +76,22 @@ The code relies on the [Scrawl-canvas](https://github.com/KaliedaRik/Scrawl-canv
 ### Known issues
 + The MVP makes use of the [Media Capture and Streams](https://developer.mozilla.org/en-US/docs/Web/API/Media_Capture_and_Streams_API) API's [getDisplayMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia) function, which is not widely supported. It should work on latest desktop Chrome/Edge/Firefox/Safari, but will currently fail on Android Chrome, iOS Safari, etc. See the [Can I Use website](https://caniuse.com/?search=getDisplayMedia) for latest details.
 
-+ The MVP makes use of Google's selfie-segmentation [MediaPipe solution](https://ai.google.dev/edge/mediapipe/solutions/guide). The code is not very efficient at the moment ... don't shake your head too vigorously! ... but needs must.
++ The MVP makes use of Google's selfie-segmentation [MediaPipe solution](https://ai.google.dev/edge/mediapipe/solutions/guide). The code is not very efficient at the moment - don't shake your head too vigorously!
 
 + The MVP video recording functionality is primitive - the video output is restricted to `video/webm` and `video/mp4`. Adding codec metadata to the mix is manual (and risky!)
 
 + On initial visit to the web page the "Head" modal camera dropdown, and the "Record" modal microphone dropdown appear empty. This is because we don't request access to these things until further action is taken ("use head" and "start recording"). Everything seems to work, but it's not a nice UX.
 
++ Clicking outside a modal to close it is an experrimental technology, currently not supported by Firefox or Safari - see [Caniuse Dialog closedby](https://caniuse.com/?search=dialog%20closedby) for latest support details.
+
 #### Issues specific to Chrome desktop (Macbook Pro)
 + Everything works (except for the above comments) ... but that is expected as the web page was only tested on Chrome during initial development.
 
 #### Issues specific to Safari desktop (Macbook Pro)
-+ The MediaPipe remove background thing isn't working, though you still get a talking head.
-+ Clicking outside a modal doesn't close the modal (esc key and close buttons do work).
-+ Target acquisition is very different to the Chrome experience (though maybe better? It's a shock on first encounter).
++ The MediaPipe Selfie-Segmentation model does not work on Safari desktop browsers - you'll get a talking head, but the background won't be removed.
 + The video recording functionality pretends that it's working, but the files that get downloaded are zero-byte-length files. This is a serious bug!
 
 #### Issues specific to Firefox desktop (Macbook Pro)
 + The talking head works, except it displays as much narrower than expected.
-+ Target acquisitioon is the same as for Safari (maybe it's Chrome that's breaking the rules here?)
-+ Clicking outside a modal doesn't close the modal (esc key and close buttons do work).
 + Drag-and-drop background image upload is buggy - files get loaded into the page, but don't display correctly. Same with file upload. User has to open the Background modal and click on the image to display it.
 + Video recording is borked. Error message: "DOMException: MediaRecorder constructor: video/mp4 indicates an unsupported container". Needs investigation/fixing.

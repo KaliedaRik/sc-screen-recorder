@@ -320,3 +320,69 @@ dialog {
     }
   }
 }
+
+/* Styling the range sliders across browsers */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  margin: 1rem 0 0.25rem;
+
+  &::-webkit-slider-runnable-track {
+    background-color: #143b8a;
+    border-radius: 2px;
+    height: 4px;
+  }
+
+  &:disabled::-webkit-slider-runnable-track {
+    background-color: #c0c0c0;
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    margin-top: -6px; /* Centers thumb on the track */
+    background-color: #f42a2a;
+    border-radius: 8px;
+    height: 16px;
+    width: 12px;
+  }
+
+  &:disabled::-webkit-slider-thumb {
+    background-color: #a0a0a0;
+  }
+
+  &:focus::-webkit-slider-thumb {
+    outline: 3px solid rgb(0 215 255 / 1);
+    outline-offset: 0.125rem;
+  }
+
+  &::-moz-range-track {
+    background-color: #143b8a;
+    border-radius: 2px;
+    height: 4px;
+  }
+
+  &:disabled::-moz-range-track {
+    background-color: #c0c0c0;
+  }
+
+  &::-moz-range-thumb {
+    background-color: #f42a2a;
+    border: none; /*Removes extra border that FF applies*/
+    border-radius: 8px;
+    height: 16px;
+    width: 12px;
+  }
+
+  &:disabled::-moz-range-thumb {
+    background-color: #c0c0c0;
+  }
+
+  &:focus::-moz-range-thumb{
+    outline: 3px solid rgb(0 215 255 / 1);
+    outline-offset: 0.125rem;
+  }
+}
