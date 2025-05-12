@@ -1,7 +1,7 @@
 # Scrawl-canvas screen recorder
 Record your local screen using your browser.
 
-**tl;dr:** It Works On My Machine (specifically Chrome running on MacBook Pro M2). There needs to be a lot more work done to get the page working on desktop Firefox/Safari browsers. Support to get the page working on mobile browsers is out-of-scope for this side project.
+**tl;dr:** Tested on latest Chrome, Firefox and Safari browsers on Macbook Pro M2. See bottom of this README for a list of known issues. Support to get the page working on mobile browsers is out-of-scope for this side project.
 
 ### Use case(s)
 The main use case for this product is **bug reporting**. When a user encounters an issue with a website (or other product) they can navigate to this web page and screen capture the issue in a more meaningful way to help product developers identify and fix the problem. Using the page they can:
