@@ -1,10 +1,10 @@
 # Scrawl-canvas screen recorder
 Record your local screen using your browser.
 
-**tl;dr:** It Works On My Machine (specifically Chrome running on MacBook Pro M2)! There needs to be a lot more work done to get the page working on desktop Firefox/Safari browsers. Support to get the page working on mobile browsers is out-of-scope for this side project.
+**tl;dr:** It Works On My Machine (specifically Chrome running on MacBook Pro M2). There needs to be a lot more work done to get the page working on desktop Firefox/Safari browsers. Support to get the page working on mobile browsers is out-of-scope for this side project.
 
 ### Use case(s)
-The main use case for this product is for **bug reporting**. When a user encounters an issue with a website (or other product) they can navigate to this web page and screen capture the issue. Using the page they can:
+The main use case for this product is **bug reporting**. When a user encounters an issue with a website (or other product) they can navigate to this web page and screen capture the issue in a more meaningful way to help product developers identify and fix the problem. Using the page they can:
 + Add multiple "targets" (screen captures of various parts of their display) and rearrange them on the canvas to best demonstrate the issue they are facing.
 + Change the canvas background color, or use an image to act as the background (in case they don't want people to see their real screen background).
 + Include a "talking head" of themselves describing the problem.
@@ -83,7 +83,7 @@ The code relies on the [Scrawl-canvas](https://github.com/KaliedaRik/Scrawl-canv
 + On initial visit to the web page the "Head" modal camera dropdown, and the "Record" modal microphone dropdown appear empty. This is because we don't request access to these things until further action is taken ("use head" and "start recording"). Everything seems to work, but it's not a nice UX.
 
 #### Issues specific to Chrome desktop (Macbook Pro)
-+ Everything works as expected (except for the above comments) ... but that is expected as the web page was only tested on Chrome during initial development.
++ Everything works (except for the above comments) ... but that is expected as the web page was only tested on Chrome during initial development.
 
 #### Issues specific to Safari desktop (Macbook Pro)
 + The MediaPipe remove background thing isn't working, though you still get a talking head.
