@@ -978,7 +978,9 @@ const initVideoRecording = () => {
   };
 
   // Local variables used by both startRecording and stopRecording functions
-  let recorder, recordedChunks, stopListener;
+  let recorder, stopListener, dataCodec;
+
+  const recordedChunks = [];
 
   // Keeping track of whether the page is currently recording, or not
   let isRecording = false;
@@ -1010,14 +1012,18 @@ const initVideoRecording = () => {
           mimeType,
         });
 
-        recordedChunks = [];
+        recordedChunks.length = 0;
 
         recorder.ondataavailable = (e) => {
 
-          if (e.data.size > 0) recordedChunks.push(e.data);
+          if (e.data.size > 0) {
+
+            dataCodec = e.data.type;
+            recordedChunks.push(e.data);
+          }
         };
 
-        recorder.start();
+        recorder.start(1000);
       })
       .catch(err => console.log(err));
     }
@@ -1037,12 +1043,10 @@ const initVideoRecording = () => {
 
       setTimeout(() => {
 
-        const blob = new Blob(recordedChunks, { type: `video/${selectedFiletype}` });
-        recordedChunks = null;
-
+        const blob = new Blob(recordedChunks, { type: dataCodec });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
 
+        const a = document.createElement('a');
         a.href = url;
         a.download = `SC-screen-recording_${Date().slice(4, 24)}.${selectedFiletype}`;
         a.click();
