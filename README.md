@@ -3,7 +3,7 @@ Record your screen directly in the browser. No installs. No sign-ins. No trackin
 
 This lightweight tool was built to make screen recording effortless and private — ideal for situations where installing software isn’t practical or desirable.
 
-[Try it now - no signup, no cost](https://kaliedarik.github.io/sc-screen-recorder/).
+#### [Try it now](https://kaliedarik.github.io/sc-screen-recorder/).
 
 ### 📌 Key Features
 + Multi-Target Recording: Users can capture multiple areas of their screen simultaneously and arrange them on a canvas to highlight specific issues.
