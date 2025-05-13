@@ -99,7 +99,7 @@ The code relies on the [Scrawl-canvas](https://github.com/KaliedaRik/Scrawl-canv
 
 + On initial visit to the web page the "Head" modal camera dropdown, and the "Record" modal microphone dropdown appear empty. This is because we don't request access to these things until further action is taken ("use head" and "start recording"). Everything seems to work, but it's not a nice UX.
 
-+ Clicking outside a modal to close it is an experrimental technology, currently not supported by Firefox or Safari - see [Caniuse Dialog closedby](https://caniuse.com/?search=dialog%20closedby) for latest support details.
++ Clicking outside a modal to close it is an experimental technology, currently not supported by Firefox or Safari - see [Caniuse Dialog closedby](https://caniuse.com/?search=dialog%20closedby) for latest support details.
 
 #### Issues specific to Chrome desktop (Macbook Pro)
 + Everything works (except for the above comments) ... but that is expected as the web page was only tested on Chrome during initial development.
