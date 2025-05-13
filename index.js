@@ -366,8 +366,10 @@ const initTalkingHead = () => {
 
     name: name('talking-head-input-picture'),
     group: talkingHeadInput,
-    dimensions: ['100%', '100%'],
+    // dimensions: ['100%', '100%'],
     copyDimensions: ['100%', '100%'],
+    start: ['center', 'center'],
+    handle: ['center', 'center'],
   });
 
   // The maskPicture displays the mask Cell in the output Cell 
@@ -395,7 +397,9 @@ const initTalkingHead = () => {
 
     name: name('talking-head-overlay-picture'),
     group: talkingHeadOutput,
-    dimensions: ['100%', '100%'],
+    // dimensions: ['100%', '100%'],
+    start: ['center', 'center'],
+    handle: ['center', 'center'],
     copyDimensions: ['100%', '100%'],
     globalCompositeOperation: 'source-in',
     order: 1,
@@ -445,6 +449,28 @@ const initTalkingHead = () => {
     }).then(res => {
 
       mycamera = res;
+
+      // We asked for a 768 x 768 media stream, but the browser won't guarantee returning those dimensions
+      // - Thus we need to adapt the picture elements to accommodate vaiations
+      scrawl.addNativeListener('loadedmetadata', () => {
+
+        const width = mycamera.source.videoWidth,
+          height = mycamera.source.videoHeight,
+          minimumDimension = Math.min(width, height),
+          inputScale = 256 / minimumDimension,
+          overlayScale = 768 / minimumDimension;
+
+        inputPicture.set({
+          dimensions: [width, height],
+          scale: inputScale,
+        });
+
+        overlayPicture.set({
+          dimensions: [width, height],
+          scale: overlayScale,
+        });
+
+      }, mycamera.source);
 
       talkingHeadInput.set({
         cleared: true,

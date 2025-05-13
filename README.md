@@ -91,6 +91,5 @@ The code relies on the [Scrawl-canvas](https://github.com/KaliedaRik/Scrawl-canv
 + The MediaPipe Selfie-Segmentation model does not work on Safari desktop browsers - you'll get a talking head, but the background won't be removed.
 
 #### Issues specific to Firefox desktop (Macbook Pro)
-+ The talking head works, except it displays as much narrower than expected.
 + Drag-and-drop background image upload is buggy - files get loaded into the page, but don't display correctly. Same with file upload. User has to open the Background modal and click on the image to display it.
 + Firefox does not natively support encoding recordings into MP4 - see [issue 1631143 on Bugzilla](https://bugzilla.mozilla.org/show_bug.cgi?id=1631143) for details.
