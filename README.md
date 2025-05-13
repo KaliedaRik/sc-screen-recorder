@@ -19,7 +19,7 @@ This lightweight tool was built to make screen recording effortless and private 
 ### 🎯 Core Use Case: Bug Reporting
 When something breaks, you can capture exactly what happened — your screen, tabs, and even a webcam overlay — and share the video with your team. It's faster and clearer than writing long explanations.
 
-### 🔍 Other Use Cases
+### 🔍 Other Possible Use Cases
 + User testing: Record UX sessions with screen + narration
 + Micro-tutorials: Explain UI workflows or features
 + Support: Show what went wrong instead of just describing it
