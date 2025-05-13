@@ -1,20 +1,41 @@
 # Scrawl-canvas screen recorder
-Record your local screen using your browser.
+Record your screen directly in the browser. No installs. No sign-ins. No tracking.
 
-**tl;dr:** Tested on latest Chrome, Firefox and Safari browsers on Macbook Pro M2. See bottom of this README for a list of known issues. Support to get the page working on mobile browsers is out-of-scope for this side project.
+This lightweight tool was built to make screen recording effortless and private — ideal for situations where installing software isn’t practical or desirable.
 
-### Use case(s)
-The main use case for this product is **bug reporting**. When a user encounters an issue with a website (or other product) they can navigate to this web page and screen capture the issue in a more meaningful way to help product developers identify and fix the problem. Using the page they can:
-+ Add multiple "targets" (screen captures of various parts of their display) and rearrange them on the canvas to best demonstrate the issue they are facing.
-+ Change the canvas background color, or use an image to act as the background (in case they don't want people to see their real screen background).
-+ Include a "talking head" of themselves describing the problem.
-+ Record their report in their preferred dimensions and resolutions: landscape (16:9); square (1:1); portrait (9:16).
+[Try it now - no signup, no cost](https://kaliedarik.github.io/sc-screen-recorder/).
 
-Once the recording is done, the video downloads to the user's local device for further processing (if required) and sharing.
+### 📌 Key Features
++ Multi-Target Recording: Users can capture multiple areas of their screen simultaneously and arrange them on a canvas to highlight specific issues.
 
-There's probably other use cases for the web page. But I only care about bug reporting. If people can show me the issue they think is a bug, and describe it to me as they're showing it, then I'm more likely to believe them and (maybe) do something about it.
++ Customizable Backgrounds: The canvas background can be changed to a solid color or an image, allowing users to obscure sensitive information or personalize their recordings.
 
-The code in this repo is supplied as a Minimum Viable Product. It has not been built for the generation of professional-grade video assets. You have been warned!
++ Picture-in-Picture Support: Users can include a "talking head" video overlay, enabling them to narrate and explain the issue as it occurs.
+
++ Flexible Output Formats: Recordings can be made in various aspect ratios, including landscape (16:9), square (1:1), and portrait (9:16), catering to different presentation needs.
+
++ Local Download: Upon completion, the recorded video is downloaded directly to the user's device for easy sharing or further editing.
+
+### 🎯 Core Use Case: Bug Reporting
+When something breaks, you can capture exactly what happened — your screen, tabs, and even a webcam overlay — and share the video with your team. It's faster and clearer than writing long explanations.
+
+### 🔍 Other Use Cases
++ User testing: Record UX sessions with screen + narration
++ Micro-tutorials: Explain UI workflows or features
++ Support: Show what went wrong instead of just describing it
++ Code review walkthroughs: Walk through changes visually
++ Student demos: Record projects or presentations
++ Async collaboration: Share quick visual updates without meetings
+
+### 🔐 Privacy by Design
++ Everything runs in your browser
++ No data is uploaded — videos are saved locally
++ No accounts, cookies, or analytics
+
+### ⚙️ Under the Hood
++ Built with vanilla JavaScript, HTML, and CSS
++ Entirely client-side
++ Open-source and self-hostable
 
 ## Instructions
 The following instructions assume the user is using a desktop (or laptop) setup.
