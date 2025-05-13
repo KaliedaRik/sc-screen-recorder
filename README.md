@@ -3,18 +3,18 @@ Record your screen directly in the browser. No installs. No sign-ins. No trackin
 
 This lightweight tool was built to make screen recording effortless and private — ideal for situations where installing software isn’t practical or desirable.
 
-#### [Try it now](https://kaliedarik.github.io/sc-screen-recorder/).
-
 ### 📌 Key Features
-+ Multi-Target Recording: Users can capture multiple areas of their screen simultaneously and arrange them on a canvas to highlight specific issues.
+**Multi-Target Recording:** Users can capture multiple areas of their screen simultaneously and arrange them on a canvas to highlight specific issues.
 
-+ Customizable Backgrounds: The canvas background can be changed to a solid color or an image, allowing users to obscure sensitive information or personalize their recordings.
+**Customizable Backgrounds:** The canvas background can be changed to a solid color or an image, allowing users to obscure sensitive information or personalize their recordings.
 
-+ Picture-in-Picture Support: Users can include a "talking head" video overlay, enabling them to narrate and explain the issue as it occurs.
+**Picture-in-Picture Support:** Users can include a "talking head" video overlay, enabling them to narrate and explain the issue as it occurs.
 
-+ Flexible Output Formats: Recordings can be made in various aspect ratios, including landscape (16:9), square (1:1), and portrait (9:16), catering to different presentation needs.
+**Flexible Output Formats:** Recordings can be made in various aspect ratios, including landscape (16:9), square (1:1), and portrait (9:16), catering to different presentation needs.
 
-+ Local Download: Upon completion, the recorded video is downloaded directly to the user's device for easy sharing or further editing.
+**Local Download:** Upon completion, the recorded video is downloaded directly to the user's device for easy sharing or further editing.
+
+**Try it now: [kaliedarik.github.io/sc-screen-recorder](https://kaliedarik.github.io/sc-screen-recorder/).**
 
 ### 🎯 Core Use Case: Bug Reporting
 When something breaks, you can capture exactly what happened — your screen, tabs, and even a webcam overlay — and share the video with your team. It's faster and clearer than writing long explanations.
@@ -72,11 +72,7 @@ The web page supports the following (hopefully cross-browser standard) keyboard 
 + For checkboxes - `SPACE`
 
 ## Self hosting the web page
-The web page is hosted on GitHub - [kaliedarik.github.io/sc-screen-recorder](https://kaliedarik.github.io/sc-screen-recorder/):
-+ Designed for use on the desktop; use on mobile devices is not in-scope for this MVP.
-+ Keyboard accessibility is definitely in-scope!
 + Built in vanilla HTML, CSS and Javascript. No frameworks. No toolchains.
-+ Everything happens on the client-side. No sign-in or registration required. Also: no tracking!
 + The web page can be self hosted by forking this repo and deploying to the user's own servers or, alternatively, run locally on the user's device. The code is offered free under the MIT licence.
 + Users are free to develop and improve the code in any way they see fit. If anyone wants to build a better product from this code (and monetise it) ... go for it!
 
