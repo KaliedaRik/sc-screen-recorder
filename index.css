@@ -1,9 +1,111 @@
 :root {
   font: 16px Arial, sans-serif;
+
+  --control-bar-background: rgb(255 255 255 / 0.7);
+  --control-button-background: rgb(220 220 220 / 1);
+  --control-button-border: rgb(60 60 60 / 1);
+
+  --outline-width: 3px;
+  --outline-color: rgb(0 215 255 / 1);
+
+  --canvas-color: rgb(255 255 0 / 1);
+
+  --is-recording-text: rgb(255 255 200 / 1);
+  --is-recording-background: rgb(220 0 0 / 1);
+  --start-recording-background: rgb(80 255 80 / 1);
+
+  --editing-bar-border: rgb(60 60 60 / 1);
+  --editing-bar-background: rgb(255 255 255 / 0.7);
+
+  --dialog-border: rgb(60 60 60 / 1);
+  --dialog-button-background: rgb(220 220 220 / 1);
+  --dialog-button-border: rgb(60 60 60 / 1);
+  --dialog-row-separator: rgb(60 60 60 / 1);
+
+  --range-track: rgb(100 100 100 / 1);
+  --range-pin-background: rgb(200 200 200 / 1);
+  --range-pin-border: rgb(100 100 100 / 1);
+
+  --range-track-disabled: rgb(220 220 220 / 1);
+  --range-pin-background-disabled: rgb(240 240 240 / 1);
+  --range-pin-border-disabled: rgb(220 220 220 / 1);
+
+  --warning-color: rgb(160 0 0 / 1);
 }
 
 *:focus {
-  outline: 3px solid rgb(0 215 255 / 1);
+  outline: var(--outline-width) solid var(--outline-color);
+}
+
+/* Styling the range sliders across browsers */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  margin: 0.5rem 0;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-slider-runnable-track {
+    background-color: var(--range-track);
+    border-radius: 2px;
+    height: 4px;
+  }
+
+  &:disabled::-webkit-slider-runnable-track {
+    background-color: var(--range-track-disabled);
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    margin-top: -6px;
+    background-color: var(--range-pin-background);
+    border: 1px solid var(--range-pin-border);
+    border-radius: 8px;
+    height: 16px;
+    width: 12px;
+  }
+
+  &:focus::-webkit-slider-thumb {
+    outline: var(--outline-width) solid var(--outline-color);
+  }
+
+  &:disabled::-webkit-slider-thumb {
+    background-color: var(--range-pin-background-disabled);
+    border-color: var(--range-pin-border-disabled);
+  }
+
+  &::-moz-range-track {
+    background-color: var(--range-track);
+    border-radius: 2px;
+    height: 4px;
+  }
+
+  &:disabled::-moz-range-track {
+    background-color: var(--range-track-disabled);
+  }
+
+  &::-moz-range-thumb {
+    background-color: var(--range-pin-background);
+    border: 1px solid var(--range-pin-border);
+    border-radius: 8px;
+    height: 16px;
+    width: 12px;
+  }
+
+  &:focus::-moz-range-thumb {
+    outline: var(--outline-width) solid var(--outline-color);
+  }
+
+  &:disabled::-moz-range-thumb {
+    background-color: var(--range-pin-background-disabled);
+    border-color: var(--range-pin-border-disabled);
+  }
 }
 
 body {
@@ -19,7 +121,7 @@ body {
 }
 
 #my-canvas {
-  background-color: yellow;
+  background-color: var(--canvas-color);
 }
 
 #control-buttons {
@@ -35,34 +137,34 @@ body {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  background-color: rgb(255 255 255 / 0.7);
+  background-color: var(--control-bar-background);
 
   & button {
     font-size: 100%;
     display: inline-block;
     margin: 0.5rem;
-    border: 1px solid black;
+    border: 1px solid var(--control-button-border);
     padding: 0.25rem 0.5rem;
     border-radius: 5px;
-    background-color: rgb(220 220 220 / 1);
+    background-color: var(--control-button-background);
 
     &:hover {
       cursor: pointer;
     }
 
     &.is-recording {
-      background-color: red;
-      color: yellow;
+      background-color: var(--is-recording-background);
+      color: var(--is-recording-text);
     }
   }
 
   & a {
     display: inline-block;
     margin: 0.5rem;
-    border: 1px solid black;
+    border: 1px solid var(--control-button-border);
     padding: 0.25rem 0.5rem;
     border-radius: 5px;
-    background-color: rgb(220 220 220 / 1);
+    background-color: var(--control-button-background);
     color: inherit;
     text-decoration: none;
   }
@@ -84,12 +186,12 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background-color: rgb(255 255 255 / 0.7);
+  background-color: var(--editing-bar-background);
 
   & #entity-heading {
     margin: 0;
-    border-bottom: 1px dashed black;
-    border-top: 1px solid black;
+    border-bottom: 1px dashed var(--editing-bar-border);
+    border-top: 1px solid var(--editing-bar-border);
     padding: 0.5rem 1rem;
     display: flex;
     flex-direction: row;
@@ -127,14 +229,15 @@ body {
 dialog {
   max-height: 80vh;
   max-width: 80vw;
-  border: 1px dashed black;
+  border: 1px dashed var(--dialog-border);
   border-radius: 5px;
 
   & button.close {
     float: right;
     font-size: 100%;
-    background-color: rgb(220 220 220 / 1);
     border-radius: 5px;
+    border: 1px solid var(--dialog-button-border);
+    background-color: var(--dialog-button-background);
 
     &:hover {
       cursor: pointer;
@@ -150,23 +253,23 @@ dialog {
 
   & button#background-image-hide {
     font-size: 100%;
-    background-color: rgb(220 220 220 / 1);
+    background-color: var(--dialog-button-background);
     border-radius: 5px;
     padding: 0.25rem;
   }
 
   & label {
-    border: 1px solid black;
+    border: 1px solid var(--dialog-button-border);
     padding: 0.25rem 0.5rem;
     border-radius: 5px;
-    background-color: rgb(220 220 220 / 1);
+    background-color: var(--dialog-button-background);
 
     &:hover {
       cursor: pointer;
     }
 
     &.is-focussed {
-      outline: 3px solid rgb(0 215 255 / 1);
+      outline: var(--outline-width) solid var(--outline-color);
     }
   }
 
@@ -201,7 +304,7 @@ dialog {
 
   & button#target-request-button {
     font-size: 100%;
-    background-color: rgb(220 220 220 / 1);
+    background-color: var(--dialog-button-background);
     border-radius: 5px;
     padding: 0.25rem;
   }
@@ -209,12 +312,12 @@ dialog {
   & .target-list-row {
     display: flex;
     justify-content: space-between;
-    border-top: 1px solid gray;
+    border-top: 1px solid var(--dialog-row-separator);
     padding: 0.3rem 0;
 
     & button {
       font-size: 100%;
-      background-color: rgb(220 220 220 / 1);
+      background-color: var(--dialog-button-background);
       border-radius: 5px;
       padding: 0.25rem;
     }
@@ -307,85 +410,19 @@ dialog {
     & .warning-message {
       font-size: 90%;
       margin-right: 2rem;
-      color: rgb(160 0 0 / 1);
+      color: var(--warning-color);
     }
   }
 
   & #recording-start-button {
     font-size: 120%;
     width: 100%;
-    background-color: rgb(220 220 220 / 1);
+    background-color: var(--dialog-button-background);
     border-radius: 5px;
     padding: 0.25rem;
 
     &:hover, &:focus {
-      background-color: rgb(80 255 80 / 1);
+      background-color: var(--start-recording-background);
     }
-  }
-}
-
-/* Styling the range sliders across browsers */
-input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  background: transparent;
-  cursor: pointer;
-  width: 100%;
-  margin: 0.5rem 0;
-
-  &::-webkit-slider-runnable-track {
-    background-color: #143b8a;
-    border-radius: 2px;
-    height: 4px;
-  }
-
-  &:disabled::-webkit-slider-runnable-track {
-    background-color: #c0c0c0;
-  }
-
-  &::-webkit-slider-thumb {
-    -webkit-appearance: none; /* Override default look */
-    appearance: none;
-    margin-top: -6px; /* Centers thumb on the track */
-    background-color: #f42a2a;
-    border-radius: 8px;
-    height: 16px;
-    width: 12px;
-  }
-
-  &:disabled::-webkit-slider-thumb {
-    background-color: #a0a0a0;
-  }
-
-  &:focus::-webkit-slider-thumb {
-    outline: 3px solid rgb(0 215 255 / 1);
-    outline-offset: 0.125rem;
-  }
-
-  &::-moz-range-track {
-    background-color: #143b8a;
-    border-radius: 2px;
-    height: 4px;
-  }
-
-  &:disabled::-moz-range-track {
-    background-color: #c0c0c0;
-  }
-
-  &::-moz-range-thumb {
-    background-color: #f42a2a;
-    border: none; /*Removes extra border that FF applies*/
-    border-radius: 8px;
-    height: 16px;
-    width: 12px;
-  }
-
-  &:disabled::-moz-range-thumb {
-    background-color: #c0c0c0;
-  }
-
-  &:focus::-moz-range-thumb{
-    outline: 3px solid rgb(0 215 255 / 1);
-    outline-offset: 0.125rem;
   }
 }
