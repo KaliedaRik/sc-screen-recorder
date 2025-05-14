@@ -318,6 +318,16 @@ const initTalkingHead = () => {
 
   // Set up some hidden Cells to process the camera data and create the desired output
   // - This first Cell receives the camera data
+  const talkingHeadFrame = canvas.buildCell({
+
+    name: name('talking-head-frame'),
+    dimensions: [768, 768],
+    cleared: false,
+    compiled: false,
+    shown: false,
+  });
+
+  // We use this Cell to feed data into MediaPipe
   const talkingHeadInput = canvas.buildCell({
 
     name: name('talking-head-input'),
@@ -358,48 +368,72 @@ const initTalkingHead = () => {
       data.forEach((val, index) => pixels[index].alpha = 255 - val);
 
       talkingHeadMask.paintCellData(maskData);
+
+      talkingHeadFrame.clear();
+      talkingHeadFrame.compile();
     }
   };
 
-  // The inputPicture's asset will be the camera feed, in due course
-  const inputPicture = scrawl.makePicture({
+  // The framePicture's asset will be the camera feed, in due course
+  const framePicture = scrawl.makePicture({
 
-    name: name('talking-head-input-picture'),
-    group: talkingHeadInput,
-    // dimensions: ['100%', '100%'],
+    name: name('talking-head-frame-picture'),
+    group: talkingHeadFrame,
     copyDimensions: ['100%', '100%'],
     start: ['center', 'center'],
     handle: ['center', 'center'],
   });
 
-  // The maskPicture displays the mask Cell in the output Cell 
-  // - We can blur it a bit to make it appear less harsh
-  const headBlur = scrawl.makeFilter({
+  scrawl.makePicture({
 
-    name: name('head-blur'),
-    method: 'gaussianBlur',
-    radius: 6,
+    name: name('talking-head-input-picture'),
+    group: talkingHeadInput,
+    asset: talkingHeadFrame,
+    dimensions: ['100%', '100%'],
+    copyDimensions: ['100%', '100%'],
   });
 
-  scrawl.makePicture({
+  const squareShape = scrawl.makeBlock({
+
+    name: name('talking-head-square'),
+    group: talkingHeadOutput,
+    dimensions: ['100%', '100%'],
+  });
+
+  const roundShape = scrawl.makeWheel({
+
+    name: name('talking-head-round'),
+    group: talkingHeadOutput,
+    start: ['center', 'center'],
+    handle: ['center', 'center'],
+    radius: '50%',
+    visibility: false,
+  })
+
+  scrawl.makeFilter({
+
+    name: name('mask-blur'),
+    method: 'gaussianBlur',
+    radius: 3,
+  })
+
+  const maskPicture = scrawl.makePicture({
 
     name: name('talking-head-mask-picture'),
     group: talkingHeadOutput,
     asset: talkingHeadMask,
     dimensions: ['100%', '100%'],
     copyDimensions: ['100%', '100%'],
-    filters: [headBlur],
+    filters: [name('mask-blur')],
+    globalCompositeOperation: 'source-in',
   });
 
-  // The overlayPicture's asset will also be the camera feed
-  // - This time, it goes to the output Cell
   const overlayPicture = scrawl.makePicture({
 
     name: name('talking-head-overlay-picture'),
     group: talkingHeadOutput,
-    // dimensions: ['100%', '100%'],
-    start: ['center', 'center'],
-    handle: ['center', 'center'],
+    asset: talkingHeadFrame,
+    dimensions: ['100%', '100%'],
     copyDimensions: ['100%', '100%'],
     globalCompositeOperation: 'source-in',
     order: 1,
@@ -457,50 +491,35 @@ const initTalkingHead = () => {
         const width = mycamera.source.videoWidth,
           height = mycamera.source.videoHeight,
           minimumDimension = Math.min(width, height),
-          inputScale = 256 / minimumDimension,
-          overlayScale = 768 / minimumDimension;
+          scale = 768 / minimumDimension;
 
-        inputPicture.set({
+        framePicture.set({
           dimensions: [width, height],
-          scale: inputScale,
+          scale,
+          asset: mycamera, 
         });
 
-        overlayPicture.set({
-          dimensions: [width, height],
-          scale: overlayScale,
-        });
+        talkingHeadFrame.clear();
+        talkingHeadFrame.compile();
 
-      }, mycamera.source);
+        outputPicture.set ({ visibility: true });
 
-      talkingHeadInput.set({
-        cleared: true,
-        compiled: true,
-      });
+        headShowCheckbox.removeAttribute('disabled');
 
-      talkingHeadOutput.set({
-        cleared: true,
-        compiled: true,
-      });
+        // We need to feed input data into the model discretely, via an SC animation object
+        myCameraAnimation = scrawl.makeAnimation({
 
-      inputPicture.set({ asset: mycamera });
-      overlayPicture.set({ asset: mycamera });
-      outputPicture.set ({ visibility: true });
+          name: name('head-segmenter'),
+          order: 0,
+          fn: () => {
 
-      // We need to feed input data into the model discretely, via an SC animation object
-      myCameraAnimation = scrawl.makeAnimation({
+            if (imageSegmenter && imageSegmenter.segmentForVideo) {
 
-        name: name('head-segmenter'),
-        order: 0,
-        fn: () => {
-
-          if (imageSegmenter && imageSegmenter.segmentForVideo) {
-
-            imageSegmenter.segmentForVideo(talkingHeadInput.element, performance.now(), processModelData);
+              imageSegmenter.segmentForVideo(talkingHeadInput.element, performance.now(), processModelData);
+            }
           }
-        }
-      });
-
-      headShowCheckbox.removeAttribute('disabled');
+        });
+      }, mycamera.source);
 
     }).catch(err => console.log(err.message));
   };
@@ -516,18 +535,7 @@ const initTalkingHead = () => {
 
     myCameraAnimation.kill();
 
-    talkingHeadInput.set({
-      cleared: false,
-      compiled: false,
-    });
-
-    talkingHeadOutput.set({
-      cleared: false,
-      compiled: false,
-    });
-
-    inputPicture.set({ asset: '' });
-    overlayPicture.set({ asset: '' });
+    framePicture.set({ asset: '' });
     outputPicture.set ({ visibility: false });
 
     mycamera.kill();
@@ -620,6 +628,32 @@ const initTalkingHead = () => {
       ['head-rotation']: ['roll', 'float'],
     },
   });
+
+  scrawl.addNativeListener('change', () => {
+
+    const res = parseInt(headShape.value, 10);
+
+    // Show round shape
+    if (res) {
+
+      squareShape.set({ visibility: false });
+      roundShape.set({ visibility: true });
+    }
+    else {
+
+      squareShape.set({ visibility: true });
+      roundShape.set({ visibility: false });
+    }
+
+  }, headShape);
+
+  scrawl.addNativeListener('change', () => {
+
+    maskPicture.set({ 
+      visibility: headBackground.value === '1' ? true : false,
+    });
+
+  }, headBackground);
 };
 
 
@@ -1444,6 +1478,8 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'head-vertical', '75'],
   ['input', 'head-scale', '0.5'],
   ['input', 'head-rotation', '0'],
+  ['select', 'head-shape', 0],
+  ['select', 'head-background', 1],
 
   // Capture handles to the recording controls
   ['button', 'recording-modal-button', 'Record'],
@@ -1500,6 +1536,8 @@ const entityBeingEdited = dom['entity-being-edited'],
   headVertical = dom['head-vertical'],
   headScale = dom['head-scale'],
   headRotation = dom['head-rotation'],
+  headShape = dom['head-shape'],
+  headBackground = dom['head-background'],
 
   recordingModal = dom['recording-modal'],
   recordingButton = dom['recording-modal-button'],
