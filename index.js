@@ -629,11 +629,11 @@ const initTalkingHead = () => {
     },
   });
 
+  // Show a round or square head (keyboard: ARROWS, RETURN)
   scrawl.addNativeListener('change', () => {
 
     const res = parseInt(headShape.value, 10);
 
-    // Show round shape
     if (res) {
 
       squareShape.set({ visibility: false });
@@ -647,18 +647,17 @@ const initTalkingHead = () => {
 
   }, headShape);
 
+  // Show or remove the head background (keyboard: ARROWS, RETURN)
   scrawl.addNativeListener('change', () => {
 
-    maskPicture.set({ 
-      visibility: headBackground.value === '1' ? true : false,
-    });
+    maskPicture.set({ visibility: headBackground.value === '1' ? true : false });
 
   }, headBackground);
 
+  // Filter effects on the head (keyboard: ARROWS, RETURN)
   scrawl.addNativeListener('change', () => {
 
-    if (headFilter.value) talkingHeadOutput.set({ filters: name(headFilter.value) });
-    else talkingHeadOutput.set({ filters: [] });
+    talkingHeadOutput.set({ filters: [headFilter.value] });
 
   }, headFilter);
 };
@@ -894,8 +893,6 @@ const initTargets = () => {
           entity.set({
             scale: ((scale / oldScaler) * newScaler),
           });
-
-          // TODO: if the entity is currently being edited, need to adjust entityScale input
         }
       });
     }
@@ -1347,11 +1344,13 @@ const initUpdates = () => {
 
   const enableControls = () => {
     entityControls.forEach(control => control.removeAttribute('disabled'));
+    entityFilter.removeAttribute('disabled'),
     controlsEnabled = true;
   };
 
   const disableControls = () => {
     entityControls.forEach(control => control.setAttribute('disabled', ''));
+    entityFilter.setAttribute('disabled', '');
     controlsEnabled = false;
   };
 
@@ -1379,6 +1378,12 @@ const initUpdates = () => {
     },
   });
 
+  scrawl.addNativeListener('change', () => {
+
+    updateGroup.setArtefacts({ filters: [entityFilter.value] });
+
+  }, entityFilter);
+
   // When changing between target entitys, we need to update controls to reflect current values for that entity
   const updateEntityControls = (entity) => {
 
@@ -1398,6 +1403,7 @@ const initUpdates = () => {
         const scale = entity.get('scale');
         const roll = entity.get('roll');
         const order = entity.get('order');
+        const filters = entity.get('filters')[0];
 
         // Positioning is relative to canvas dimensions
         const pX = (x / w) * 100; 
@@ -1409,6 +1415,9 @@ const initUpdates = () => {
         entityScale.value = `${scale}`;
         entityRoll.value = `${roll}`;
         entityOrder.value = `${order}`;
+
+        if (!filters) entityFilter.value = 'none';
+        else entityFilter.value = filters;
 
         updateGroup.addArtefacts(entity);
 
@@ -1473,6 +1482,7 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'scale', '1'],
   ['input', 'roll', '0'],
   ['input', 'order', '0'],
+  ['select', 'target-filter', 0],
 
   // Capture handles to the talking head controls
   ['button', 'head-modal-button', 'Head'],
@@ -1533,6 +1543,7 @@ const entityBeingEdited = dom['entity-being-edited'],
   entityScale = dom['scale'],
   entityRoll = dom['roll'],
   entityOrder = dom['order'],
+  entityFilter = dom['target-filter'],
 
   headModal = dom['head-modal'],
   headButton = dom['head-modal-button'],
@@ -1584,53 +1595,50 @@ const entityBeingEdited = dom['entity-being-edited'],
 // ------------------------------------------------------------------------
 // Filter effects
 // ------------------------------------------------------------------------
+scrawl.makeFilter({
+  name: 'none',
+  actions: [],
+}),
 
 scrawl.makeFilter({
-
-  name: name('blur-effect'),
+  name: 'blur',
   method: 'gaussianBlur',
   radius: 20,
   excludeTransparentPixels: true,
-});
+}),
 
 scrawl.makeFilter({
-
-  name: name('gray-effect'),
+  name: 'gray',
   method: 'grayscale',
-});
+}),
 
 scrawl.makeFilter({
-
-  name: name('pixelate-effect'),
+  name: 'pixelate',
   method: 'pixelate',
   tileWidth: 20,
   tileHeight: 20,
-});
+}),
 
 scrawl.makeFilter({
-
-  name: name('monochrome-effect'),
+  name: 'monochrome',
   method: 'reducePalette',
   noiseType: 'bluenoise',
-});
+}),
 
 scrawl.makeFilter({
-
-  name: name('sharpen-effect'),
+  name: 'sharpen',
   method: 'sharpen',
-});
+}),
 
 scrawl.makeFilter({
-
-  name: name('outline-effect'),
+  name: 'outline',
   method: 'flood',
   reference: 'gray',
   opacity: 0.95,
 });
 
 scrawl.makeFilter({
-
-  name: name('cartoon-effect'),
+  name: 'cartoon',
   actions: [
     {
       action: 'grayscale',
@@ -1680,7 +1688,6 @@ scrawl.makeFilter({
     }
   ],
 });
-
 
 // ------------------------------------------------------------------------
 // Start the page running

@@ -64,6 +64,15 @@
         <label for="order">Display order</label>
         <input class="target-update" id="order" type="range" min="0" max="100" value="0" step="1" disabled>
       </div>
+      <div>
+        <label for="target-filter">Filter</label>
+        <select id="target-filter" disabled>
+          <option value="none">None</option>
+          <option value="sharpen">Sharpen</option>
+          <option value="pixelate">Pixelate</option>
+          <option value="gray">Gray</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -141,13 +150,13 @@
       </select>
       <label for="head-filter">Filter</label>
       <select id="head-filter">
-        <option value="">None</option>
-        <option value="gray-effect">Gray</option>
-        <option value="blur-effect">Blur</option>
-        <option value="monochrome-effect">Monochrome</option>
-        <option value="pixelate-effect">Pixellate</option>
-        <option value="cartoon-effect">Cartoon</option>
-        <option value="outline-effect">Hidden</option>
+        <option value="none">None</option>
+        <option value="gray">Gray</option>
+        <option value="blur">Blur</option>
+        <option value="monochrome">Monochrome</option>
+        <option value="pixelate">Pixellate</option>
+        <option value="cartoon">Cartoon</option>
+        <option value="outline">Hidden</option>
       </select>
     </div>
   </dialog>

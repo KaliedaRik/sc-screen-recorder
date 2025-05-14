@@ -222,6 +222,10 @@ body {
       & label {
         padding-left: 0.5rem;
       }
+
+      & select {
+        margin: 0.2rem 0 0 0.5rem;
+      }
     }
   }
 }
