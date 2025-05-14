@@ -73,8 +73,8 @@ The web page supports the following (hopefully cross-browser standard) keyboard 
 
 ## Self hosting the web page
 + Built in vanilla HTML, CSS and Javascript. No frameworks. No toolchains.
-+ The web page can be self hosted by forking this repo and deploying to the user's own servers or, alternatively, run locally on the user's device. The code is offered free under the MIT licence.
-+ Users are free to develop and improve the code in any way they see fit. If anyone wants to build a better product from this code (and monetise it) ... go for it!
++ The web page can be self hosted by forking this repo and deploying to the user's own servers or, alternatively, run locally on the user's device. 
++ The code is offered free under the MIT licence. Users are free to develop, improve and even monetize the code in any way they see fit.
 
 ### Running the web page locally
 1. Fork or clone this repo.
