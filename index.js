@@ -654,6 +654,13 @@ const initTalkingHead = () => {
     });
 
   }, headBackground);
+
+  scrawl.addNativeListener('change', () => {
+
+    if (headFilter.value) talkingHeadOutput.set({ filters: name(headFilter.value) });
+    else talkingHeadOutput.set({ filters: [] });
+
+  }, headFilter);
 };
 
 
@@ -1480,6 +1487,7 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'head-rotation', '0'],
   ['select', 'head-shape', 0],
   ['select', 'head-background', 1],
+  ['select', 'head-filter', 0],
 
   // Capture handles to the recording controls
   ['button', 'recording-modal-button', 'Record'],
@@ -1538,6 +1546,7 @@ const entityBeingEdited = dom['entity-being-edited'],
   headRotation = dom['head-rotation'],
   headShape = dom['head-shape'],
   headBackground = dom['head-background'],
+  headFilter = dom['head-filter'],
 
   recordingModal = dom['recording-modal'],
   recordingButton = dom['recording-modal-button'],
@@ -1573,10 +1582,110 @@ const entityBeingEdited = dom['entity-being-edited'],
 
 
 // ------------------------------------------------------------------------
+// Filter effects
+// ------------------------------------------------------------------------
+
+scrawl.makeFilter({
+
+  name: name('blur-effect'),
+  method: 'gaussianBlur',
+  radius: 20,
+  excludeTransparentPixels: true,
+});
+
+scrawl.makeFilter({
+
+  name: name('gray-effect'),
+  method: 'grayscale',
+});
+
+scrawl.makeFilter({
+
+  name: name('pixelate-effect'),
+  method: 'pixelate',
+  tileWidth: 20,
+  tileHeight: 20,
+});
+
+scrawl.makeFilter({
+
+  name: name('monochrome-effect'),
+  method: 'reducePalette',
+  noiseType: 'bluenoise',
+});
+
+scrawl.makeFilter({
+
+  name: name('sharpen-effect'),
+  method: 'sharpen',
+});
+
+scrawl.makeFilter({
+
+  name: name('outline-effect'),
+  method: 'flood',
+  reference: 'gray',
+  opacity: 0.95,
+});
+
+scrawl.makeFilter({
+
+  name: name('cartoon-effect'),
+  actions: [
+    {
+      action: 'grayscale',
+      lineOut: 'top-filter-1',
+    },{
+      lineIn: 'top-filter-1',
+      action: 'gaussian-blur',
+      radius: 1,
+      lineOut: 'top-filter-1',
+    },{
+      lineIn: 'top-filter-1',
+      action: 'matrix',
+      weights: [1, 1, 1, 1, -8, 1, 1, 1, 1],
+      lineOut: 'top-filter-2',
+    },{
+      lineIn: 'top-filter-2',
+      action: 'channels-to-alpha',
+      lineOut: 'top-filter-2',
+    },{
+      lineIn: 'top-filter-2',
+      action: 'threshold',
+      low: [0, 0, 0, 0],
+      high: [0, 0, 0, 255],
+      includeAlpha: true,
+      level: 20,
+      lineOut: 'top-filter-2',
+    },{
+      lineIn: 'source',
+      action: 'step-channels',
+      red: 15,
+      green: 60,
+      blue: 60,
+      lineOut: 'bottom-filter',
+    },{
+      lineIn: 'bottom-filter',
+      action: 'modulate-channels',
+      red: 2,
+      green: 2,
+      blue: 2,
+      alpha: 0.5,
+      lineOut: 'bottom-filter',
+    },{
+      lineIn: 'top-filter-2',
+      lineMix: 'bottom-filter',
+      action: 'compose',
+      compose: 'source-over',
+    }
+  ],
+});
+
+
+// ------------------------------------------------------------------------
 // Start the page running
 // ------------------------------------------------------------------------
 
-// Start by initializing functionality for each button/modal
 const {
   updateGroup,
   updateEntityControls,
