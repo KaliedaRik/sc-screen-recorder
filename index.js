@@ -27,8 +27,8 @@ let selectedMicrophone = 'none',
 
 const findMicrophoneDevices = () => {
 
-  availableMicrophoneInputs.length = [];
-  availableMicrophoneIds.length = [];
+  availableMicrophoneInputs.length = 0;
+  availableMicrophoneIds.length = 0;
 
   return new Promise ((resolve, reject) => {
 
@@ -64,8 +64,8 @@ const findMicrophoneDevices = () => {
 
 const findCameraInputDevices = async () => {
 
-  availableCameraInputs.length = [];
-  availableCameraIds.length = [];
+  availableCameraInputs.length = 0;
+  availableCameraIds.length = 0;
 
   return new Promise ((resolve, reject) => {
 
