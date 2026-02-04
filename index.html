@@ -24,13 +24,26 @@
       data-fit="contain"
       data-label="Scrawl-canvas screen recorder canvas."
       data-description="Record your local screen using your browser. This is a proof-of-concept project."
-    ></canvas>
+    >
+      <div class="assets" aria-hidden="true">
+        <img id="guardian-logo" src="temporary-guardian-logo.png" class="logos" alt="Guardian logo">
+      </div>      
+    </canvas>
   </div>
 
   <!-- User control bar buttons - these will open up modals -->
   <div id="control-buttons">
     <a href="https://github.com/KaliedaRik/sc-screen-recorder" target="_BLANK">Instructions</a>
     <button id="targets-modal-button">Cannot get targets</button>
+    <div id="guardian-logo-control">
+      <label for="guardian-logo-position">Logo </label>
+      <select id="guardian-logo-position">
+        <option value="top-left">Top left</option>
+        <option value="bottom-left">Bottom left</option>
+        <option value="bottom-right">Bottom right</option>
+        <option value="top-right">Top right</option>
+      </select>
+    </div>
     <button id="head-modal-button">Cannot show head</button>
     <button id="recording-modal-button" disabled>Cannot record video</button>
     <button id="background-modal-button" disabled>Cannot change background</button>
