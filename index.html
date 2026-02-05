@@ -132,9 +132,14 @@
   <dialog id='scribbles-modal' closedby="any">
     <button id="scribbles-modal-close" autofocus class="close">Close</button>
     <h2>Scribbles management</h2>
-    <p><label id="scribbles-color-button" for="scribbles-color-input">Change scribbles color</label> <input id="scribbles-color-input" type="color" value="#000000"></p>
-    <label for="scribbles-width">Change scribbles width</label>
-    <input type="range" class="scribbles-controls" id="scribbles-width" name="scribbles-width" min="1" max="10" value="1" step="1">
+    <div class="scribbles-parameters">
+      <label for="use-scribbles">Use scribbles</label>
+      <input id="use-scribbles" autocomplete="off" type="checkbox">
+      <label id="scribbles-color-button" for="scribbles-color-input">Change scribbles color</label>
+      <input id="scribbles-color-input" type="color" value="#000000">
+      <label for="scribbles-width">Change scribbles width</label>
+      <input type="range" class="scribbles-controls" id="scribbles-width" name="scribbles-width" min="1" max="10" value="1" step="1">
+    </div>
   </dialog>
 
   <!-- Talking head capture modal -->

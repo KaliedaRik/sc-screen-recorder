@@ -780,6 +780,10 @@ const initTargets = () => {
 
           if (targetPicture.sourceLoaded) {
 
+            // Assume that users won't want to be scribbling until after they position the target on the canvas
+            setScribblesFlag(false);
+            enableDragging();
+
             const [cameraWidth, cameraHeight] = targetPicture.get('copyDimensions');
             const [canvasWidth, canvasHeight] = getDimensions(currentDimension);
 
@@ -1435,10 +1439,11 @@ const initUpdates = () => {
   };
 
   // Build the drag functionality
-  const dragGroup = scrawl.makeGroup({
-
-    name: name('drag-group'),
-  });
+  // - User can be either dragging, or scribbling; we use two groups to allow this
+  // - Switch off dragging by moving all draggable entitys into dragHoldGroup
+  // - Switch it back on by moving all draggable entitys into dragGroup
+  const dragGroup = scrawl.makeGroup({ name: name('drag-group') });
+  const dragHoldGroup = scrawl.makeGroup({ name: name('drag-hold-group') });
 
   // Dragging a target entity makes it the current entity for editing
   const dragger = scrawl.makeDragZone({
@@ -1449,6 +1454,18 @@ const initUpdates = () => {
     endOn: ['up', 'leave'],
     updateOnEnd: () => { updateEntityControls(dragger().artefact) },
   });
+
+  const disableDragging = () => {
+
+    dragHoldGroup.addArtefacts(...dragGroup.get('artefacts'));
+    dragGroup.clearArtefacts();
+  };
+
+  const enableDragging = () => {
+
+    dragGroup.addArtefacts(...dragHoldGroup.get('artefacts'));
+    dragHoldGroup.clearArtefacts();
+  }
 
   // Add in canvas click-to-unselect functionality
   // - Selecting an entity for editing happens as part of the drag-and-drop functionality
@@ -1468,6 +1485,8 @@ const initUpdates = () => {
     areControlsEnabled,
     disableControls,
     dragGroup,
+    disableDragging,
+    enableDragging,
   };
 };
 
@@ -1573,7 +1592,45 @@ const initScribble = () => {
   scrawl.addNativeListener('focus', () => scribblesWidth.classList.add('is-focussed'), backgroundColorInput);
   scrawl.addNativeListener('blur', () => scribblesWidth.classList.remove('is-focussed'), backgroundColorInput);
 
-  return {};
+  // Flag to indicate whether the user wants to scribble on the canvas, or not
+  // - Required because user may also want to drag Targets around the canvas
+
+  let scribblesAreActive = false;
+
+  const getScribblesFlag = () => scribblesAreActive;
+
+  const setScribblesFlag = (val, fromModal = false) => {
+
+    val = !!val;
+    scribblesAreActive = val;
+
+    if (!fromModal) {
+
+      console.log('updating scribbles modal checkbox to', val);
+      if (val) scribblesUseCheckbox.checked = '';
+      else scribblesUseCheckbox.checked = null;
+    }
+  };
+
+  scrawl.addNativeListener('change', () => {
+
+    if (scribblesUseCheckbox.checked) {
+
+      setScribblesFlag(true, true);
+      disableDragging();
+    }
+    else {
+
+      setScribblesFlag(false, true);
+      enableDragging();
+    }
+
+  }, scribblesUseCheckbox);
+
+  return {
+    getScribblesFlag,
+    setScribblesFlag,
+  };
 };
 
 
@@ -1647,6 +1704,7 @@ const dom = scrawl.initializeDomInputs([
   ['button', 'scribbles-modal-button', 'Scribbles'],
   ['button', 'scribbles-modal-close', 'Close'],
   ['by-id', 'scribbles-modal'],
+  ['input', 'use-scribbles', 'off'],
   ['input', 'scribbles-color-input', '#000000'],
   ['input', 'scribbles-width', '1'],
 
@@ -1714,6 +1772,7 @@ const entityBeingEdited = dom['entity-being-edited'],
   scribblesModal = dom['scribbles-modal'],
   scribblesButton = dom['scribbles-modal-button'],
   scribblesCloseButton = dom['scribbles-modal-close'],
+  scribblesUseCheckbox = dom['use-scribbles'],
   scribblesColorInput = dom['scribbles-color-input'],
   scribblesWidth = dom['scribbles-width'],
 
@@ -1824,7 +1883,10 @@ scrawl.makeFilter({
 // - Be wary of including function calls defined in other invocations in an invocation function
 // ------------------------------------------------------------------------
 
-initScribble();
+const {
+  getScribblesFlag,
+  setScribblesFlag,
+} = initScribble();
 
 const {
   updateLogoPosition,
@@ -1836,6 +1898,8 @@ const {
   areControlsEnabled,
   disableControls,
   dragGroup,
+  disableDragging,
+  enableDragging,
 } = initUpdates();
 
 const { 

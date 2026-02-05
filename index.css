@@ -261,15 +261,20 @@ dialog {
 
   min-width: 50vw;
 
-  & select {
-    font-size: 100%;
-    display: inline-block;
-    margin: 0.5rem;
-    padding: 0.25rem 0.5rem;
+  & .scribbles-parameters {
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 0.5rem;
+    align-items: center;
 
-    & option {
-      font-size: 100%;
+    @media (width >= 600px) {
+      grid-template-columns: 1fr 1fr;
     }
+  }
+
+  & input[type="checkbox"] {
+    width: 1.5rem;
+    height: 1.5rem;
   }
 }
 
