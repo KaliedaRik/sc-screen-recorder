@@ -1594,7 +1594,6 @@ const initScribble = () => {
 
   // Flag to indicate whether the user wants to scribble on the canvas, or not
   // - Required because user may also want to drag Targets around the canvas
-
   let scribblesAreActive = false;
 
   const getScribblesFlag = () => scribblesAreActive;
@@ -1604,9 +1603,9 @@ const initScribble = () => {
     val = !!val;
     scribblesAreActive = val;
 
+    // We only need to update the modal checkbox when change is triggered from elsewhere
     if (!fromModal) {
 
-      console.log('updating scribbles modal checkbox to', val);
       if (val) scribblesUseCheckbox.checked = '';
       else scribblesUseCheckbox.checked = null;
     }
@@ -1626,6 +1625,22 @@ const initScribble = () => {
     }
 
   }, scribblesUseCheckbox);
+
+  // Scribble color and width management
+  let currentColor = '#000000',
+    currentWidth = 1;
+
+  scrawl.addNativeListener('change', () => {
+
+    currentColor = scribblesColorInput.value;
+
+  }, scribblesColorInput);
+
+  scrawl.addNativeListener('change', () => {
+
+    currentWidth = parseInt(scribblesWidth.value, 10);
+
+  }, scribblesWidth);
 
   return {
     getScribblesFlag,
