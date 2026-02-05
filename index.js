@@ -203,6 +203,7 @@ const initDimensions = () => {
         if (ent) setTimeout(() => entityScale.value = `${ent.get('scale')}`, 50);
       }
 
+      updateAllScribbles();
       updateLogoPosition();
     }
   };
@@ -1642,9 +1643,179 @@ const initScribble = () => {
 
   }, scribblesWidth);
 
+  // Scribbling functionality
+  // ------------------------
+  const currentPins = [],
+    lineHold = [],
+    lineBin = [];
+
+  let counter = 0,
+    currentLine, lastX, lastY;
+
+  const clearLines = () => {
+
+    currentPins.length = 0;
+  
+    lineHold.forEach(line => line && line.kill());
+    lineHold.length = 0;
+
+    lineBin.forEach(line => line && line.kill());
+    lineBin.length = 0;
+  };
+  scrawl.addNativeListener('click', clearLines, scribblesLineClear);
+
+  const undoLine = () => {
+
+    const line = lineHold.pop();
+
+    if (line) {
+
+        line.set({ visibility: false });
+        lineBin.push(line);
+    }
+  };
+  scrawl.addNativeListener('click', undoLine, scribblesLineUndo);
+
+  const redoLine = () => {
+
+    const line = lineBin.pop();
+
+    if (line) {
+
+        line.set({ visibility: true });
+        lineHold.push(line);
+    }
+  };
+  scrawl.addNativeListener('click', redoLine, scribblesLineRedo);
+
+  // Accessibility
+  // - CTRL + z     Clear the last line (undo)
+  // - CTRL + y     Reinstate the last cleared line (redo)
+  // - CTRL + x     Clear out all lines and reset (clear)
+  // TODO: currently not working! Buttons in the modal panel do work
+  scrawl.makeKeyboardZone({
+
+    zone: canvas,
+
+    ctrlOnly: {
+      x: () => clearLines(),
+      y: () => redoLine(),
+      z: () => undoLine(),
+    },
+  });
+
+  // We'll draw on a separate canvas, which then gets copied into the main canvas via a picture entity
+  const scribbleCell = canvas.buildCell({
+    name: name('scribble-cell'),
+    dimensions: ['100%', '100%'],
+    setRelativeDimensionsUsingBase: true,
+    shown: false,
+  });
+
+  const getRelPos = (data) => {
+
+    const { x, y, w, h } = data;
+
+    const RX = `${(x / w) * 100}%`;
+    const RY = `${(y / h) * 100}%`;
+
+    return [RX, RY];
+  }
+
+  const startLine = function () {
+
+    if (scribblesAreActive) {
+
+      const here = canvas.getBaseHere();
+
+      if (here.active) {
+
+        console.log('startLine', JSON.stringify(here));
+
+        currentPins.push(getRelPos(here));
+
+        currentLine = scrawl.makePolyline({
+
+          name: name(`line-${counter}`),
+          group: scribbleCell.name,
+
+          pins: currentPins,
+          mapToPins: true,
+
+          tension: 0.3,
+
+          strokeStyle: currentColor,
+          lineWidth: currentWidth,
+
+          lineCap: 'round',
+          lineJoin: 'round',
+
+          method: 'draw',
+        });
+
+        counter++;
+      }
+    }
+  };
+  scrawl.addListener('down', startLine, canvas.domElement);
+
+  const endLine = function () {
+
+    if (scribblesAreActive && currentLine) lineHold.push(currentLine);
+
+    currentLine = false;
+    currentPins.length = 0;
+    lastX = -1;
+    lastY = -1;
+  };
+  scrawl.addListener(['up', 'leave'], endLine, canvas.domElement);
+
+  const checkLine = function () {
+
+    if (scribblesAreActive) {
+
+      const here = canvas.getBaseHere();
+
+      console.log('checkLine', JSON.stringify(here));
+
+      if (currentLine && here.active) {
+
+        const {x, y} = here;
+
+        if (x === lastX && y === lastY) return false;
+
+        currentPins.push(getRelPos(here));
+
+        currentLine.set({
+            pins: currentPins,
+        });
+
+        lastX = x;
+        lastY = y;
+      }
+    }
+  };
+  scrawl.addListener('move', checkLine, canvas.domElement);
+
+  scrawl.makePicture({
+    name: name('scribble-display'),
+    asset: scribbleCell,
+    dimensions: ['100%', '100%'],
+    copyDimensions: ['100%', '100%'],
+    order: 999,
+  });
+
+  // Need a way to trigger scribbled lines to recalculate if user changes screen (video) dimensions
+  const updateAllScribbles = () => {
+
+    lineHold.forEach(line => line.set({ tension: 0.3 }));
+    lineBin.forEach(line => line.set({ tension: 0.3 }));
+  };
+
   return {
     getScribblesFlag,
     setScribblesFlag,
+    updateAllScribbles,
   };
 };
 
@@ -1722,6 +1893,9 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'use-scribbles', 'off'],
   ['input', 'scribbles-color-input', '#000000'],
   ['input', 'scribbles-width', '1'],
+  ['button', 'scribbles-line-undo', 'Undo line'],
+  ['button', 'scribbles-line-redo', 'Restore line'],
+  ['button', 'scribbles-line-clear', 'Clear all lines'],
 
   // Capture handles to the logo positioning selector
   ['select', 'guardian-logo-position', 1],
@@ -1790,6 +1964,9 @@ const entityBeingEdited = dom['entity-being-edited'],
   scribblesUseCheckbox = dom['use-scribbles'],
   scribblesColorInput = dom['scribbles-color-input'],
   scribblesWidth = dom['scribbles-width'],
+  scribblesLineUndo = dom['scribbles-line-undo'],
+  scribblesLineRedo = dom['scribbles-line-redo'],
+  scribblesLineClear = dom['scribbles-line-clear'],
 
   logoSelector = dom['guardian-logo-position'];
 
@@ -1901,6 +2078,7 @@ scrawl.makeFilter({
 const {
   getScribblesFlag,
   setScribblesFlag,
+  updateAllScribbles,
 } = initScribble();
 
 const {
