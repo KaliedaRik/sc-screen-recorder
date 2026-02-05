@@ -1473,6 +1473,88 @@ const initUpdates = () => {
 
 
 // ------------------------------------------------------------------------
+// Guardian logo positioning
+// - The logo is ever-present, and needs to go above everything else
+// ------------------------------------------------------------------------
+const initLogo = () => {
+
+  scrawl.importDomImage('.logos');
+
+  // Magic numbers for the actual dimensions of the logo image, divided by a convenient amount
+  const logoPictureWidth = 860 / 4,
+    logoPictureHeight = 340 / 4;
+
+  const logoPicture = scrawl.makePicture({
+    name: name('guardian-logo'),
+    asset: 'guardian-logo',
+    start: ['left', 'bottom'],
+    handle: ['left', 'bottom'],
+    dimensions: [logoPictureWidth, logoPictureHeight],
+    copyDimensions: ['100%', '100%'],
+    order: 1000,
+  });
+
+  const updateLogoPosition = () => {
+
+    switch (logoSelector.value) {
+
+      case 'top-left':
+        logoPicture.set({
+          start: ['left', 'top'],
+          handle: ['left', 'top'],
+        });
+        break;
+
+      case 'bottom-left':
+        logoPicture.set({
+          start: ['left', 'bottom'],
+          handle: ['left', 'bottom'],
+        });
+        break;
+
+      case 'bottom-right':
+        logoPicture.set({
+          start: ['right', 'bottom'],
+          handle: ['right', 'bottom'],
+        });
+        break;
+
+      case 'top-right':
+        logoPicture.set({
+          start: ['right', 'top'],
+          handle: ['right', 'top'],
+        });
+        break;
+    }
+
+    // More magic numbers warning
+    const scaler = getScaler(currentDimension);
+
+    if (480 === scaler) {
+      logoPicture.set({
+        dimensions: [logoPictureWidth, logoPictureHeight],
+      });
+    }
+    else if (720 === scaler) {
+      logoPicture.set({
+        dimensions: [logoPictureWidth * 1.5, logoPictureHeight * 1.5],
+      });
+    }
+    else {
+      logoPicture.set({
+        dimensions: [logoPictureWidth * 2.25, logoPictureHeight * 2.25],
+      });
+    }
+  };
+  scrawl.addNativeListener('change', updateLogoPosition, logoSelector);
+
+  return {
+    updateLogoPosition,
+  }
+};
+
+
+// ------------------------------------------------------------------------
 // Control buttons management
 // ------------------------------------------------------------------------
 const dom = scrawl.initializeDomInputs([
@@ -1699,84 +1781,12 @@ scrawl.makeFilter({
 
 
 // ------------------------------------------------------------------------
-// Guardian logo positioning
-// - The logo is ever-present, and needs to go above everything else
-// ------------------------------------------------------------------------
-scrawl.importDomImage('.logos');
-
-// Magic numbers for the actual dimensions of the logo image, divided by a convenient amount
-const logoPictureWidth = 860 / 4,
-  logoPictureHeight = 340 / 4;
-
-const logoPicture = scrawl.makePicture({
-  name: name('guardian-logo'),
-  asset: 'guardian-logo',
-  start: ['left', 'bottom'],
-  handle: ['left', 'bottom'],
-  dimensions: [logoPictureWidth, logoPictureHeight],
-  copyDimensions: ['100%', '100%'],
-  order: 1000,
-});
-
-const updateLogoPosition = () => {
-
-    switch (logoSelector.value) {
-
-      case 'top-left':
-        logoPicture.set({
-          start: ['left', 'top'],
-          handle: ['left', 'top'],
-        });
-        break;
-
-      case 'bottom-left':
-        logoPicture.set({
-          start: ['left', 'bottom'],
-          handle: ['left', 'bottom'],
-        });
-        break;
-
-      case 'bottom-right':
-        logoPicture.set({
-          start: ['right', 'bottom'],
-          handle: ['right', 'bottom'],
-        });
-        break;
-
-      case 'top-right':
-        logoPicture.set({
-          start: ['right', 'top'],
-          handle: ['right', 'top'],
-        });
-        break;
-    }
-
-    // More magic numbers warning
-    const scaler = getScaler(currentDimension);
-
-    if (480 === scaler) {
-      logoPicture.set({
-        dimensions: [logoPictureWidth, logoPictureHeight],
-      });
-    }
-    else if (720 === scaler) {
-      logoPicture.set({
-        dimensions: [logoPictureWidth * 1.5, logoPictureHeight * 1.5],
-      });
-    }
-    else {
-      logoPicture.set({
-        dimensions: [logoPictureWidth * 2.25, logoPictureHeight * 2.25],
-      });
-    }
-};
-scrawl.addNativeListener('change', updateLogoPosition, logoSelector);
-
-
-
-// ------------------------------------------------------------------------
 // Start the page running
 // ------------------------------------------------------------------------
+
+const {
+  updateLogoPosition,
+} = initLogo();
 
 const {
   updateGroup,
