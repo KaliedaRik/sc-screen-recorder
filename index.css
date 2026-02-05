@@ -257,6 +257,22 @@ dialog {
   }
 }
 
+#scribbles-modal {
+
+  min-width: 50vw;
+
+  & select {
+    font-size: 100%;
+    display: inline-block;
+    margin: 0.5rem;
+    padding: 0.25rem 0.5rem;
+
+    & option {
+      font-size: 100%;
+    }
+  }
+}
+
 #background-modal {
 
   & input {

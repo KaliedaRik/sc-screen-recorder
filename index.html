@@ -44,6 +44,7 @@
         <option value="top-right">Top right</option>
       </select>
     </div>
+    <button id="scribbles-modal-button">Cannot use scribbles</button>
     <button id="head-modal-button">Cannot show head</button>
     <button id="recording-modal-button" disabled>Cannot record video</button>
     <button id="background-modal-button" disabled>Cannot change background</button>
@@ -125,6 +126,15 @@
     <h3>Recent uploads</h3>
     <p>Click on an image to use it:</p>
     <div id="background-image-hold"></div>
+  </dialog>
+
+  <!-- Scribbles modal -->
+  <dialog id='scribbles-modal' closedby="any">
+    <button id="scribbles-modal-close" autofocus class="close">Close</button>
+    <h2>Scribbles management</h2>
+    <p><label id="scribbles-color-button" for="scribbles-color-input">Change scribbles color</label> <input id="scribbles-color-input" type="color" value="#000000"></p>
+    <label for="scribbles-width">Change scribbles width</label>
+    <input type="range" class="scribbles-controls" id="scribbles-width" name="scribbles-width" min="1" max="10" value="1" step="1">
   </dialog>
 
   <!-- Talking head capture modal -->

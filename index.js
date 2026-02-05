@@ -1555,6 +1555,29 @@ const initLogo = () => {
 
 
 // ------------------------------------------------------------------------
+// Scribble canvas
+// - For drawing on the video while recording
+// ------------------------------------------------------------------------
+const initScribble = () => {
+
+  // Initialize DOM scribbles button and associated modal
+  // - The main "Scribbles" button opens an associated modal - all defined in HTML
+  // - Users can use the modal to set the color and width of the scribble pen
+  scribblesButton.removeAttribute('disabled');
+  scrawl.addNativeListener('click', () => openModal(scribblesModal), scribblesButton);
+  scrawl.addNativeListener('click', closeModal, scribblesCloseButton);
+  scrawl.addNativeListener('close', closeModal, scribblesModal);
+
+  scrawl.addNativeListener('focus', () => scribblesColorInput.classList.add('is-focussed'), backgroundUpload);
+  scrawl.addNativeListener('blur', () => scribblesColorInput.classList.remove('is-focussed'), backgroundUpload);
+  scrawl.addNativeListener('focus', () => scribblesWidth.classList.add('is-focussed'), backgroundColorInput);
+  scrawl.addNativeListener('blur', () => scribblesWidth.classList.remove('is-focussed'), backgroundColorInput);
+
+  return {};
+};
+
+
+// ------------------------------------------------------------------------
 // Control buttons management
 // ------------------------------------------------------------------------
 const dom = scrawl.initializeDomInputs([
@@ -1620,9 +1643,18 @@ const dom = scrawl.initializeDomInputs([
   ['by-id', 'dimensions-modal'],
   ['select', 'video-dimensions', 2],
 
+  // Capture handles to the dimensions-related HTML elements
+  ['button', 'scribbles-modal-button', 'Scribbles'],
+  ['button', 'scribbles-modal-close', 'Close'],
+  ['by-id', 'scribbles-modal'],
+  ['input', 'scribbles-color-input', '#000000'],
+  ['input', 'scribbles-width', '1'],
+
   // Capture handles to the logo positioning selector
   ['select', 'guardian-logo-position', 1],
 ]);
+
+console.log(dom);
 
 const entityBeingEdited = dom['entity-being-edited'],
   currentCanvasDimensions = dom['current-canvas-dimensions'],
@@ -1678,6 +1710,12 @@ const entityBeingEdited = dom['entity-being-edited'],
   dimensionsButton = dom['dimensions-modal-button'],
   dimensionsCloseButton = dom['dimensions-modal-close'],
   dimensionsSelector = dom['video-dimensions'],
+
+  scribblesModal = dom['scribbles-modal'],
+  scribblesButton = dom['scribbles-modal-button'],
+  scribblesCloseButton = dom['scribbles-modal-close'],
+  scribblesColorInput = dom['scribbles-color-input'],
+  scribblesWidth = dom['scribbles-width'],
 
   logoSelector = dom['guardian-logo-position'];
 
@@ -1782,7 +1820,11 @@ scrawl.makeFilter({
 
 // ------------------------------------------------------------------------
 // Start the page running
+// - Attempted to make the ordering of these invocations as irrelevant as possible
+// - Be wary of including function calls defined in other invocations in an invocation function
 // ------------------------------------------------------------------------
+
+initScribble();
 
 const {
   updateLogoPosition,
