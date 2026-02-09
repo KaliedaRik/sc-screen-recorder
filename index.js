@@ -1493,7 +1493,7 @@ const initUpdates = () => {
 
 
 // ------------------------------------------------------------------------
-// Guardian logo positioning
+// Company logo positioning
 // - The logo is ever-present, and needs to go above everything else
 // ------------------------------------------------------------------------
 const initLogo = () => {
@@ -1505,23 +1505,31 @@ const initLogo = () => {
     logoPictureHeight = 340 / 4;
 
   const logoPicture = scrawl.makePicture({
-    name: name('guardian-logo'),
-    asset: 'guardian-logo',
+    name: name('company-logo'),
+    asset: 'company-logo',
     start: ['left', 'bottom'],
     handle: ['left', 'bottom'],
     dimensions: [logoPictureWidth, logoPictureHeight],
     copyDimensions: ['100%', '100%'],
     order: 1000,
+    visibility: false,
   });
 
   const updateLogoPosition = () => {
 
     switch (logoSelector.value) {
 
+      case 'hide':
+        logoPicture.set({
+          visibility: false,
+        });
+        break;
+
       case 'top-left':
         logoPicture.set({
           start: ['left', 'top'],
           handle: ['left', 'top'],
+          visibility: true,
         });
         break;
 
@@ -1529,6 +1537,7 @@ const initLogo = () => {
         logoPicture.set({
           start: ['left', 'bottom'],
           handle: ['left', 'bottom'],
+          visibility: true,
         });
         break;
 
@@ -1536,6 +1545,7 @@ const initLogo = () => {
         logoPicture.set({
           start: ['right', 'bottom'],
           handle: ['right', 'bottom'],
+          visibility: true,
         });
         break;
 
@@ -1543,6 +1553,7 @@ const initLogo = () => {
         logoPicture.set({
           start: ['right', 'top'],
           handle: ['right', 'top'],
+          visibility: true,
         });
         break;
     }
@@ -1898,7 +1909,7 @@ const dom = scrawl.initializeDomInputs([
   ['button', 'scribbles-line-clear', 'Clear all lines'],
 
   // Capture handles to the logo positioning selector
-  ['select', 'guardian-logo-position', 1],
+  ['select', 'company-logo-position', 0],
 ]);
 
 console.log(dom);
@@ -1968,7 +1979,7 @@ const entityBeingEdited = dom['entity-being-edited'],
   scribblesLineRedo = dom['scribbles-line-redo'],
   scribblesLineClear = dom['scribbles-line-clear'],
 
-  logoSelector = dom['guardian-logo-position'];
+  logoSelector = dom['company-logo-position'];
 
 
 // ------------------------------------------------------------------------
