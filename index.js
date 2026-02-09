@@ -202,6 +202,9 @@ const initDimensions = () => {
         const ent = scrawl.findEntity(editInProgress[0]);
         if (ent) setTimeout(() => entityScale.value = `${ent.get('scale')}`, 50);
       }
+
+      updateAllScribbles();
+      updateLogoPosition();
     }
   };
 
@@ -210,6 +213,7 @@ const initDimensions = () => {
 
   return { 
     getDimensions,
+    getScaler,
   };
 };
 
@@ -720,6 +724,8 @@ const initTargets = () => {
         lineJoin: 'round',
         method: 'fill',
 
+        bringToFrontOnDrag: false,
+
         button: {
 
           name: `${targetId}-button`,
@@ -776,6 +782,10 @@ const initTargets = () => {
         setTimeout(() => {
 
           if (targetPicture.sourceLoaded) {
+
+            // Assume that users won't want to be scribbling until after they position the target on the canvas
+            setScribblesFlag(false);
+            enableDragging();
 
             const [cameraWidth, cameraHeight] = targetPicture.get('copyDimensions');
             const [canvasWidth, canvasHeight] = getDimensions(currentDimension);
@@ -1432,10 +1442,11 @@ const initUpdates = () => {
   };
 
   // Build the drag functionality
-  const dragGroup = scrawl.makeGroup({
-
-    name: name('drag-group'),
-  });
+  // - User can be either dragging, or scribbling; we use two groups to allow this
+  // - Switch off dragging by moving all draggable entitys into dragHoldGroup
+  // - Switch it back on by moving all draggable entitys into dragGroup
+  const dragGroup = scrawl.makeGroup({ name: name('drag-group') });
+  const dragHoldGroup = scrawl.makeGroup({ name: name('drag-hold-group') });
 
   // Dragging a target entity makes it the current entity for editing
   const dragger = scrawl.makeDragZone({
@@ -1446,6 +1457,18 @@ const initUpdates = () => {
     endOn: ['up', 'leave'],
     updateOnEnd: () => { updateEntityControls(dragger().artefact) },
   });
+
+  const disableDragging = () => {
+
+    dragHoldGroup.addArtefacts(...dragGroup.get('artefacts'));
+    dragGroup.clearArtefacts();
+  };
+
+  const enableDragging = () => {
+
+    dragGroup.addArtefacts(...dragHoldGroup.get('artefacts'));
+    dragHoldGroup.clearArtefacts();
+  }
 
   // Add in canvas click-to-unselect functionality
   // - Selecting an entity for editing happens as part of the drag-and-drop functionality
@@ -1465,6 +1488,346 @@ const initUpdates = () => {
     areControlsEnabled,
     disableControls,
     dragGroup,
+    disableDragging,
+    enableDragging,
+  };
+};
+
+
+// ------------------------------------------------------------------------
+// Company logo positioning
+// - The logo is ever-present, and needs to go above everything else
+// ------------------------------------------------------------------------
+const initLogo = () => {
+
+  scrawl.importDomImage('.logos');
+
+  // Magic numbers for the actual dimensions of the logo image, divided by a convenient amount
+  const logoPictureWidth = 860 / 4,
+    logoPictureHeight = 340 / 4;
+
+  const logoPicture = scrawl.makePicture({
+    name: name('company-logo'),
+    asset: 'company-logo',
+    start: ['left', 'bottom'],
+    handle: ['left', 'bottom'],
+    dimensions: [logoPictureWidth, logoPictureHeight],
+    copyDimensions: ['100%', '100%'],
+    order: 1000,
+    visibility: false,
+  });
+
+  const updateLogoPosition = () => {
+
+    switch (logoSelector.value) {
+
+      case 'hide':
+        logoPicture.set({
+          visibility: false,
+        });
+        break;
+
+      case 'top-left':
+        logoPicture.set({
+          start: ['left', 'top'],
+          handle: ['left', 'top'],
+          visibility: true,
+        });
+        break;
+
+      case 'bottom-left':
+        logoPicture.set({
+          start: ['left', 'bottom'],
+          handle: ['left', 'bottom'],
+          visibility: true,
+        });
+        break;
+
+      case 'bottom-right':
+        logoPicture.set({
+          start: ['right', 'bottom'],
+          handle: ['right', 'bottom'],
+          visibility: true,
+        });
+        break;
+
+      case 'top-right':
+        logoPicture.set({
+          start: ['right', 'top'],
+          handle: ['right', 'top'],
+          visibility: true,
+        });
+        break;
+    }
+
+    // More magic numbers warning
+    const scaler = getScaler(currentDimension);
+
+    if (480 === scaler) {
+      logoPicture.set({
+        dimensions: [logoPictureWidth, logoPictureHeight],
+      });
+    }
+    else if (720 === scaler) {
+      logoPicture.set({
+        dimensions: [logoPictureWidth * 1.5, logoPictureHeight * 1.5],
+      });
+    }
+    else {
+      logoPicture.set({
+        dimensions: [logoPictureWidth * 2.25, logoPictureHeight * 2.25],
+      });
+    }
+  };
+  scrawl.addNativeListener('change', updateLogoPosition, logoSelector);
+
+  return {
+    updateLogoPosition,
+  }
+};
+
+
+// ------------------------------------------------------------------------
+// Scribble canvas
+// - For drawing on the video while recording
+// ------------------------------------------------------------------------
+const initScribble = () => {
+
+  // Initialize DOM scribbles button and associated modal
+  // - The main "Scribbles" button opens an associated modal - all defined in HTML
+  // - Users can use the modal to set the color and width of the scribble pen
+  scribblesButton.removeAttribute('disabled');
+  scrawl.addNativeListener('click', () => openModal(scribblesModal), scribblesButton);
+  scrawl.addNativeListener('click', closeModal, scribblesCloseButton);
+  scrawl.addNativeListener('close', closeModal, scribblesModal);
+
+  scrawl.addNativeListener('focus', () => scribblesColorInput.classList.add('is-focussed'), backgroundUpload);
+  scrawl.addNativeListener('blur', () => scribblesColorInput.classList.remove('is-focussed'), backgroundUpload);
+  scrawl.addNativeListener('focus', () => scribblesWidth.classList.add('is-focussed'), backgroundColorInput);
+  scrawl.addNativeListener('blur', () => scribblesWidth.classList.remove('is-focussed'), backgroundColorInput);
+
+  // Flag to indicate whether the user wants to scribble on the canvas, or not
+  // - Required because user may also want to drag Targets around the canvas
+  let scribblesAreActive = false;
+
+  const getScribblesFlag = () => scribblesAreActive;
+
+  const setScribblesFlag = (val, fromModal = false) => {
+
+    val = !!val;
+    scribblesAreActive = val;
+
+    // We only need to update the modal checkbox when change is triggered from elsewhere
+    if (!fromModal) {
+
+      if (val) scribblesUseCheckbox.checked = '';
+      else scribblesUseCheckbox.checked = null;
+    }
+  };
+
+  scrawl.addNativeListener('change', () => {
+
+    if (scribblesUseCheckbox.checked) {
+
+      setScribblesFlag(true, true);
+      disableDragging();
+    }
+    else {
+
+      setScribblesFlag(false, true);
+      enableDragging();
+    }
+
+  }, scribblesUseCheckbox);
+
+  // Scribble color and width management
+  let currentColor = '#000000',
+    currentWidth = 1;
+
+  scrawl.addNativeListener('change', () => {
+
+    currentColor = scribblesColorInput.value;
+
+  }, scribblesColorInput);
+
+  scrawl.addNativeListener('change', () => {
+
+    currentWidth = parseInt(scribblesWidth.value, 10);
+
+  }, scribblesWidth);
+
+  // Scribbling functionality
+  // ------------------------
+  const currentPins = [],
+    lineHold = [],
+    lineBin = [];
+
+  let counter = 0,
+    currentLine, lastX, lastY;
+
+  const clearLines = () => {
+
+    currentPins.length = 0;
+  
+    lineHold.forEach(line => line && line.kill());
+    lineHold.length = 0;
+
+    lineBin.forEach(line => line && line.kill());
+    lineBin.length = 0;
+  };
+  scrawl.addNativeListener('click', clearLines, scribblesLineClear);
+
+  const undoLine = () => {
+
+    const line = lineHold.pop();
+
+    if (line) {
+
+        line.set({ visibility: false });
+        lineBin.push(line);
+    }
+  };
+  scrawl.addNativeListener('click', undoLine, scribblesLineUndo);
+
+  const redoLine = () => {
+
+    const line = lineBin.pop();
+
+    if (line) {
+
+        line.set({ visibility: true });
+        lineHold.push(line);
+    }
+  };
+  scrawl.addNativeListener('click', redoLine, scribblesLineRedo);
+
+  // Accessibility
+  // - CTRL + z     Clear the last line (undo)
+  // - CTRL + y     Reinstate the last cleared line (redo)
+  // - CTRL + x     Clear out all lines and reset (clear)
+scrawl.makeKeyboardZone({
+
+    zone: canvas,
+
+    altOnly: {
+      x: () => clearLines(),
+      y: () => redoLine(),
+      z: () => undoLine(),
+    },
+  });
+
+  // We'll draw on a separate canvas, which then gets copied into the main canvas via a picture entity
+  const scribbleCell = canvas.buildCell({
+    name: name('scribble-cell'),
+    dimensions: ['100%', '100%'],
+    setRelativeDimensionsUsingBase: true,
+    shown: false,
+  });
+
+  const getRelPos = (data) => {
+
+    const { x, y, w, h } = data;
+
+    const RX = `${(x / w) * 100}%`;
+    const RY = `${(y / h) * 100}%`;
+
+    return [RX, RY];
+  }
+
+  const startLine = function () {
+
+    if (scribblesAreActive) {
+
+      const here = canvas.getBaseHere();
+
+      if (here.active) {
+
+        console.log('startLine', JSON.stringify(here));
+
+        currentPins.push(getRelPos(here));
+
+        currentLine = scrawl.makePolyline({
+
+          name: name(`line-${counter}`),
+          group: scribbleCell.name,
+
+          pins: currentPins,
+          mapToPins: true,
+
+          tension: 0.3,
+
+          strokeStyle: currentColor,
+          lineWidth: currentWidth,
+
+          lineCap: 'round',
+          lineJoin: 'round',
+
+          method: 'draw',
+        });
+
+        counter++;
+      }
+    }
+  };
+  scrawl.addListener('down', startLine, canvas.domElement);
+
+  const endLine = function () {
+
+    if (scribblesAreActive && currentLine) lineHold.push(currentLine);
+
+    currentLine = false;
+    currentPins.length = 0;
+    lastX = -1;
+    lastY = -1;
+  };
+  scrawl.addListener(['up', 'leave'], endLine, canvas.domElement);
+
+  const checkLine = function () {
+
+    if (scribblesAreActive) {
+
+      const here = canvas.getBaseHere();
+
+      console.log('checkLine', JSON.stringify(here));
+
+      if (currentLine && here.active) {
+
+        const {x, y} = here;
+
+        if (x === lastX && y === lastY) return false;
+
+        currentPins.push(getRelPos(here));
+
+        currentLine.set({
+            pins: currentPins,
+        });
+
+        lastX = x;
+        lastY = y;
+      }
+    }
+  };
+  scrawl.addListener('move', checkLine, canvas.domElement);
+
+  scrawl.makePicture({
+    name: name('scribble-display'),
+    asset: scribbleCell,
+    dimensions: ['100%', '100%'],
+    copyDimensions: ['100%', '100%'],
+    order: 999,
+  });
+
+  // Need a way to trigger scribbled lines to recalculate if user changes screen (video) dimensions
+  const updateAllScribbles = () => {
+
+    lineHold.forEach(line => line.set({ tension: 0.3 }));
+    lineBin.forEach(line => line.set({ tension: 0.3 }));
+  };
+
+  return {
+    getScribblesFlag,
+    setScribblesFlag,
+    updateAllScribbles,
   };
 };
 
@@ -1534,7 +1897,23 @@ const dom = scrawl.initializeDomInputs([
   ['button', 'dimensions-modal-close', 'Close'],
   ['by-id', 'dimensions-modal'],
   ['select', 'video-dimensions', 2],
+
+  // Capture handles to the dimensions-related HTML elements
+  ['button', 'scribbles-modal-button', 'Scribbles'],
+  ['button', 'scribbles-modal-close', 'Close'],
+  ['by-id', 'scribbles-modal'],
+  ['input', 'use-scribbles', 'off'],
+  ['input', 'scribbles-color-input', '#000000'],
+  ['input', 'scribbles-width', '1'],
+  ['button', 'scribbles-line-undo', 'Undo line'],
+  ['button', 'scribbles-line-redo', 'Restore line'],
+  ['button', 'scribbles-line-clear', 'Clear all lines'],
+
+  // Capture handles to the logo positioning selector
+  ['select', 'company-logo-position', 0],
 ]);
+
+console.log(dom);
 
 const entityBeingEdited = dom['entity-being-edited'],
   currentCanvasDimensions = dom['current-canvas-dimensions'],
@@ -1589,7 +1968,19 @@ const entityBeingEdited = dom['entity-being-edited'],
   dimensionsModal = dom['dimensions-modal'],
   dimensionsButton = dom['dimensions-modal-button'],
   dimensionsCloseButton = dom['dimensions-modal-close'],
-  dimensionsSelector = dom['video-dimensions'];
+  dimensionsSelector = dom['video-dimensions'],
+
+  scribblesModal = dom['scribbles-modal'],
+  scribblesButton = dom['scribbles-modal-button'],
+  scribblesCloseButton = dom['scribbles-modal-close'],
+  scribblesUseCheckbox = dom['use-scribbles'],
+  scribblesColorInput = dom['scribbles-color-input'],
+  scribblesWidth = dom['scribbles-width'],
+  scribblesLineUndo = dom['scribbles-line-undo'],
+  scribblesLineRedo = dom['scribbles-line-redo'],
+  scribblesLineClear = dom['scribbles-line-clear'],
+
+  logoSelector = dom['company-logo-position'];
 
 
 // ------------------------------------------------------------------------
@@ -1689,9 +2080,27 @@ scrawl.makeFilter({
   ],
 });
 
+
 // ------------------------------------------------------------------------
 // Start the page running
+// - Attempted to make the ordering of these invocations as irrelevant as possible
+// - Be wary of including function calls defined in other invocations in an invocation function
 // ------------------------------------------------------------------------
+
+// Keyboard accessibility
+canvas.set({
+  includeInTabNavigation: true,
+});
+
+const {
+  getScribblesFlag,
+  setScribblesFlag,
+  updateAllScribbles,
+} = initScribble();
+
+const {
+  updateLogoPosition,
+} = initLogo();
 
 const {
   updateGroup,
@@ -1699,10 +2108,13 @@ const {
   areControlsEnabled,
   disableControls,
   dragGroup,
+  disableDragging,
+  enableDragging,
 } = initUpdates();
 
 const { 
   getDimensions,
+  getScaler,
 } = initDimensions();
 
 const { 
@@ -1727,3 +2139,6 @@ scrawl.makeRender({
   name: name('render'),
   target: canvas,
 });
+
+console.log(scrawl.library);
+

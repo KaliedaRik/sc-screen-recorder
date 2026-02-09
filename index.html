@@ -24,13 +24,28 @@
       data-fit="contain"
       data-label="Scrawl-canvas screen recorder canvas."
       data-description="Record your local screen using your browser. This is a proof-of-concept project."
-    ></canvas>
+    >
+      <div class="assets" aria-hidden="true">
+        <img id="company-logo" src="assets/logo.png" class="logos" alt="Company logo">
+      </div>      
+    </canvas>
   </div>
 
   <!-- User control bar buttons - these will open up modals -->
   <div id="control-buttons">
     <a href="https://github.com/KaliedaRik/sc-screen-recorder" target="_BLANK">Instructions</a>
     <button id="targets-modal-button">Cannot get targets</button>
+    <div id="company-logo-control">
+      <label for="company-logo-position">Logo </label>
+      <select id="company-logo-position">
+        <option value="hide">Hide</option>
+        <option value="top-left">Top left</option>
+        <option value="bottom-left">Bottom left</option>
+        <option value="bottom-right">Bottom right</option>
+        <option value="top-right">Top right</option>
+      </select>
+    </div>
+    <button id="scribbles-modal-button">Cannot use scribbles</button>
     <button id="head-modal-button">Cannot show head</button>
     <button id="recording-modal-button" disabled>Cannot record video</button>
     <button id="background-modal-button" disabled>Cannot change background</button>
@@ -112,6 +127,26 @@
     <h3>Recent uploads</h3>
     <p>Click on an image to use it:</p>
     <div id="background-image-hold"></div>
+  </dialog>
+
+  <!-- Scribbles modal -->
+  <dialog id='scribbles-modal' closedby="any">
+    <button id="scribbles-modal-close" autofocus class="close">Close</button>
+    <h2>Scribbles management</h2>
+    <div class="scribbles-parameters">
+      <label for="use-scribbles">Use scribbles</label>
+      <input id="use-scribbles" autocomplete="off" type="checkbox">
+      <label id="scribbles-color-button" for="scribbles-color-input">Change scribbles color</label>
+      <input id="scribbles-color-input" type="color" value="#000000">
+      <label for="scribbles-width">Change scribbles width</label>
+      <input type="range" class="scribbles-controls" id="scribbles-width" name="scribbles-width" min="1" max="10" value="1" step="1">
+    </div>
+    <hr />
+    <div class="scribble-line-buttons">
+      <button id="scribbles-line-undo">Undo line</button>
+      <button id="scribbles-line-redo">Restore line</button>
+      <button id="scribbles-line-clear">Clear all lines</button>
+    </div>
   </dialog>
 
   <!-- Talking head capture modal -->
