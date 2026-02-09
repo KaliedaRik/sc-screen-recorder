@@ -724,6 +724,8 @@ const initTargets = () => {
         lineJoin: 'round',
         method: 'fill',
 
+        bringToFrontOnDrag: false,
+
         button: {
 
           name: `${targetId}-button`,
@@ -1703,12 +1705,11 @@ const initScribble = () => {
   // - CTRL + z     Clear the last line (undo)
   // - CTRL + y     Reinstate the last cleared line (redo)
   // - CTRL + x     Clear out all lines and reset (clear)
-  // TODO: currently not working! Buttons in the modal panel do work
-  scrawl.makeKeyboardZone({
+scrawl.makeKeyboardZone({
 
     zone: canvas,
 
-    ctrlOnly: {
+    altOnly: {
       x: () => clearLines(),
       y: () => redoLine(),
       z: () => undoLine(),
@@ -2085,6 +2086,11 @@ scrawl.makeFilter({
 // - Attempted to make the ordering of these invocations as irrelevant as possible
 // - Be wary of including function calls defined in other invocations in an invocation function
 // ------------------------------------------------------------------------
+
+// Keyboard accessibility
+canvas.set({
+  includeInTabNavigation: true,
+});
 
 const {
   getScribblesFlag,
