@@ -1,6 +1,8 @@
 :root {
   font: 16px Arial, sans-serif;
 
+  --control-panel-width: 320px;
+
   --control-bar-background: rgb(255 255 255 / 0.7);
   --control-button-background: rgb(220 220 220 / 1);
   --control-button-border: rgb(60 60 60 / 1);
@@ -114,10 +116,59 @@ body {
   padding: 0;
 }
 
-#my-canvas-container {
+/* 
+  Use a 2 panel approach, 
+  - main controls in the left panel
+  - canvas app in the right panel
+*/
+main {
   width: 100vw;
   min-width: 360px;
   height: 100vh;
+
+  display: grid;
+  grid-template-columns: var(--control-panel-width) 1fr;
+}
+
+#controls-panel {
+  width: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  border-right: 1px solid var(--editing-bar-border);
+  padding: 0 1rem;
+
+  & a {
+    display: block;
+    margin: 0.5rem 0;
+    border: 1px solid var(--control-button-border);
+    padding: 0.25rem 0.5rem;
+    padding-left: 1rem;
+    border-radius: 5px;
+    background-color: var(--control-button-background);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  & div {
+    margin: 0.5rem 0;
+    border: 1px solid var(--control-button-border);
+    padding: 0.25rem 0.5rem;
+    padding-left: 1rem;
+    border-radius: 5px;
+    background-color: var(--control-button-background);
+  }
+}
+
+#app-panel {
+  width: 100%;
+  min-width: 360px;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+#my-canvas-container {
+  width: 100%;
+  height: 100%;
 }
 
 #my-canvas {
@@ -127,9 +178,9 @@ body {
 #control-buttons {
   position: absolute;
   top: 0;
-  left: 0;
+  left: var(--control-panel-width);
   box-sizing: border-box;
-  width: 100%;
+  width: calc(100vw - var(--control-panel-width));
   min-width: 360px;
   margin: 0;
   border: 0;
@@ -182,9 +233,9 @@ body {
   font-size: 90%;
   position: absolute;
   bottom: 0;
-  left: 0;
+  left: var(--control-panel-width);
   box-sizing: border-box;
-  width: 100%;
+  width: calc(100vw - var(--control-panel-width));
   min-width: 360px;
   max-height: 180px;
   overflow-y: auto;

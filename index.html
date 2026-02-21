@@ -12,88 +12,104 @@
 
 <body>
 
-  <!-- Canvas app -->
-  <div id="my-canvas-container">
-    <canvas 
-      id="my-canvas" 
-      data-scrawl-canvas 
-      data-is-responsive="true"
-      data-base-width="854"
-      data-base-height="480"
-      data-base-background-color="white"
-      data-fit="contain"
-      data-label="Scrawl-canvas screen recorder canvas."
-      data-description="Record your local screen using your browser. This is a proof-of-concept project."
-    >
-      <div class="assets" aria-hidden="true">
-        <img id="company-logo" src="assets/logo.png" class="logos" alt="Company logo">
-      </div>      
-    </canvas>
-  </div>
+  <main>
 
-  <!-- User control bar buttons - these will open up modals -->
-  <div id="control-buttons">
-    <a href="https://github.com/KaliedaRik/sc-screen-recorder" target="_BLANK">Instructions</a>
-    <button id="targets-modal-button">Cannot get targets</button>
-    <div id="company-logo-control">
-      <label for="company-logo-position">Logo </label>
-      <select id="company-logo-position">
-        <option value="hide">Hide</option>
-        <option value="top-left">Top left</option>
-        <option value="bottom-left">Bottom left</option>
-        <option value="bottom-right">Bottom right</option>
-        <option value="top-right">Top right</option>
-      </select>
-    </div>
-    <button id="scribbles-modal-button">Cannot use scribbles</button>
-    <button id="head-modal-button">Cannot show head</button>
-    <button id="recording-modal-button" disabled>Cannot record video</button>
-    <button id="background-modal-button" disabled>Cannot change background</button>
-    <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
-  </div>
-
-  <!-- User target entity controls -->
-  <div id="entity-control-panel">
-    <div id="entity-heading">
-      <p>Editing: <span id="entity-being-edited">no target selected</span></p>
-      <p>Current dimensions: <span id="current-canvas-dimensions">Canvas dims</span></p>
-    </div>
-    <div id="entity-controls">
-      <div>
-        <label for="startX">Horizontal</label>
-        <input class="target-update" id="startX" type="range" min="-25" max="125" value="50" step="1" disabled>
-      </div>
-      <div>
-        <label for="startY">Vertical</label>
-        <input class="target-update" id="startY" type="range" min="-25" max="125" value="50" step="1" disabled>
-      </div>
-      <div>
-        <label for="scale">Scale</label>
-        <input class="target-update" id="scale" type="range" min="0" max="2" value="1" step="0.01" disabled>
-      </div>
-      <div>
-        <label for="roll">Rotation</label>
-        <input class="target-update" id="roll" type="range" min="0" max="360" value="0" step="1" disabled>
-      </div>
-      <div>
-        <label for="opacity">Opacity</label>
-        <input class="target-update" id="opacity" type="range" min="0" max="1" value="1" step="0.01" disabled>
-      </div>
-      <div>
-        <label for="order">Display order</label>
-        <input class="target-update" id="order" type="range" min="0" max="100" value="0" step="1" disabled>
-      </div>
-      <div>
-        <label for="target-filter">Filter</label>
-        <select id="target-filter" disabled>
-          <option value="none">None</option>
-          <option value="sharpen">Sharpen</option>
-          <option value="pixelate">Pixelate</option>
-          <option value="gray">Gray</option>
+    <!-- App controls bar on left hand side -->
+    <div id="controls-panel">
+      <a href="https://github.com/KaliedaRik/sc-screen-recorder" target="_BLANK">Instructions</a>
+      <div id="company-logo-control">
+        <label for="company-logo-position">Logo</label>
+        <select id="company-logo-position">
+          <option value="hide">Hide</option>
+          <option value="top-left">Top left</option>
+          <option value="bottom-left">Bottom left</option>
+          <option value="bottom-right">Bottom right</option>
+          <option value="top-right">Top right</option>
         </select>
       </div>
+      <p>Head</p>
+      <p>Background</p>
+      <p>Scribbles</p>
+      <p>Targets</p>
     </div>
-  </div>
+
+    <div id="app-panel">
+      
+      <!-- Canvas app -->
+      <div id="my-canvas-container">
+        <canvas 
+          id="my-canvas" 
+          data-scrawl-canvas 
+          data-is-responsive="true"
+          data-base-width="854"
+          data-base-height="480"
+          data-base-background-color="white"
+          data-fit="contain"
+          data-label="Scrawl-canvas screen recorder canvas."
+          data-description="Record your local screen using your browser. This is a proof-of-concept project."
+        >
+          <div class="assets" aria-hidden="true">
+            <img id="company-logo" src="assets/logo.png" class="logos" alt="Company logo">
+          </div>      
+        </canvas>
+      </div>
+
+      <!-- User control bar buttons - these will open up modals -->
+      <div id="control-buttons">
+        <button id="targets-modal-button">Cannot get targets</button>
+        <button id="scribbles-modal-button">Cannot use scribbles</button>
+        <button id="head-modal-button">Cannot show head</button>
+        <button id="recording-modal-button" disabled>Cannot record video</button>
+        <button id="background-modal-button" disabled>Cannot change background</button>
+        <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
+      </div>
+
+      <!-- User target entity controls -->
+      <div id="entity-control-panel">
+        <div id="entity-heading">
+          <p>Editing: <span id="entity-being-edited">no target selected</span></p>
+          <p>Current dimensions: <span id="current-canvas-dimensions">Canvas dims</span></p>
+        </div>
+        <div id="entity-controls">
+          <div>
+            <label for="startX">Horizontal</label>
+            <input class="target-update" id="startX" type="range" min="-25" max="125" value="50" step="1" disabled>
+          </div>
+          <div>
+            <label for="startY">Vertical</label>
+            <input class="target-update" id="startY" type="range" min="-25" max="125" value="50" step="1" disabled>
+          </div>
+          <div>
+            <label for="scale">Scale</label>
+            <input class="target-update" id="scale" type="range" min="0" max="2" value="1" step="0.01" disabled>
+          </div>
+          <div>
+            <label for="roll">Rotation</label>
+            <input class="target-update" id="roll" type="range" min="0" max="360" value="0" step="1" disabled>
+          </div>
+          <div>
+            <label for="opacity">Opacity</label>
+            <input class="target-update" id="opacity" type="range" min="0" max="1" value="1" step="0.01" disabled>
+          </div>
+          <div>
+            <label for="order">Display order</label>
+            <input class="target-update" id="order" type="range" min="0" max="100" value="0" step="1" disabled>
+          </div>
+          <div>
+            <label for="target-filter">Filter</label>
+            <select id="target-filter" disabled>
+              <option value="none">None</option>
+              <option value="sharpen">Sharpen</option>
+              <option value="pixelate">Pixelate</option>
+              <option value="gray">Gray</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    
+  </main>
 
   <!-- Target management modal -->
   <dialog id='targets-modal' closedby="any">
