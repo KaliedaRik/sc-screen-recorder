@@ -501,7 +501,7 @@ const initTalkingHead = () => {
           dimensions: [width, height],
           scale,
           asset: mycamera, 
-        });
+        }, mycamera.source);
 
         talkingHeadFrame.clear();
         talkingHeadFrame.compile();
