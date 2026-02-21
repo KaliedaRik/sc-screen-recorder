@@ -1153,15 +1153,6 @@ const initVideoRecording = () => {
 // Initialize background image functionality
 const initBackground = () => {
 
-  // Initialize DOM background button and associated modal
-  // - The main "Background" button opens an associated modal - all defined in HTML
-  // - Users can use the modal to upload new background images, or select an image loaded earlier
-  // - Users can also drag-drop image files onto the canvas to upload/display them
-  backgroundButton.removeAttribute('disabled');
-  scrawl.addNativeListener('click', () => openModal(backgroundModal), backgroundButton);
-  scrawl.addNativeListener('click', closeModal, backgroundCloseButton);
-  scrawl.addNativeListener('close', closeModal, backgroundModal);
-
   scrawl.addNativeListener('focus', () => backgroundUploadButton.classList.add('is-focussed'), backgroundUpload);
   scrawl.addNativeListener('blur', () => backgroundUploadButton.classList.remove('is-focussed'), backgroundUpload);
   scrawl.addNativeListener('focus', () => backgroundColorButton.classList.add('is-focussed'), backgroundColorInput);
@@ -1254,7 +1245,6 @@ const initBackground = () => {
 
               backgroundPicture.set({ asset });
               updateBackgroundPicture();
-              backgroundModal.close();
             }
           }
         }
@@ -1290,8 +1280,6 @@ const initBackground = () => {
     backgroundPicture.set({
       asset: '',
     });
-
-    backgroundModal.close();
   };
   scrawl.addNativeListener('click', hideBackground, backgroundImageHide);
 
@@ -1891,9 +1879,9 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'target-border-color', '#ff0000'],
 
   // Capture handles to the background-related HTML elements
-  ['button', 'background-modal-button', 'Background'],
-  ['button', 'background-modal-close', 'Close'],
-  ['by-id', 'background-modal'],
+  // ['button', 'background-modal-button', 'Background'],
+  // ['button', 'background-modal-close', 'Close'],
+  // ['by-id', 'background-modal'],
   ['input', 'background-upload', ''],
   ['by-id', 'background-upload-button'],
   ['input', 'background-color-input', '#ffffff'],
@@ -1966,9 +1954,6 @@ const entityBeingEdited = dom['entity-being-edited'],
   targetBorderStyle = dom['target-border-style'],
   targetBorderColor = dom['target-border-color'],
 
-  backgroundModal = dom['background-modal'],
-  backgroundButton = dom['background-modal-button'],
-  backgroundCloseButton = dom['background-modal-close'],
   backgroundUpload = dom['background-upload'],
   backgroundUploadButton = dom['background-upload-button'],
   backgroundColorInput = dom['background-color-input'],

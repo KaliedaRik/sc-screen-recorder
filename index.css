@@ -6,6 +6,7 @@
   --control-bar-background: rgb(255 255 255 / 0.7);
   --control-button-background: rgb(220 220 220 / 1);
   --control-button-border: rgb(60 60 60 / 1);
+  --control-button-panel-background: rgb(240 240 240 / 1);
 
   --outline-width: 3px;
   --outline-color: rgb(0 215 255 / 1);
@@ -135,27 +136,52 @@ main {
   overflow-y: auto;
   box-sizing: border-box;
   border-right: 1px solid var(--editing-bar-border);
-  padding: 0 1rem;
+  padding: 0 0.5rem;
 
   & a {
     display: block;
     margin: 0.5rem 0;
     border: 1px solid var(--control-button-border);
     padding: 0.25rem 0.5rem;
-    padding-left: 1rem;
     border-radius: 5px;
     background-color: var(--control-button-background);
     color: inherit;
     text-decoration: none;
+    font-weight: bold;
   }
 
-  & div {
+  & details {
     margin: 0.5rem 0;
     border: 1px solid var(--control-button-border);
     padding: 0.25rem 0.5rem;
-    padding-left: 1rem;
     border-radius: 5px;
     background-color: var(--control-button-background);
+
+    & summary {
+      font-weight: bold;
+    }
+
+    & > div {
+      margin-top: 0.5rem;
+      border-radius: 5px;
+      background-color: var(--control-button-panel-background);
+      border: 1px solid var(--control-button-border);
+      padding: 0.25rem 0.5rem;
+
+      & h2 {
+        font-size: 120%;
+        margin: 0;
+      }
+
+      & h3 {
+        font-size: 110%;
+        margin: 0;
+      }
+
+      & input {
+        margin: 0;
+      }
+    }
   }
 }
 
@@ -207,25 +233,6 @@ main {
       background-color: var(--is-recording-background);
       color: var(--is-recording-text);
     }
-  }
-
-  & a {
-    display: inline-block;
-    margin: 0.5rem;
-    border: 1px solid var(--control-button-border);
-    padding: 0.25rem 0.5rem;
-    border-radius: 5px;
-    background-color: var(--control-button-background);
-    color: inherit;
-    text-decoration: none;
-  }
-
-  & div {
-    margin: 0.5rem;
-    border: 1px solid var(--control-button-border);
-    padding: 0.25rem 0.5rem;
-    border-radius: 5px;
-    background-color: var(--control-button-background);
   }
 }
 
@@ -329,10 +336,11 @@ dialog {
   }
 }
 
-#background-modal {
+#background-details-panel {
 
   & input {
     opacity: 0;
+    height: 0;
   }
 
   & button#background-image-hide {
@@ -358,7 +366,7 @@ dialog {
   }
 
   & #background-image-hold {
-    width: 100%;
+    width: calc(100% - 2rem);
     margin: 1rem 0;
     display: flex;
     justify-content: center;
@@ -367,8 +375,8 @@ dialog {
     & button {
       margin: 0.2rem;
       padding: 0;
-      width: 100px;
-      height: 100px;
+      width: 90px;
+      height: 90px;
 
       & img {
         width: 100%;
