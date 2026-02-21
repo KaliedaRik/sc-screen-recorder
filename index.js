@@ -558,6 +558,7 @@ const initTalkingHead = () => {
         headHorizontal.removeAttribute('disabled');
         headVertical.removeAttribute('disabled');
         headScale.removeAttribute('disabled');
+        headOpacity.removeAttribute('disabled');
         headRotation.removeAttribute('disabled');
 
         headIsDisplayed = true;
@@ -569,6 +570,7 @@ const initTalkingHead = () => {
         headHorizontal.setAttribute('disabled', '');
         headVertical.setAttribute('disabled', '');
         headScale.setAttribute('disabled', '');
+        headOpacity.setAttribute('disabled', '');
         headRotation.setAttribute('disabled', '');
 
         headIsDisplayed = false;
@@ -581,6 +583,7 @@ const initTalkingHead = () => {
       headHorizontal.setAttribute('disabled', '');
       headVertical.setAttribute('disabled', '');
       headScale.setAttribute('disabled', '');
+      headOpacity.setAttribute('disabled', '');
       headRotation.setAttribute('disabled', '');
 
       headIsDisplayed = false;
@@ -629,6 +632,7 @@ const initTalkingHead = () => {
       ['head-horizontal']: ['startX', '%'],
       ['head-vertical']: ['startY', '%'],
       ['head-scale']: ['scale', 'float'],
+      ['head-opacity']: ['globalAlpha', 'float'],
       ['head-rotation']: ['roll', 'float'],
     },
   });
@@ -1350,7 +1354,7 @@ const initUpdates = () => {
   let controlsEnabled = false;
   const areControlsEnabled = () => controlsEnabled;
 
-  const entityControls = [entityStartX, entityStartY, entityScale, entityRoll, entityOrder];
+  const entityControls = [entityStartX, entityStartY, entityScale, entityRoll, entityOpacity, entityOrder];
 
   const enableControls = () => {
     entityControls.forEach(control => control.removeAttribute('disabled'));
@@ -1384,6 +1388,7 @@ const initUpdates = () => {
       startY: ['startY', '%'],
       scale: ['scale', 'float'],
       roll: ['roll', 'float'],
+      opacity: ['globalAlpha', 'float'],
       order: ['order', 'int'],
     },
   });
@@ -1412,6 +1417,7 @@ const initUpdates = () => {
         const [x, y] = entity.get('start');
         const scale = entity.get('scale');
         const roll = entity.get('roll');
+        const opacity = entity.get('globalAlpha');
         const order = entity.get('order');
         const filters = entity.get('filters')[0];
 
@@ -1424,6 +1430,7 @@ const initUpdates = () => {
         entityStartY.value = `${pY}`;
         entityScale.value = `${scale}`;
         entityRoll.value = `${roll}`;
+        entityOpacity.value = `${opacity}`;
         entityOrder.value = `${order}`;
 
         if (!filters) entityFilter.value = 'none';
@@ -1844,6 +1851,7 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'startY', '50'],
   ['input', 'scale', '1'],
   ['input', 'roll', '0'],
+  ['input', 'opacity', '1'],
   ['input', 'order', '0'],
   ['select', 'target-filter', 0],
 
@@ -1857,6 +1865,7 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'head-horizontal', '75'],
   ['input', 'head-vertical', '75'],
   ['input', 'head-scale', '0.5'],
+  ['input', 'head-opacity', '1'],
   ['input', 'head-rotation', '0'],
   ['select', 'head-shape', 0],
   ['select', 'head-background', 1],
@@ -1921,6 +1930,7 @@ const entityBeingEdited = dom['entity-being-edited'],
   entityStartY = dom['startY'],
   entityScale = dom['scale'],
   entityRoll = dom['roll'],
+  entityOpacity = dom['opacity'],
   entityOrder = dom['order'],
   entityFilter = dom['target-filter'],
 
@@ -1933,6 +1943,7 @@ const entityBeingEdited = dom['entity-being-edited'],
   headHorizontal = dom['head-horizontal'],
   headVertical = dom['head-vertical'],
   headScale = dom['head-scale'],
+  headOpacity = dom['head-opacity'],
   headRotation = dom['head-rotation'],
   headShape = dom['head-shape'],
   headBackground = dom['head-background'],
