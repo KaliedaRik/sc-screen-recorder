@@ -416,15 +416,14 @@ dialog {
   }
 }
 
-#targets-modal {
-
-  min-width: 50vw;
+#targets-panel {
 
   & button#target-request-button {
     font-size: 100%;
     background-color: var(--dialog-button-background);
     border-radius: 5px;
     padding: 0.25rem;
+    margin: 0.5rem 0;
   }
 
   & .target-list-row {
@@ -434,7 +433,7 @@ dialog {
     padding: 0.3rem 0;
 
     & button {
-      font-size: 100%;
+      font-size: 80%;
       background-color: var(--dialog-button-background);
       border-radius: 5px;
       padding: 0.25rem;
@@ -443,17 +442,18 @@ dialog {
 
   & .border-parameters {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     row-gap: 0.5rem;
     align-items: center;
-
-    @media (width >= 600px) {
-      grid-template-columns: 1fr 1fr;
-    }
+    margin: 0.5rem 0;
 
     & #target-border-color {
       width: 100%;
     }
+  }
+
+  & h2, h3 {
+    margin: 0.5rem 0;
   }
 }
 

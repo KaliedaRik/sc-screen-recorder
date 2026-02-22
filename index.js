@@ -672,11 +672,6 @@ const initTalkingHead = () => {
 const initTargets = () => {
 
   // Initialize DOM targets button and associated modal
-  targetsButton.removeAttribute('disabled');
-  scrawl.addNativeListener('click', () => openModal(targetsModal), targetsButton);
-  scrawl.addNativeListener('click', closeModal, targetsCloseButton);
-  scrawl.addNativeListener('close', closeModal, targetsModal);
-
   scrawl.addNativeListener('click', () => requestScreenCapture(), targetRequestButton);
 
   // Local state
@@ -1834,6 +1829,7 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'order', '0'],
   ['select', 'target-filter', 0],
 
+  // Capture handles to the head controls
   ['select', 'talking-head-camera', 0],
   ['input', 'use-talking-head', 'off'],
   ['input', 'show-talking-head', 'on'],
@@ -1856,9 +1852,6 @@ const dom = scrawl.initializeDomInputs([
   ['button', 'recording-start-button', 'Start recording'],
 
   // Capture handles to the targets-related HTML elements
-  ['button', 'targets-modal-button', 'Targets'],
-  ['button', 'targets-modal-close', 'Close'],
-  ['by-id', 'targets-modal'],
   ['button', 'target-request-button', 'Request screen capture'],
   ['by-id', 'current-targets-hold'],
   ['input', 'target-border-width', '3'],
@@ -1923,9 +1916,6 @@ const entityBeingEdited = dom['entity-being-edited'],
   recordingCodec = dom['video-output-codec'],
   recordingStartButton = dom['recording-start-button'],
 
-  targetsModal = dom['targets-modal'],
-  targetsButton = dom['targets-modal-button'],
-  targetsCloseButton = dom['targets-modal-close'],
   targetRequestButton = dom['target-request-button'],
   targetsHold = dom['current-targets-hold'],
   targetBorderWidth = dom['target-border-width'],

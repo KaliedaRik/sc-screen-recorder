@@ -112,7 +112,31 @@
       </details>
 
       <!-- Targets -->
-      <p>Targets</p>
+      <details id='targets-panel'>
+        <summary>Targets</summary>
+        <div>
+          <h2>Targets management</h2>
+          <div>
+            <button id="target-request-button">Request screen capture</button>
+          </div>
+          <h3>Current targets</h3>
+          <div id="current-targets-hold"></div>
+          <hr />
+          <h3>Target borders</h3>
+          <div class="border-parameters">
+            <label for="target-border-width">Border width</label>
+            <input type="range" class= "target-border-controls" id="target-border-width" min="0" max="20" value="3">
+            <label for="target-border-style">Border style</label>
+            <select class= "target-border-controls" id="target-border-style">
+              <option value="[]">Solid</option>
+              <option value="[4,4]">Dotted</option>
+              <option value="[10,4]">Dashed</option>
+            </select>
+            <label for="target-border-color">Border color</label>
+            <input type="color" class= "target-border-controls" id="target-border-color" value="#ff0000">
+          </div>
+        </div>
+      </details>
 
       <!-- Scribbles -->
       <details id='scribbles-panel'>
@@ -160,7 +184,6 @@
 
       <!-- User control bar buttons - these will open up modals -->
       <div id="control-buttons">
-        <button id="targets-modal-button">Cannot get targets</button>
         <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
         <button id="recording-modal-button" disabled>Cannot record video</button>
       </div>
@@ -212,7 +235,7 @@
     
   </main>
 
-  <!-- Target management modal -->
+  <!-- Target management modal 
   <dialog id='targets-modal' closedby="any">
     <button id="targets-modal-close" autofocus class="close">Close</button>
     <h2>Targets management</h2>
@@ -235,79 +258,7 @@
       <input type="color" class= "target-border-controls" id="target-border-color" value="#ff0000">
     </div>
   </dialog>
-
-  <!--
-  Scribbles modal 
-  <dialog id='scribbles-modal' closedby="any">
-    <button id="scribbles-modal-close" autofocus class="close">Close</button>
-    <h2>Scribbles management</h2>
-    <div class="scribbles-parameters">
-      <label for="use-scribbles">Use scribbles</label>
-      <input id="use-scribbles" autocomplete="off" type="checkbox">
-      <label id="scribbles-color-button" for="scribbles-color-input">Change scribbles color</label>
-      <input id="scribbles-color-input" type="color" value="#000000">
-      <label for="scribbles-width">Change scribbles width</label>
-      <input type="range" class="scribbles-controls" id="scribbles-width" name="scribbles-width" min="1" max="10" value="1" step="1">
-    </div>
-    <hr />
-    <div class="scribble-line-buttons">
-      <button id="scribbles-line-undo">Undo line</button>
-      <button id="scribbles-line-redo">Restore line</button>
-      <button id="scribbles-line-clear">Clear all lines</button>
-    </div>
-  </dialog>
   -->
-
-  <!-- 
-  Talking head capture modal
-  <dialog id='head-modal' closedby="any">
-    <button id="head-modal-close" autofocus class="close">Close</button>
-    <h2>Talking head management</h2>
-    <div class="talking-head-parameters">
-      <label for="talking-head-camera">Selected camera</label>
-      <select id="talking-head-camera">
-        <option value="none">None</option>
-      </select>
-      <label for="use-talking-head">Use talking head</label>
-      <input id="use-talking-head" autocomplete="off" type="checkbox">
-      <label for="show-talking-head">Show talking head</label>
-      <input id="show-talking-head" autocomplete="off" type="checkbox" checked disabled>
-    </div>
-    <h3>Talking head parameters</h3>
-    <div class="talking-head-parameters">
-      <label for="head-horizontal">Horizontal</label>
-      <input type="range" class="head-controls" id="head-horizontal" name="head-horizontal" min="-25" max="125" value="75" disabled>
-      <label for="head-vertical">Vertical</label>
-      <input type="range" class="head-controls" id="head-vertical" name="head-vertical" min="-25" max="125" value="75" disabled>
-      <label for="head-scale">Scale</label>
-      <input type="range" class="head-controls" id="head-scale" name="head-scale" min="0" max="2" value="1" step="0.01" disabled>
-      <label for="head-opacity">Opacity</label>
-      <input type="range" class="head-controls" id="head-opacity" name="head-opacity" min="0" max="1" value="1" step="0.01" disabled>
-      <label for="head-rotation">Rotation</label>
-      <input type="range" class="head-controls" id="head-rotation" name="head-rotation" min="0" max="360" value="0" disabled>
-      <label for="head-shape">Shape</label>
-      <select id="head-shape">
-        <option value="0">Square</option>
-        <option value="1">Round</option>
-      </select>
-      <label for="head-background">Remove background</label>
-      <select id="head-background">
-        <option value="0">False</option>
-        <option value="1">True</option>
-      </select>
-      <label for="head-filter">Filter</label>
-      <select id="head-filter">
-        <option value="none">None</option>
-        <option value="gray">Gray</option>
-        <option value="blur">Blur</option>
-        <option value="monochrome">Monochrome</option>
-        <option value="pixelate">Pixellate</option>
-        <option value="cartoon">Cartoon</option>
-        <option value="outline">Hidden</option>
-      </select>
-    </div>
-  </dialog>
-   -->
 
   <!-- Canvas dimensions modal -->
   <dialog id='dimensions-modal' closedby="any">
