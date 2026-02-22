@@ -1506,18 +1506,25 @@ const initLogo = () => {
     logoChoice.appendChild(opt);
   });
 
+  const logoGroup = scrawl.makeGroup({
+    name: name('logo-group'),
+    host: canvas.base,
+    order: 2,
+  });
+
   // Magic numbers for the actual dimensions of the logo image, divided by a convenient amount
-  const logoPictureWidth = 860 / 4,
-    logoPictureHeight = 340 / 4;
+  let logoPictureWidth = 0,
+    logoPictureHeight = 0,
+    currentLogo = logos[0].name;
 
   const logoPicture = scrawl.makePicture({
     name: name('logo'),
-    asset: logos[0].name,
+    group: logoGroup,
+    asset: currentLogo,
     start: ['left', 'bottom'],
     handle: ['left', 'bottom'],
     dimensions: [logoPictureWidth, logoPictureHeight],
     copyDimensions: ['100%', '100%'],
-    order: 1000,
     visibility: false,
   });
 
@@ -1525,16 +1532,44 @@ const initLogo = () => {
 
     const logo = logoChoice.value;
 
-    if (logo) {
+    if (logo !== currentLogo) {
+
+      currentLogo = logo;
+
+      const asset = scrawl.findAsset(logo),
+        scaler = getScaler(currentDimension);
+      
+      let width = asset.get('width'),
+        height = asset.get('height');
+
+      if (480 === scaler) {
+        logoPictureWidth = width / 2.25;
+        logoPictureHeight = height / 2.25;
+      }
+      else if (720 === scaler) {
+        logoPictureWidth = width / 1.5;
+        logoPictureHeight = height / 1.5;
+      }
+      else {
+        logoPictureWidth = width;
+        logoPictureHeight = height;
+      }
 
       logoPicture.set({
         asset: logo,
+        width: logoPictureWidth,
+        height: logoPictureHeight,
       });
     }
   };
   scrawl.addNativeListener('change', updateLogoChoice, logoChoice);
 
   const updateLogoPosition = () => {
+
+    // We invoke updateLogoChoice because image loading is async
+    // - the logo is initially hidden; this will give it dimensions when first positioned 
+    currentLogo = '';
+    updateLogoChoice();
 
     switch (logoPosition.value) {
 
@@ -1575,25 +1610,6 @@ const initLogo = () => {
           visibility: true,
         });
         break;
-    }
-
-    // More magic numbers warning
-    const scaler = getScaler(currentDimension);
-
-    if (480 === scaler) {
-      logoPicture.set({
-        dimensions: [logoPictureWidth, logoPictureHeight],
-      });
-    }
-    else if (720 === scaler) {
-      logoPicture.set({
-        dimensions: [logoPictureWidth * 1.5, logoPictureHeight * 1.5],
-      });
-    }
-    else {
-      logoPicture.set({
-        dimensions: [logoPictureWidth * 2.25, logoPictureHeight * 2.25],
-      });
     }
   };
   scrawl.addNativeListener('change', updateLogoPosition, logoPosition);
