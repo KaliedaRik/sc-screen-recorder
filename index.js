@@ -1878,7 +1878,7 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'scribbles-width', '1'],
   ['button', 'scribbles-line-undo', 'Undo line'],
   ['button', 'scribbles-line-redo', 'Restore line'],
-  ['button', 'scribbles-line-clear', 'Clear all lines'],
+  ['button', 'scribbles-line-clear', 'Clear lines'],
 
   // Capture handles to the logo positioning selector
   ['select', 'company-logo-position', 0],
