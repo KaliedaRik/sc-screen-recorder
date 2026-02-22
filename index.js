@@ -1331,7 +1331,7 @@ const initUpdates = () => {
   let controlsEnabled = false;
   const areControlsEnabled = () => controlsEnabled;
 
-  const entityControls = [entityStartX, entityStartY, entityScale, entityRoll, entityOpacity, entityOrder];
+  const entityControls = [entityStartX, entityStartY, entityScale, entityRoll, entityOpacity];
 
   const enableControls = () => {
     entityControls.forEach(control => control.removeAttribute('disabled'));
@@ -1366,7 +1366,6 @@ const initUpdates = () => {
       scale: ['scale', 'float'],
       roll: ['roll', 'float'],
       opacity: ['globalAlpha', 'float'],
-      order: ['order', 'int'],
     },
   });
 
@@ -1395,7 +1394,6 @@ const initUpdates = () => {
         const scale = entity.get('scale');
         const roll = entity.get('roll');
         const opacity = entity.get('globalAlpha');
-        const order = entity.get('order');
         const filters = entity.get('filters')[0];
 
         // Positioning is relative to canvas dimensions
@@ -1408,7 +1406,6 @@ const initUpdates = () => {
         entityScale.value = `${scale}`;
         entityRoll.value = `${roll}`;
         entityOpacity.value = `${opacity}`;
-        entityOrder.value = `${order}`;
 
         if (!filters) entityFilter.value = 'none';
         else entityFilter.value = filters;
@@ -1874,7 +1871,6 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'scale', '1'],
   ['input', 'roll', '0'],
   ['input', 'opacity', '1'],
-  ['input', 'order', '0'],
   ['select', 'target-filter', 0],
 
   // Capture handles to the head controls
@@ -1942,7 +1938,6 @@ const entityBeingEdited = dom['entity-being-edited'],
   entityScale = dom['scale'],
   entityRoll = dom['roll'],
   entityOpacity = dom['opacity'],
-  entityOrder = dom['order'],
   entityFilter = dom['target-filter'],
 
   headUseCheckbox = dom['use-talking-head'],
