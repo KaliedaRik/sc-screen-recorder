@@ -21,7 +21,7 @@
       <a href="https://github.com/KaliedaRik/sc-screen-recorder" target="_BLANK">Instructions</a>
 
       <!-- logo -->
-      <details id="company-logo-control">
+      <details id="company-logo-panel">
         <summary>Logo control</summary>
         <div>
           <label for="company-logo-position">Logo position</label>
@@ -58,11 +58,59 @@
         </div>
       </details>
 
+      <!-- Head -->
+      <details id='head-panel'>
+        <summary>Head</summary>
+        <div>
+          <h2>Talking head management</h2>
+          <div class="talking-head-parameters">
+            <label for="talking-head-camera">Selected camera</label>
+            <select id="talking-head-camera">
+              <option value="none">None</option>
+            </select>
+            <label for="use-talking-head">Use talking head</label>
+            <input id="use-talking-head" autocomplete="off" type="checkbox">
+            <label for="show-talking-head">Show talking head</label>
+            <input id="show-talking-head" autocomplete="off" type="checkbox" checked disabled>
+          </div>
+          <h3>Talking head parameters</h3>
+          <div class="talking-head-parameters">
+            <label for="head-horizontal">Horizontal</label>
+            <input type="range" class="head-controls" id="head-horizontal" name="head-horizontal" min="-25" max="125" value="75" disabled>
+            <label for="head-vertical">Vertical</label>
+            <input type="range" class="head-controls" id="head-vertical" name="head-vertical" min="-25" max="125" value="75" disabled>
+            <label for="head-scale">Scale</label>
+            <input type="range" class="head-controls" id="head-scale" name="head-scale" min="0" max="2" value="1" step="0.01" disabled>
+            <label for="head-opacity">Opacity</label>
+            <input type="range" class="head-controls" id="head-opacity" name="head-opacity" min="0" max="1" value="1" step="0.01" disabled>
+            <label for="head-rotation">Rotation</label>
+            <input type="range" class="head-controls" id="head-rotation" name="head-rotation" min="0" max="360" value="0" disabled>
+            <label for="head-shape">Shape</label>
+            <select id="head-shape">
+              <option value="0">Square</option>
+              <option value="1">Round</option>
+            </select>
+            <label for="head-background">Remove background</label>
+            <select id="head-background">
+              <option value="0">False</option>
+              <option value="1">True</option>
+            </select>
+            <label for="head-filter">Filter</label>
+            <select id="head-filter">
+              <option value="none">None</option>
+              <option value="gray">Gray</option>
+              <option value="blur">Blur</option>
+              <option value="monochrome">Monochrome</option>
+              <option value="pixelate">Pixellate</option>
+              <option value="cartoon">Cartoon</option>
+              <option value="outline">Hidden</option>
+            </select>
+          </div>
+        </div>
+      </details>
+
       <!-- Targets -->
       <p>Targets</p>
-
-      <!-- Head -->
-      <p>Head</p>
 
       <!-- Scribbles -->
       <p>Scribbles</p>
@@ -92,7 +140,6 @@
       <!-- User control bar buttons - these will open up modals -->
       <div id="control-buttons">
         <button id="targets-modal-button">Cannot get targets</button>
-        <button id="head-modal-button">Cannot show head</button>
         <button id="scribbles-modal-button">Cannot use scribbles</button>
         <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
         <button id="recording-modal-button" disabled>Cannot record video</button>
@@ -189,7 +236,8 @@
     </div>
   </dialog>
 
-  <!-- Talking head capture modal -->
+  <!-- 
+  Talking head capture modal
   <dialog id='head-modal' closedby="any">
     <button id="head-modal-close" autofocus class="close">Close</button>
     <h2>Talking head management</h2>
@@ -237,6 +285,7 @@
       </select>
     </div>
   </dialog>
+   -->
 
   <!-- Canvas dimensions modal -->
   <dialog id='dimensions-modal' closedby="any">

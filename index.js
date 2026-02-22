@@ -285,11 +285,6 @@ const initTalkingHead = () => {
   };
 
   // Initialize DOM head button and associated modal
-  headButton.removeAttribute('disabled');
-  scrawl.addNativeListener('click', () => openModal(headModal, cameraDiscovery), headButton);
-  scrawl.addNativeListener('click', closeModal, headCloseButton);
-  scrawl.addNativeListener('close', closeModal, headModal);
-
   scrawl.addNativeListener('change', () => selectedCamera = headCamera.value, headCamera);
 
   // Google MediaPipe ML model code
@@ -1843,10 +1838,6 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'order', '0'],
   ['select', 'target-filter', 0],
 
-  // Capture handles to the talking head controls
-  ['button', 'head-modal-button', 'Head'],
-  ['button', 'head-modal-close', 'Close'],
-  ['by-id', 'head-modal'],
   ['select', 'talking-head-camera', 0],
   ['input', 'use-talking-head', 'off'],
   ['input', 'show-talking-head', 'on'],
@@ -1879,9 +1870,6 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'target-border-color', '#ff0000'],
 
   // Capture handles to the background-related HTML elements
-  // ['button', 'background-modal-button', 'Background'],
-  // ['button', 'background-modal-close', 'Close'],
-  // ['by-id', 'background-modal'],
   ['input', 'background-upload', ''],
   ['by-id', 'background-upload-button'],
   ['input', 'background-color-input', '#ffffff'],
@@ -1922,9 +1910,6 @@ const entityBeingEdited = dom['entity-being-edited'],
   entityOrder = dom['order'],
   entityFilter = dom['target-filter'],
 
-  headModal = dom['head-modal'],
-  headButton = dom['head-modal-button'],
-  headCloseButton = dom['head-modal-close'],
   headUseCheckbox = dom['use-talking-head'],
   headCamera = dom['talking-head-camera'],
   headShowCheckbox = dom['show-talking-head'],

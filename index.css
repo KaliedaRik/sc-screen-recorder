@@ -390,6 +390,27 @@ dialog {
   }
 }
 
+#head-panel {
+
+  & .talking-head-parameters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap: 0.5rem;
+    align-items: center;
+    margin: 0.5rem 0 1rem;
+  }
+
+  & input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    margin-left: 0.5rem;
+  }
+
+  & h2, h3 {
+    margin: 0.5rem 0;
+  }
+}
+
 #targets-modal {
 
   min-width: 50vw;
@@ -444,28 +465,6 @@ dialog {
     & option {
       font-size: 100%;
     }
-  }
-}
-
-#head-modal {
-
-  min-width: 50vw;
-
-  & .talking-head-parameters {
-    display: grid;
-    grid-template-columns: 1fr;
-    row-gap: 0.5rem;
-    align-items: center;
-
-    @media (width >= 600px) {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  & input[type="checkbox"] {
-    width: 1.5rem;
-    height: 1.5rem;
-    margin-left: 0.5rem;
   }
 }
 
