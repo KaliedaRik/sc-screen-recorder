@@ -138,6 +138,15 @@ main {
   border-right: 1px solid var(--editing-bar-border);
   padding: 0 0.5rem;
 
+  & h1 {
+    font-size: 150%;
+    margin: 0.5rem 0 0;
+    color: white;
+    background-color: darkslateblue;
+    padding: 0.5rem;
+    text-align: center;
+  }
+
   & a {
     display: block;
     margin: 0.5rem 0;
