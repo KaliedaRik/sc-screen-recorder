@@ -325,6 +325,17 @@ dialog {
   }
 }
 
+#logo-panel {
+
+  & .logo-parameters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap: 0.5rem;
+    align-items: center;
+    margin: 0.5rem 0;
+  }
+}
+
 #scribbles-panel {
 
   & .scribbles-parameters {
