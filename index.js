@@ -219,7 +219,7 @@ const initDimensions = () => {
 
 
 // ------------------------------------------------------------------------
-// Head management modal
+// Head management controls
 // - generates a talking head - with the help of a Google MediaPipe solution
 // - https://ai.google.dev/edge/mediapipe/solutions/guide
 // ------------------------------------------------------------------------
@@ -667,7 +667,7 @@ const initTalkingHead = () => {
 
 
 // ------------------------------------------------------------------------
-// Targets management modal
+// Targets management controls
 // ------------------------------------------------------------------------
 const initTargets = () => {
 
@@ -1136,8 +1136,7 @@ const initVideoRecording = () => {
 
 
 // ------------------------------------------------------------------------
-// Setting the background
-// - WARNING: loading more than a few images at one time will impact page performance!
+// Background color/images controls
 // ------------------------------------------------------------------------
 
 // Initialize background image functionality
@@ -1480,20 +1479,40 @@ const initUpdates = () => {
 
 
 // ------------------------------------------------------------------------
-// Company logo positioning
-// - The logo is ever-present, and needs to go above everything else
+// Logo controls
 // ------------------------------------------------------------------------
 const initLogo = () => {
 
   scrawl.importDomImage('.logos');
+
+  // State is determined by what is in the HTML code
+  const logoElements = document.querySelectorAll('.logos');
+
+  const logos = [...logoElements].map(el => {
+
+    return {
+      name: el.id,
+      label: el.dataset.label || el.id,
+    }
+  });
+
+  logos.forEach(logo => {
+
+    const opt = document.createElement('option');
+
+    opt.value = logo.name;
+    opt.textContent = logo.label;
+
+    logoChoice.appendChild(opt);
+  });
 
   // Magic numbers for the actual dimensions of the logo image, divided by a convenient amount
   const logoPictureWidth = 860 / 4,
     logoPictureHeight = 340 / 4;
 
   const logoPicture = scrawl.makePicture({
-    name: name('company-logo'),
-    asset: 'company-logo',
+    name: name('logo'),
+    asset: logos[0].name,
     start: ['left', 'bottom'],
     handle: ['left', 'bottom'],
     dimensions: [logoPictureWidth, logoPictureHeight],
@@ -1502,9 +1521,22 @@ const initLogo = () => {
     visibility: false,
   });
 
+  const updateLogoChoice = () => {
+
+    const logo = logoChoice.value;
+
+    if (logo) {
+
+      logoPicture.set({
+        asset: logo,
+      });
+    }
+  };
+  scrawl.addNativeListener('change', updateLogoChoice, logoChoice);
+
   const updateLogoPosition = () => {
 
-    switch (logoSelector.value) {
+    switch (logoPosition.value) {
 
       case 'hide':
         logoPicture.set({
@@ -1564,7 +1596,7 @@ const initLogo = () => {
       });
     }
   };
-  scrawl.addNativeListener('change', updateLogoPosition, logoSelector);
+  scrawl.addNativeListener('change', updateLogoPosition, logoPosition);
 
   return {
     updateLogoPosition,
@@ -1881,7 +1913,8 @@ const dom = scrawl.initializeDomInputs([
   ['button', 'scribbles-line-clear', 'Clear lines'],
 
   // Capture handles to the logo positioning selector
-  ['select', 'company-logo-position', 0],
+  ['select', 'logo-choice', 0],
+  ['select', 'logo-position', 0],
 ]);
 
 console.log(dom);
@@ -1941,7 +1974,8 @@ const entityBeingEdited = dom['entity-being-edited'],
   scribblesLineRedo = dom['scribbles-line-redo'],
   scribblesLineClear = dom['scribbles-line-clear'],
 
-  logoSelector = dom['company-logo-position'];
+  logoChoice = dom['logo-choice'],
+  logoPosition = dom['logo-position'];
 
 
 // ------------------------------------------------------------------------
