@@ -145,6 +145,7 @@ main {
     background-color: darkslateblue;
     padding: 0.5rem;
     text-align: center;
+    border-radius: 5px;
   }
 
   & a {
@@ -221,7 +222,7 @@ main {
   border: 0;
   padding: 0;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   flex-wrap: wrap;
   background-color: var(--control-bar-background);
 
@@ -324,24 +325,19 @@ dialog {
   }
 }
 
-#scribbles-modal {
-
-  min-width: 50vw;
+#scribbles-panel {
 
   & .scribbles-parameters {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     row-gap: 0.5rem;
     align-items: center;
-
-    @media (width >= 600px) {
-      grid-template-columns: 1fr 1fr;
-    }
+    margin: 0.5rem 0;
   }
 
   & input[type="checkbox"] {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1rem;
+    height: 1rem;
   }
 }
 
@@ -375,17 +371,17 @@ dialog {
   }
 
   & #background-image-hold {
-    width: calc(100% - 2rem);
+    width: 100%;
     margin: 1rem 0;
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
 
     & button {
-      margin: 0.2rem;
+      margin: 0.1rem;
       padding: 0;
-      width: 90px;
-      height: 90px;
+      width: 80px;
+      height: 80px;
 
       & img {
         width: 100%;

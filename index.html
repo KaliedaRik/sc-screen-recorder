@@ -115,7 +115,26 @@
       <p>Targets</p>
 
       <!-- Scribbles -->
-      <p>Scribbles</p>
+      <details id='scribbles-panel'>
+        <summary>Scribbles</summary>
+        <div>
+          <h2>Scribbles management</h2>
+          <div class="scribbles-parameters">
+            <label for="use-scribbles">Use scribbles</label>
+            <input id="use-scribbles" autocomplete="off" type="checkbox">
+            <label id="scribbles-color-button" for="scribbles-color-input">Line color</label>
+            <input id="scribbles-color-input" type="color" value="#000000">
+            <label for="scribbles-width">Line width</label>
+            <input type="range" class="scribbles-controls" id="scribbles-width" name="scribbles-width" min="1" max="10" value="1" step="1">
+          </div>
+          <hr />
+          <div class="scribble-line-buttons">
+            <button id="scribbles-line-undo">Undo line</button>
+            <button id="scribbles-line-redo">Restore line</button>
+            <button id="scribbles-line-clear">Clear all lines</button>
+          </div>
+        </div>
+      </details>
     </div>
 
     <div id="app-panel">
@@ -142,7 +161,6 @@
       <!-- User control bar buttons - these will open up modals -->
       <div id="control-buttons">
         <button id="targets-modal-button">Cannot get targets</button>
-        <button id="scribbles-modal-button">Cannot use scribbles</button>
         <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
         <button id="recording-modal-button" disabled>Cannot record video</button>
       </div>
@@ -218,7 +236,8 @@
     </div>
   </dialog>
 
-  <!-- Scribbles modal -->
+  <!--
+  Scribbles modal 
   <dialog id='scribbles-modal' closedby="any">
     <button id="scribbles-modal-close" autofocus class="close">Close</button>
     <h2>Scribbles management</h2>
@@ -237,6 +256,7 @@
       <button id="scribbles-line-clear">Clear all lines</button>
     </div>
   </dialog>
+  -->
 
   <!-- 
   Talking head capture modal

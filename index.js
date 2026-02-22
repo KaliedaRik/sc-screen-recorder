@@ -1586,10 +1586,6 @@ const initScribble = () => {
   // Initialize DOM scribbles button and associated modal
   // - The main "Scribbles" button opens an associated modal - all defined in HTML
   // - Users can use the modal to set the color and width of the scribble pen
-  scribblesButton.removeAttribute('disabled');
-  scrawl.addNativeListener('click', () => openModal(scribblesModal), scribblesButton);
-  scrawl.addNativeListener('click', closeModal, scribblesCloseButton);
-  scrawl.addNativeListener('close', closeModal, scribblesModal);
 
   scrawl.addNativeListener('focus', () => scribblesColorInput.classList.add('is-focussed'), backgroundUpload);
   scrawl.addNativeListener('blur', () => scribblesColorInput.classList.remove('is-focussed'), backgroundUpload);
@@ -1884,9 +1880,6 @@ const dom = scrawl.initializeDomInputs([
   ['select', 'video-dimensions', 2],
 
   // Capture handles to the dimensions-related HTML elements
-  ['button', 'scribbles-modal-button', 'Scribbles'],
-  ['button', 'scribbles-modal-close', 'Close'],
-  ['by-id', 'scribbles-modal'],
   ['input', 'use-scribbles', 'off'],
   ['input', 'scribbles-color-input', '#000000'],
   ['input', 'scribbles-width', '1'],
@@ -1951,9 +1944,6 @@ const entityBeingEdited = dom['entity-being-edited'],
   dimensionsCloseButton = dom['dimensions-modal-close'],
   dimensionsSelector = dom['video-dimensions'],
 
-  scribblesModal = dom['scribbles-modal'],
-  scribblesButton = dom['scribbles-modal-button'],
-  scribblesCloseButton = dom['scribbles-modal-close'],
   scribblesUseCheckbox = dom['use-scribbles'],
   scribblesColorInput = dom['scribbles-color-input'],
   scribblesWidth = dom['scribbles-width'],
