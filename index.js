@@ -916,7 +916,7 @@ const initTargets = () => {
 
         const name = prompt('Change target label to', targetNamesObject[targetId]);
 
-        if (name != null && value.trim() !== '') {
+        if (name != null && name.trim() !== '') {
 
           targetNamesObject[targetId] = name;
           updateEntityControls(targetPicture, targetNamesObject[targetId]);
