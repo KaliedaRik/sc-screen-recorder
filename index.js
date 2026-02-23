@@ -219,7 +219,7 @@ const initDimensions = () => {
 
 
 // ------------------------------------------------------------------------
-// Head management modal
+// Head management controls
 // - generates a talking head - with the help of a Google MediaPipe solution
 // - https://ai.google.dev/edge/mediapipe/solutions/guide
 // ------------------------------------------------------------------------
@@ -285,11 +285,6 @@ const initTalkingHead = () => {
   };
 
   // Initialize DOM head button and associated modal
-  headButton.removeAttribute('disabled');
-  scrawl.addNativeListener('click', () => openModal(headModal, cameraDiscovery), headButton);
-  scrawl.addNativeListener('click', closeModal, headCloseButton);
-  scrawl.addNativeListener('close', closeModal, headModal);
-
   scrawl.addNativeListener('change', () => selectedCamera = headCamera.value, headCamera);
 
   // Google MediaPipe ML model code
@@ -672,21 +667,17 @@ const initTalkingHead = () => {
 
 
 // ------------------------------------------------------------------------
-// Targets management modal
+// Targets management controls
 // ------------------------------------------------------------------------
 const initTargets = () => {
 
   // Initialize DOM targets button and associated modal
-  targetsButton.removeAttribute('disabled');
-  scrawl.addNativeListener('click', () => openModal(targetsModal), targetsButton);
-  scrawl.addNativeListener('click', closeModal, targetsCloseButton);
-  scrawl.addNativeListener('close', closeModal, targetsModal);
-
   scrawl.addNativeListener('click', () => requestScreenCapture(), targetRequestButton);
 
   // Local state
   let targetCount = 0;
-  const targetsArray = [];
+  const targetsPictureArray = [],
+    targetNamesObject = {};
 
   // The main request screen capture function
   // - Users can add multiple screen-captured targets to the canvas
@@ -695,8 +686,11 @@ const initTargets = () => {
     const targetId = name(`target-${targetCount}`);
     targetCount++;
 
+    targetNamesObject[targetId] = targetId;
+
     // Screen capture streams are brittle
     // - We need to remove associated assets and entitys from SC when they fail us
+    // - TODO: not yet implemented
     let cleanup = () => console.log(`${targetId} - video track stream has ended`);
 
     // The main event!
@@ -705,7 +699,10 @@ const initTargets = () => {
     scrawl.importScreenCapture({
 
       name: targetId,
+
+      // Is this the line causing audio issues?
       audio: { suppressLocalAudioPlayback: true },
+
       onMediaStreamEnd: () => cleanup(),
 
     }).then(mycamera => {
@@ -713,7 +710,7 @@ const initTargets = () => {
       // Create a Picture entity to display the media stream on the canvas
       const targetPicture = scrawl.makePicture({
 
-        name: `${targetId}-picture`,
+        name: targetId,
         asset: mycamera.name,
 
         dimensions: [1, 1],
@@ -722,14 +719,13 @@ const initTargets = () => {
         start: ['50%', '50%'],
         handle: ['50%', '50%'],
 
-        strokeStyle: targetBorderColor.value,
-        lineWidth: parseInt(targetBorderWidth.value, 10),
-        lineDash: JSON.parse(targetBorderStyle.value),
-        lineJoin: 'round',
         method: 'fill',
 
         bringToFrontOnDrag: false,
 
+        // Don't need a button anymore?
+        // - given that users will be able to navigate the targets list in the left-hand bar?
+        // - clickAction could be part of the dragZone functionality?
         button: {
 
           name: `${targetId}-button`,
@@ -737,40 +733,21 @@ const initTargets = () => {
 
           clickAction: function () {
 
-            if (updateGroup.get('artefacts').includes(targetPicture.name)) cleanupAction();
+            if (updateGroup.get('artefacts').includes(targetPicture.name)) {
 
+              console.log('HELLO');
+              cleanupAction();
+            }
             else {
-
-              targetPicture.set({
-                method: 'fillThenDraw',
-              });
-
-              updateGroup.setArtefacts({
-                method: 'fill',
-              });
 
               updateGroup.clearArtefacts();
               updateGroup.addArtefacts(targetPicture);
 
-              updateEntityControls(targetPicture);
+              updateEntityControls(targetPicture, targetNamesObject[targetId]);
 
               entityBeingEdited.textContent = targetPicture.name;
             }
           },
-        },
-
-        onEnter: function () {
-
-          targetPicture.set({
-            method: 'fillThenDraw',
-          });
-        },
-
-        onLeave: function () {
-
-          targetPicture.set({
-            method: 'fill',
-          });
         },
       });
 
@@ -779,7 +756,10 @@ const initTargets = () => {
       // - We can only set the Picture dimensions and scale after the media stream starts, well, streaming
       // - TODO: There's probably a better, more "listenery" way to achieve this
       let checkerAttempts = 0,
-        listDiv;
+        details, detailsEvent, 
+        summary, summaryEvent,
+        removeButton, centerButton, renameButton, 
+        removeEvent, centerEvent, renameEvent;
 
       const checker = () => {
 
@@ -808,39 +788,93 @@ const initTargets = () => {
             dragGroup.addArtefacts(targetPicture);
 
             // Keep track of target names
-            targetsArray.push(targetPicture.name);
+            targetsPictureArray.push(targetPicture.name);
 
             // Each target needs a listing in the Targets modal
-            listDiv = document.createElement('div');
-            listDiv.id = `${targetId}-list-row`
-            listDiv.classList.add('target-list-row');
+            details = document.createElement('details');
+            details.name = 'targets-accordion';
+            details.id = targetId;
 
-            const itemTitle = document.createElement('div');
-            itemTitle.textContent = targetId;
-            listDiv.appendChild(itemTitle);
+            summary = document.createElement('summary');
+            summary.id = `${targetId}-summary`;
+            summary.textContent = targetNamesObject[targetId];
+            summary.classList.add('target-summary');
+            details.appendChild(summary);
 
-            const itemButton = document.createElement('button');
-            itemButton.textContent = 'Remove';
-            listDiv.appendChild(itemButton);
+            const controlsDiv = document.createElement('div');
+            controlsDiv.classList.add('targets-container');
 
-            // In case the user wantas to get rid of the target intentionally
-            scrawl.addNativeListener('click', removeTarget, itemButton);
+            renameButton = document.createElement('button');
+            renameButton.textContent = 'Rename';
+            renameButton.classList.add('target-button');
 
-            targetsHold.appendChild(listDiv);
+            controlsDiv.appendChild(renameButton);
+            renameEvent = scrawl.addNativeListener('click', (e) => {
 
-            updateGroup.setArtefacts({
-              method: 'fill',
-            });
+              e.stopPropagation();
+              renameTarget();
+
+            }, renameButton);
+
+            centerButton = document.createElement('button');
+            centerButton.textContent = 'Center';
+            centerButton.classList.add('target-button');
+
+            controlsDiv.appendChild(centerButton);
+
+            centerEvent = scrawl.addNativeListener('click', (e) => {
+
+              e.stopPropagation();
+              centerTarget();
+
+            }, centerButton);
+
+            removeButton = document.createElement('button');
+            removeButton.textContent = 'Remove';
+            removeButton.classList.add('target-button');
+
+            controlsDiv.appendChild(removeButton);
+
+            removeEvent = scrawl.addNativeListener('click', (e) => {
+
+              e.stopPropagation();
+              removeTarget();
+
+            }, removeButton);
+
+            summaryEvent = scrawl.addNativeListener('keydown', (e) => {
+
+              if (e.target.tagName.toLowerCase() !== 'summary') return;
+
+              if (e.shiftKey && e.key === 'ArrowUp') {
+
+                e.preventDefault();
+                moveTargetUp(details);
+              }
+              else if (e.shiftKey && e.key === 'ArrowDown') {
+
+                e.preventDefault();
+                moveTargetDown(details);
+              }
+            }, summary);
+
+            detailsEvent = scrawl.addNativeListener('toggle', () => {
+
+              if (details.open) {
+
+                updateGroup.clearArtefacts();
+                updateGroup.addArtefacts(targetPicture);
+                updateEntityControls(targetPicture, targetNamesObject[targetId]);
+              }
+            }, details);
+
+            details.appendChild(controlsDiv);
+            targetsHold.insertAdjacentElement('afterbegin', details);
 
             updateGroup.clearArtefacts();
             updateGroup.addArtefacts(targetPicture);
 
-            updateGroup.setArtefacts({
-              method: 'fillThenDraw',
-            });
-
-            updateEntityControls(targetPicture);
-            closeModal();
+            updateEntityControls(targetPicture, targetNamesObject[targetId]);
           }
           else {
 
@@ -865,38 +899,99 @@ const initTargets = () => {
         targetPicture.kill();
         mycamera.kill();
 
-        if (listDiv != null) listDiv.remove();
+        if (details != null) {
+
+          // scrawl.addNativeListener returns a function to remove the listener
+          renameEvent();
+          centerEvent();
+          removeEvent();
+          summaryEvent();
+          detailsEvent();
+
+          details.remove();
+        }
       }
 
-      // Clean up the mess left behind when a user deliberately removes the target in the web page
-      // - Can only be done by clicking the "Remove" button in the Targets modal
+      const renameTarget = () => {
+
+        const name = prompt('Change target label to', targetNamesObject[targetId]);
+
+        if (name != null && name.trim() !== '') {
+
+          targetNamesObject[targetId] = name;
+          updateEntityControls(targetPicture, targetNamesObject[targetId]);
+
+          const targ = targetsHold.querySelector(`#${targetId}-summary`);
+          if (targ) targ.textContent = targetNamesObject[targetId];
+        }
+      };
+
+      const centerTarget = () => targetPicture.set({ start: ['50%', '50%'] });
+
       const removeTarget = () => {
 
         if (mycamera.mediaStreamTrack != null) mycamera.mediaStreamTrack.stop();
         cleanup();
       };
 
+      const moveTargetUp = (detailsEl) => {
+
+        const prev = detailsEl.previousElementSibling;
+        if (!prev) return;
+
+        targetsHold.insertBefore(detailsEl, prev);
+        setTimeout(updateTargetOrderValues, 0);
+      };
+
+      const moveTargetDown = (detailsEl) => {
+
+        const next = detailsEl.nextElementSibling;
+        if (!next) return;
+
+        targetsHold.insertBefore(next, detailsEl);
+        setTimeout(updateTargetOrderValues, 0);
+      };
     }).catch(err => console.log('err', err));
   };
 
-  const cleanupAction = () => {
+  const updateTargetOrderValues = () => {
 
-    updateGroup.setArtefacts({
-      method: 'fill',
+    const targets = [...targetsHold.querySelectorAll('details')];
+
+    const len = targets.length;
+
+    targets.forEach((t, index) => {
+
+      const pic = scrawl.findEntity(t.id);
+
+      if (pic) pic.set({ order: len - index });
     });
+  };
+
+
+  const cleanupAction = () => { 
 
     updateGroup.clearArtefacts();
 
     entityBeingEdited.textContent = 'no target selected';
 
     if (areControlsEnabled()) disableControls();
-  }
+
+    const targets = targetsHold.querySelectorAll('details');
+
+    [...targets].forEach(t => {
+
+      if (t.open) t.removeAttribute('open');
+    });
+
+    targetsPanelSummary.focus();
+  };
 
   const updateTargetScales = (oldScaler, newScaler) => {
 
     if (oldScaler !== newScaler) {
 
-      targetsArray.forEach(id => {
+      targetsPictureArray.forEach(id => {
 
         const entity = scrawl.findEntity(id);
 
@@ -910,28 +1005,12 @@ const initTargets = () => {
         }
       });
     }
-  }
-
-  scrawl.makeUpdater({
-
-    event: ['input', 'change'],
-    origin: '.target-border-controls',
-
-    target: dragGroup,
-
-    useNativeListener: true,
-    preventDefault: true,
-
-    updates: {
-      ['target-border-width']: ['lineWidth', 'int'],
-      ['target-border-style']: ['lineDash', 'parse'],
-      ['target-border-color']: ['strokeStyle', 'raw'],
-    },
-  });
+  };
 
   return { 
     updateTargetScales,
     cleanupAction,
+    targetNamesObject,
   };
 };
 
@@ -1146,21 +1225,11 @@ const initVideoRecording = () => {
 
 
 // ------------------------------------------------------------------------
-// Setting the background
-// - WARNING: loading more than a few images at one time will impact page performance!
+// Background color/images controls
 // ------------------------------------------------------------------------
 
 // Initialize background image functionality
 const initBackground = () => {
-
-  // Initialize DOM background button and associated modal
-  // - The main "Background" button opens an associated modal - all defined in HTML
-  // - Users can use the modal to upload new background images, or select an image loaded earlier
-  // - Users can also drag-drop image files onto the canvas to upload/display them
-  backgroundButton.removeAttribute('disabled');
-  scrawl.addNativeListener('click', () => openModal(backgroundModal), backgroundButton);
-  scrawl.addNativeListener('click', closeModal, backgroundCloseButton);
-  scrawl.addNativeListener('close', closeModal, backgroundModal);
 
   scrawl.addNativeListener('focus', () => backgroundUploadButton.classList.add('is-focussed'), backgroundUpload);
   scrawl.addNativeListener('blur', () => backgroundUploadButton.classList.remove('is-focussed'), backgroundUpload);
@@ -1254,7 +1323,6 @@ const initBackground = () => {
 
               backgroundPicture.set({ asset });
               updateBackgroundPicture();
-              backgroundModal.close();
             }
           }
         }
@@ -1290,8 +1358,6 @@ const initBackground = () => {
     backgroundPicture.set({
       asset: '',
     });
-
-    backgroundModal.close();
   };
   scrawl.addNativeListener('click', hideBackground, backgroundImageHide);
 
@@ -1354,7 +1420,7 @@ const initUpdates = () => {
   let controlsEnabled = false;
   const areControlsEnabled = () => controlsEnabled;
 
-  const entityControls = [entityStartX, entityStartY, entityScale, entityRoll, entityOpacity, entityOrder];
+  const entityControls = [entityStartX, entityStartY, entityScale, entityRoll, entityOpacity];
 
   const enableControls = () => {
     entityControls.forEach(control => control.removeAttribute('disabled'));
@@ -1389,7 +1455,6 @@ const initUpdates = () => {
       scale: ['scale', 'float'],
       roll: ['roll', 'float'],
       opacity: ['globalAlpha', 'float'],
-      order: ['order', 'int'],
     },
   });
 
@@ -1400,9 +1465,9 @@ const initUpdates = () => {
   }, entityFilter);
 
   // When changing between target entitys, we need to update controls to reflect current values for that entity
-  const updateEntityControls = (entity) => {
+  const updateEntityControls = (entity, label) => {
 
-    if (entity) {
+    if (entity && label) {
 
       updateGroup.setArtefacts({
         method: 'fill',
@@ -1418,29 +1483,23 @@ const initUpdates = () => {
         const scale = entity.get('scale');
         const roll = entity.get('roll');
         const opacity = entity.get('globalAlpha');
-        const order = entity.get('order');
         const filters = entity.get('filters')[0];
 
         // Positioning is relative to canvas dimensions
         const pX = (x / w) * 100; 
         const pY = (y / h) * 100; 
 
-        entityBeingEdited.textContent = entity.name;
+        entityBeingEdited.textContent = label;
         entityStartX.value = `${pX}`;
         entityStartY.value = `${pY}`;
         entityScale.value = `${scale}`;
         entityRoll.value = `${roll}`;
         entityOpacity.value = `${opacity}`;
-        entityOrder.value = `${order}`;
 
         if (!filters) entityFilter.value = 'none';
         else entityFilter.value = filters;
 
         updateGroup.addArtefacts(entity);
-
-        updateGroup.setArtefacts({
-          method: 'fillThenDraw',
-        });
 
         if (!controlsEnabled) enableControls();
 
@@ -1462,7 +1521,11 @@ const initUpdates = () => {
     collisionGroup: dragGroup,
     exposeCurrentArtefact: true,
     endOn: ['up', 'leave'],
-    updateOnEnd: () => { updateEntityControls(dragger().artefact) },
+    updateOnEnd: () => { 
+
+      const art = dragger().artefact;
+      updateEntityControls(art, targetNamesObject[art.name]);
+    },
   });
 
   const disableDragging = () => {
@@ -1502,31 +1565,99 @@ const initUpdates = () => {
 
 
 // ------------------------------------------------------------------------
-// Company logo positioning
-// - The logo is ever-present, and needs to go above everything else
+// Logo controls
 // ------------------------------------------------------------------------
 const initLogo = () => {
 
   scrawl.importDomImage('.logos');
 
+  // State is determined by what is in the HTML code
+  const logoElements = document.querySelectorAll('.logos');
+
+  const logos = [...logoElements].map(el => {
+
+    return {
+      name: el.id,
+      label: el.dataset.label || el.id,
+    }
+  });
+
+  logos.forEach(logo => {
+
+    const opt = document.createElement('option');
+
+    opt.value = logo.name;
+    opt.textContent = logo.label;
+
+    logoChoice.appendChild(opt);
+  });
+
+  const logoGroup = scrawl.makeGroup({
+    name: name('logo-group'),
+    host: canvas.base,
+    order: 2,
+  });
+
   // Magic numbers for the actual dimensions of the logo image, divided by a convenient amount
-  const logoPictureWidth = 860 / 4,
-    logoPictureHeight = 340 / 4;
+  let logoPictureWidth = 0,
+    logoPictureHeight = 0,
+    currentLogo = logos[0].name;
 
   const logoPicture = scrawl.makePicture({
-    name: name('company-logo'),
-    asset: 'company-logo',
+    name: name('logo'),
+    group: logoGroup,
+    asset: currentLogo,
     start: ['left', 'bottom'],
     handle: ['left', 'bottom'],
     dimensions: [logoPictureWidth, logoPictureHeight],
     copyDimensions: ['100%', '100%'],
-    order: 1000,
     visibility: false,
   });
 
+  const updateLogoChoice = () => {
+
+    const logo = logoChoice.value;
+
+    if (logo !== currentLogo) {
+
+      currentLogo = logo;
+
+      const asset = scrawl.findAsset(logo),
+        scaler = getScaler(currentDimension);
+      
+      let width = asset.get('width'),
+        height = asset.get('height');
+
+      if (480 === scaler) {
+        logoPictureWidth = width / 2.25;
+        logoPictureHeight = height / 2.25;
+      }
+      else if (720 === scaler) {
+        logoPictureWidth = width / 1.5;
+        logoPictureHeight = height / 1.5;
+      }
+      else {
+        logoPictureWidth = width;
+        logoPictureHeight = height;
+      }
+
+      logoPicture.set({
+        asset: logo,
+        width: logoPictureWidth,
+        height: logoPictureHeight,
+      });
+    }
+  };
+  scrawl.addNativeListener('change', updateLogoChoice, logoChoice);
+
   const updateLogoPosition = () => {
 
-    switch (logoSelector.value) {
+    // We invoke updateLogoChoice because image loading is async
+    // - the logo is initially hidden; this will give it dimensions when first positioned 
+    currentLogo = '';
+    updateLogoChoice();
+
+    switch (logoPosition.value) {
 
       case 'hide':
         logoPicture.set({
@@ -1566,27 +1697,8 @@ const initLogo = () => {
         });
         break;
     }
-
-    // More magic numbers warning
-    const scaler = getScaler(currentDimension);
-
-    if (480 === scaler) {
-      logoPicture.set({
-        dimensions: [logoPictureWidth, logoPictureHeight],
-      });
-    }
-    else if (720 === scaler) {
-      logoPicture.set({
-        dimensions: [logoPictureWidth * 1.5, logoPictureHeight * 1.5],
-      });
-    }
-    else {
-      logoPicture.set({
-        dimensions: [logoPictureWidth * 2.25, logoPictureHeight * 2.25],
-      });
-    }
   };
-  scrawl.addNativeListener('change', updateLogoPosition, logoSelector);
+  scrawl.addNativeListener('change', updateLogoPosition, logoPosition);
 
   return {
     updateLogoPosition,
@@ -1603,10 +1715,6 @@ const initScribble = () => {
   // Initialize DOM scribbles button and associated modal
   // - The main "Scribbles" button opens an associated modal - all defined in HTML
   // - Users can use the modal to set the color and width of the scribble pen
-  scribblesButton.removeAttribute('disabled');
-  scrawl.addNativeListener('click', () => openModal(scribblesModal), scribblesButton);
-  scrawl.addNativeListener('click', closeModal, scribblesCloseButton);
-  scrawl.addNativeListener('close', closeModal, scribblesModal);
 
   scrawl.addNativeListener('focus', () => scribblesColorInput.classList.add('is-focussed'), backgroundUpload);
   scrawl.addNativeListener('blur', () => scribblesColorInput.classList.remove('is-focussed'), backgroundUpload);
@@ -1852,13 +1960,9 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'scale', '1'],
   ['input', 'roll', '0'],
   ['input', 'opacity', '1'],
-  ['input', 'order', '0'],
   ['select', 'target-filter', 0],
 
-  // Capture handles to the talking head controls
-  ['button', 'head-modal-button', 'Head'],
-  ['button', 'head-modal-close', 'Close'],
-  ['by-id', 'head-modal'],
+  // Capture handles to the head controls
   ['select', 'talking-head-camera', 0],
   ['input', 'use-talking-head', 'off'],
   ['input', 'show-talking-head', 'on'],
@@ -1881,19 +1985,11 @@ const dom = scrawl.initializeDomInputs([
   ['button', 'recording-start-button', 'Start recording'],
 
   // Capture handles to the targets-related HTML elements
-  ['button', 'targets-modal-button', 'Targets'],
-  ['button', 'targets-modal-close', 'Close'],
-  ['by-id', 'targets-modal'],
   ['button', 'target-request-button', 'Request screen capture'],
   ['by-id', 'current-targets-hold'],
-  ['input', 'target-border-width', '3'],
-  ['select', 'target-border-style', 0],
-  ['input', 'target-border-color', '#ff0000'],
+  ['by-id', 'targets-panel-summary'],
 
   // Capture handles to the background-related HTML elements
-  ['button', 'background-modal-button', 'Background'],
-  ['button', 'background-modal-close', 'Close'],
-  ['by-id', 'background-modal'],
   ['input', 'background-upload', ''],
   ['by-id', 'background-upload-button'],
   ['input', 'background-color-input', '#ffffff'],
@@ -1908,18 +2004,16 @@ const dom = scrawl.initializeDomInputs([
   ['select', 'video-dimensions', 2],
 
   // Capture handles to the dimensions-related HTML elements
-  ['button', 'scribbles-modal-button', 'Scribbles'],
-  ['button', 'scribbles-modal-close', 'Close'],
-  ['by-id', 'scribbles-modal'],
   ['input', 'use-scribbles', 'off'],
   ['input', 'scribbles-color-input', '#000000'],
   ['input', 'scribbles-width', '1'],
   ['button', 'scribbles-line-undo', 'Undo line'],
   ['button', 'scribbles-line-redo', 'Restore line'],
-  ['button', 'scribbles-line-clear', 'Clear all lines'],
+  ['button', 'scribbles-line-clear', 'Clear lines'],
 
   // Capture handles to the logo positioning selector
-  ['select', 'company-logo-position', 0],
+  ['select', 'logo-choice', 0],
+  ['select', 'logo-position', 0],
 ]);
 
 console.log(dom);
@@ -1931,12 +2025,8 @@ const entityBeingEdited = dom['entity-being-edited'],
   entityScale = dom['scale'],
   entityRoll = dom['roll'],
   entityOpacity = dom['opacity'],
-  entityOrder = dom['order'],
   entityFilter = dom['target-filter'],
 
-  headModal = dom['head-modal'],
-  headButton = dom['head-modal-button'],
-  headCloseButton = dom['head-modal-close'],
   headUseCheckbox = dom['use-talking-head'],
   headCamera = dom['talking-head-camera'],
   headShowCheckbox = dom['show-talking-head'],
@@ -1957,18 +2047,10 @@ const entityBeingEdited = dom['entity-being-edited'],
   recordingCodec = dom['video-output-codec'],
   recordingStartButton = dom['recording-start-button'],
 
-  targetsModal = dom['targets-modal'],
-  targetsButton = dom['targets-modal-button'],
-  targetsCloseButton = dom['targets-modal-close'],
   targetRequestButton = dom['target-request-button'],
   targetsHold = dom['current-targets-hold'],
-  targetBorderWidth = dom['target-border-width'],
-  targetBorderStyle = dom['target-border-style'],
-  targetBorderColor = dom['target-border-color'],
+  targetsPanelSummary = dom['targets-panel-summary'],
 
-  backgroundModal = dom['background-modal'],
-  backgroundButton = dom['background-modal-button'],
-  backgroundCloseButton = dom['background-modal-close'],
   backgroundUpload = dom['background-upload'],
   backgroundUploadButton = dom['background-upload-button'],
   backgroundColorInput = dom['background-color-input'],
@@ -1981,9 +2063,6 @@ const entityBeingEdited = dom['entity-being-edited'],
   dimensionsCloseButton = dom['dimensions-modal-close'],
   dimensionsSelector = dom['video-dimensions'],
 
-  scribblesModal = dom['scribbles-modal'],
-  scribblesButton = dom['scribbles-modal-button'],
-  scribblesCloseButton = dom['scribbles-modal-close'],
   scribblesUseCheckbox = dom['use-scribbles'],
   scribblesColorInput = dom['scribbles-color-input'],
   scribblesWidth = dom['scribbles-width'],
@@ -1991,7 +2070,8 @@ const entityBeingEdited = dom['entity-being-edited'],
   scribblesLineRedo = dom['scribbles-line-redo'],
   scribblesLineClear = dom['scribbles-line-clear'],
 
-  logoSelector = dom['company-logo-position'];
+  logoChoice = dom['logo-choice'],
+  logoPosition = dom['logo-position'];
 
 
 // ------------------------------------------------------------------------
@@ -2131,6 +2211,7 @@ const {
 const { 
   updateTargetScales,
   cleanupAction,
+  targetNamesObject,
 } = initTargets();
 
 initTalkingHead();

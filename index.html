@@ -12,195 +12,258 @@
 
 <body>
 
-  <!-- Canvas app -->
-  <div id="my-canvas-container">
-    <canvas 
-      id="my-canvas" 
-      data-scrawl-canvas 
-      data-is-responsive="true"
-      data-base-width="854"
-      data-base-height="480"
-      data-base-background-color="white"
-      data-fit="contain"
-      data-label="Scrawl-canvas screen recorder canvas."
-      data-description="Record your local screen using your browser. This is a proof-of-concept project."
-    >
-      <div class="assets" aria-hidden="true">
-        <img id="company-logo" src="assets/logo.png" class="logos" alt="Company logo">
-      </div>      
-    </canvas>
-  </div>
+  <main>
 
-  <!-- User control bar buttons - these will open up modals -->
-  <div id="control-buttons">
-    <a href="https://github.com/KaliedaRik/sc-screen-recorder" target="_BLANK">Instructions</a>
-    <button id="targets-modal-button">Cannot get targets</button>
-    <div id="company-logo-control">
-      <label for="company-logo-position">Logo </label>
-      <select id="company-logo-position">
-        <option value="hide">Hide</option>
-        <option value="top-left">Top left</option>
-        <option value="bottom-left">Bottom left</option>
-        <option value="bottom-right">Bottom right</option>
-        <option value="top-right">Top right</option>
-      </select>
-    </div>
-    <button id="scribbles-modal-button">Cannot use scribbles</button>
-    <button id="head-modal-button">Cannot show head</button>
-    <button id="recording-modal-button" disabled>Cannot record video</button>
-    <button id="background-modal-button" disabled>Cannot change background</button>
-    <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
-  </div>
+    <!-- App controls bar on left hand side -->
+    <div id="controls-panel">
 
-  <!-- User target entity controls -->
-  <div id="entity-control-panel">
-    <div id="entity-heading">
-      <p>Editing: <span id="entity-being-edited">no target selected</span></p>
-      <p>Current dimensions: <span id="current-canvas-dimensions">Canvas dims</span></p>
-    </div>
-    <div id="entity-controls">
-      <div>
-        <label for="startX">Horizontal</label>
-        <input class="target-update" id="startX" type="range" min="-25" max="125" value="50" step="1" disabled>
-      </div>
-      <div>
-        <label for="startY">Vertical</label>
-        <input class="target-update" id="startY" type="range" min="-25" max="125" value="50" step="1" disabled>
-      </div>
-      <div>
-        <label for="scale">Scale</label>
-        <input class="target-update" id="scale" type="range" min="0" max="2" value="1" step="0.01" disabled>
-      </div>
-      <div>
-        <label for="roll">Rotation</label>
-        <input class="target-update" id="roll" type="range" min="0" max="360" value="0" step="1" disabled>
-      </div>
-      <div>
-        <label for="opacity">Opacity</label>
-        <input class="target-update" id="opacity" type="range" min="0" max="1" value="1" step="0.01" disabled>
-      </div>
-      <div>
-        <label for="order">Display order</label>
-        <input class="target-update" id="order" type="range" min="0" max="100" value="0" step="1" disabled>
-      </div>
-      <div>
-        <label for="target-filter">Filter</label>
-        <select id="target-filter" disabled>
-          <option value="none">None</option>
-          <option value="sharpen">Sharpen</option>
-          <option value="pixelate">Pixelate</option>
-          <option value="gray">Gray</option>
-        </select>
-      </div>
-    </div>
-  </div>
+      <h1>SC Screen Recorder</h1>
 
-  <!-- Target management modal -->
-  <dialog id='targets-modal' closedby="any">
-    <button id="targets-modal-close" autofocus class="close">Close</button>
-    <h2>Targets management</h2>
-    <div>
-      <button id="target-request-button">Request screen capture</button>
-    </div>
-    <h3>Current targets</h3>
-    <div id="current-targets-hold"></div>
-    <h3>Target borders</h3>
-    <div class="border-parameters">
-      <label for="target-border-width">Border width</label>
-      <input type="range" class= "target-border-controls" id="target-border-width" min="0" max="20" value="3">
-      <label for="target-border-style">Border style</label>
-      <select class= "target-border-controls" id="target-border-style">
-        <option value="[]">Solid</option>
-        <option value="[4,4]">Dotted</option>
-        <option value="[10,4]">Dashed</option>
-      </select>
-      <label for="target-border-color">Border color</label>
-      <input type="color" class= "target-border-controls" id="target-border-color" value="#ff0000">
-    </div>
-  </dialog>
+      <!-- Instructions -->
+      <a href="https://github.com/KaliedaRik/sc-screen-recorder" target="_BLANK">Instructions</a>
 
-  <!-- Background images modal -->
-  <dialog id='background-modal' closedby="any">
-    <button id="background-modal-close" autofocus class="close">Close</button>
-    <h2>Background color management</h2>
-    <p><label id="background-color-button" for="background-color-input">Change background color</label> <input id="background-color-input" type="color" value="#000000"></p>
-    <h2>Background image management</h2>
-    <p>Add a background image by dragging it onto the browser window.</p>
-    <p><label id="background-upload-button" for="background-upload">Browse for image files</label> <input type="file" id="background-upload" name="background-upload" accept="image/png, image/jpeg, image/jpg, image/webp" multiple></p>
-    <p><button id='background-image-hide'>Hide background image</button></p>
-    <h3>Recent uploads</h3>
-    <p>Click on an image to use it:</p>
-    <div id="background-image-hold"></div>
-  </dialog>
+      <!-- logo -->
+      <details id="logo-panel">
+        <summary>Logo control</summary>
 
-  <!-- Scribbles modal -->
-  <dialog id='scribbles-modal' closedby="any">
-    <button id="scribbles-modal-close" autofocus class="close">Close</button>
-    <h2>Scribbles management</h2>
-    <div class="scribbles-parameters">
-      <label for="use-scribbles">Use scribbles</label>
-      <input id="use-scribbles" autocomplete="off" type="checkbox">
-      <label id="scribbles-color-button" for="scribbles-color-input">Change scribbles color</label>
-      <input id="scribbles-color-input" type="color" value="#000000">
-      <label for="scribbles-width">Change scribbles width</label>
-      <input type="range" class="scribbles-controls" id="scribbles-width" name="scribbles-width" min="1" max="10" value="1" step="1">
-    </div>
-    <hr />
-    <div class="scribble-line-buttons">
-      <button id="scribbles-line-undo">Undo line</button>
-      <button id="scribbles-line-redo">Restore line</button>
-      <button id="scribbles-line-clear">Clear all lines</button>
-    </div>
-  </dialog>
+        <div class="logo-parameters">
+          <label for="logo-choice">Logo choice</label>
+          <select id="logo-choice">
+          </select>
 
-  <!-- Talking head capture modal -->
-  <dialog id='head-modal' closedby="any">
-    <button id="head-modal-close" autofocus class="close">Close</button>
-    <h2>Talking head management</h2>
-    <div class="talking-head-parameters">
-      <label for="talking-head-camera">Selected camera</label>
-      <select id="talking-head-camera">
-        <option value="none">None</option>
-      </select>
-      <label for="use-talking-head">Use talking head</label>
-      <input id="use-talking-head" autocomplete="off" type="checkbox">
-      <label for="show-talking-head">Show talking head</label>
-      <input id="show-talking-head" autocomplete="off" type="checkbox" checked disabled>
+          <label for="logo-position">Logo position</label>
+          <select id="logo-position">
+            <option value="hide">Hide</option>
+            <option value="top-left">Top left</option>
+            <option value="bottom-left">Bottom left</option>
+            <option value="bottom-right">Bottom right</option>
+            <option value="top-right">Top right</option>
+          </select>
+        </div>
+      </details>
+
+      <!-- Background -->
+      <details id='background-details-panel'>
+        <summary>Background</summary>
+        <div>
+
+          <h2>Background color</h2>
+          <p>
+            <label id="background-color-button" for="background-color-input">Change background color</label>
+            <input id="background-color-input" type="color" value="#000000">
+          </p>
+
+          <h2>Background images</h2>
+          <p>Add a background image by dragging it onto the browser window.</p>
+
+          <p>
+            <label id="background-upload-button" for="background-upload">Browse for image files</label>
+            <input type="file" id="background-upload" name="background-upload" accept="image/png, image/jpeg, image/jpg, image/webp" multiple>
+          </p>
+
+          <p>
+            <button id='background-image-hide'>Hide background image</button>
+          </p>
+
+          <h3>Recent uploads</h3>
+          <p>Click on an image to use it:</p>
+
+          <div id="background-image-hold"></div>
+        </div>
+      </details>
+
+      <!-- Head -->
+      <details id='head-panel'>
+        <summary>Head</summary>
+
+        <div>
+
+          <h2>Talking head management</h2>
+          <div class="talking-head-parameters">
+            <label for="talking-head-camera">Selected camera</label>
+            <select id="talking-head-camera">
+              <option value="none">None</option>
+            </select>
+
+            <label for="use-talking-head">Use talking head</label>
+            <input id="use-talking-head" autocomplete="off" type="checkbox">
+
+            <label for="show-talking-head">Show talking head</label>
+            <input id="show-talking-head" autocomplete="off" type="checkbox" checked disabled>
+          </div>
+
+          <h3>Talking head parameters</h3>
+          <div class="talking-head-parameters">
+            <label for="head-horizontal">Horizontal</label>
+            <input type="range" class="head-controls" id="head-horizontal" name="head-horizontal" min="-25" max="125" value="75" disabled>
+
+            <label for="head-vertical">Vertical</label>
+            <input type="range" class="head-controls" id="head-vertical" name="head-vertical" min="-25" max="125" value="75" disabled>
+
+            <label for="head-scale">Scale</label>
+            <input type="range" class="head-controls" id="head-scale" name="head-scale" min="0" max="2" value="1" step="0.01" disabled>
+
+            <label for="head-opacity">Opacity</label>
+            <input type="range" class="head-controls" id="head-opacity" name="head-opacity" min="0" max="1" value="1" step="0.01" disabled>
+
+            <label for="head-rotation">Rotation</label>
+            <input type="range" class="head-controls" id="head-rotation" name="head-rotation" min="0" max="360" value="0" disabled>
+
+            <label for="head-shape">Shape</label>
+            <select id="head-shape">
+              <option value="0">Square</option>
+              <option value="1">Round</option>
+            </select>
+
+            <label for="head-background">Remove background</label>
+            <select id="head-background">
+              <option value="0">False</option>
+              <option value="1">True</option>
+            </select>
+
+            <label for="head-filter">Filter</label>
+            <select id="head-filter">
+              <option value="none">None</option>
+              <option value="gray">Gray</option>
+              <option value="blur">Blur</option>
+              <option value="monochrome">Monochrome</option>
+              <option value="pixelate">Pixellate</option>
+              <option value="cartoon">Cartoon</option>
+              <option value="outline">Hidden</option>
+            </select>
+          </div>
+        </div>
+      </details>
+
+      <!-- Targets -->
+      <details id='targets-panel'>
+        <summary id='targets-panel-summary'>Targets</summary>
+
+        <div>
+          <h2>Targets management</h2>
+
+          <div>
+            <button id="target-request-button">Request screen capture</button>
+          </div>
+
+          <h3>Acquired targets</h3>
+
+          <p>Click on target to select it for editing. Reorder target display by reordering the list - targets at the top display over targets lower in the list.</p>
+
+          <div id="current-targets-hold"></div>
+
+          <hr>
+
+          <p>To rearrange target order, click on a target listing (above) then use the <b>Shift + ↑</b> / <b>Shift + ↓</b> keys (together) to move it up/down the list.</p>
+        </div>
+      </details>
+
+      <!-- Scribbles -->
+      <details id='scribbles-panel'>
+
+        <summary>Scribbles</summary>
+        <div>
+
+          <h2>Scribbles management</h2>
+
+          <div class="scribbles-parameters">
+            <label for="use-scribbles">Use scribbles</label>
+            <input id="use-scribbles" autocomplete="off" type="checkbox">
+            <label id="scribbles-color-button" for="scribbles-color-input">Line color</label>
+            <input id="scribbles-color-input" type="color" value="#000000">
+            <label for="scribbles-width">Line width</label>
+            <input type="range" class="scribbles-controls" id="scribbles-width" name="scribbles-width" min="1" max="10" value="1" step="1">
+          </div>
+
+          <hr />
+
+          <div class="scribble-line-buttons">
+            <button id="scribbles-line-undo">Undo line</button>
+            <button id="scribbles-line-redo">Restore line</button>
+            <button id="scribbles-line-clear">Clear lines</button>
+          </div>
+        </div>
+      </details>
     </div>
-    <h3>Talking head parameters</h3>
-    <div class="talking-head-parameters">
-      <label for="head-horizontal">Horizontal</label>
-      <input type="range" class="head-controls" id="head-horizontal" name="head-horizontal" min="-25" max="125" value="75" disabled>
-      <label for="head-vertical">Vertical</label>
-      <input type="range" class="head-controls" id="head-vertical" name="head-vertical" min="-25" max="125" value="75" disabled>
-      <label for="head-scale">Scale</label>
-      <input type="range" class="head-controls" id="head-scale" name="head-scale" min="0" max="2" value="1" step="0.01" disabled>
-      <label for="head-opacity">Opacity</label>
-      <input type="range" class="head-controls" id="head-opacity" name="head-opacity" min="0" max="1" value="1" step="0.01" disabled>
-      <label for="head-rotation">Rotation</label>
-      <input type="range" class="head-controls" id="head-rotation" name="head-rotation" min="0" max="360" value="0" disabled>
-      <label for="head-shape">Shape</label>
-      <select id="head-shape">
-        <option value="0">Square</option>
-        <option value="1">Round</option>
-      </select>
-      <label for="head-background">Remove background</label>
-      <select id="head-background">
-        <option value="0">False</option>
-        <option value="1">True</option>
-      </select>
-      <label for="head-filter">Filter</label>
-      <select id="head-filter">
-        <option value="none">None</option>
-        <option value="gray">Gray</option>
-        <option value="blur">Blur</option>
-        <option value="monochrome">Monochrome</option>
-        <option value="pixelate">Pixellate</option>
-        <option value="cartoon">Cartoon</option>
-        <option value="outline">Hidden</option>
-      </select>
+
+    <div id="app-panel">
+      
+      <!-- Canvas app -->
+      <div id="my-canvas-container">
+        <canvas 
+          id="my-canvas" 
+          data-scrawl-canvas 
+          data-is-responsive="true"
+          data-base-width="854"
+          data-base-height="480"
+          data-base-background-color="white"
+          data-fit="contain"
+          data-label="Scrawl-canvas screen recorder canvas."
+          data-description="Record your local screen using your browser. This is a proof-of-concept project."
+        >
+          <div class="assets" aria-hidden="true">
+
+            <!--
+              Logo images go here
+              - must have a class of "logos"
+              - must have an id value, which can be any value but must be unique to the page
+              - if a data-label attribute is not supplied, then the logo controls will use the id value as the listing name
+            -->
+            <img id="logo-v1" src="assets/logo-v1.png" class="logos" data-label="Logo (version 1)" alt="Logo version 1">
+            <img id="logo-v2" src="assets/logo-v2.png" class="logos" data-label="Logo (version 2)" alt="Logo version 2">
+            <img id="logo-v3" src="assets/logo-v3.png" class="logos" data-label="Logo (version 3)" alt="Logo version 3">
+          </div>      
+        </canvas>
+      </div>
+
+      <!-- User control bar buttons - these will open up modals -->
+      <div id="control-buttons">
+        <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
+        <button id="recording-modal-button" disabled>Cannot record video</button>
+      </div>
+
+      <!-- User target entity controls -->
+      <div id="entity-control-panel">
+        <div id="entity-heading">
+          <p>Editing: <span id="entity-being-edited">no target selected</span></p>
+          <p>Current dimensions: <span id="current-canvas-dimensions">Canvas dims</span></p>
+        </div>
+        <div id="entity-controls">
+          <div>
+            <label for="startX">Horizontal</label>
+            <input class="target-update" id="startX" type="range" min="-25" max="125" value="50" step="1" disabled>
+          </div>
+          <div>
+            <label for="startY">Vertical</label>
+            <input class="target-update" id="startY" type="range" min="-25" max="125" value="50" step="1" disabled>
+          </div>
+          <div>
+            <label for="scale">Scale</label>
+            <input class="target-update" id="scale" type="range" min="0" max="2" value="1" step="0.01" disabled>
+          </div>
+          <div>
+            <label for="roll">Rotation</label>
+            <input class="target-update" id="roll" type="range" min="0" max="360" value="0" step="1" disabled>
+          </div>
+          <div>
+            <label for="opacity">Opacity</label>
+            <input class="target-update" id="opacity" type="range" min="0" max="1" value="1" step="0.01" disabled>
+          </div>
+          <div>
+            <label for="target-filter">Filter</label>
+            <select id="target-filter" disabled>
+              <option value="none">None</option>
+              <option value="sharpen">Sharpen</option>
+              <option value="pixelate">Pixelate</option>
+              <option value="gray">Gray</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
     </div>
-  </dialog>
+    
+  </main>
 
   <!-- Canvas dimensions modal -->
   <dialog id='dimensions-modal' closedby="any">
