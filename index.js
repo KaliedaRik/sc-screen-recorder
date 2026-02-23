@@ -756,7 +756,8 @@ const initTargets = () => {
       // - We can only set the Picture dimensions and scale after the media stream starts, well, streaming
       // - TODO: There's probably a better, more "listenery" way to achieve this
       let checkerAttempts = 0,
-        details, detailsEvent,
+        details, detailsEvent, 
+        summary, summaryEvent,
         removeButton, centerButton, renameButton, 
         removeEvent, centerEvent, renameEvent;
 
@@ -792,8 +793,9 @@ const initTargets = () => {
             // Each target needs a listing in the Targets modal
             details = document.createElement('details');
             details.name = 'targets-accordion';
+            details.id = targetId;
 
-            const summary = document.createElement('summary');
+            summary = document.createElement('summary');
             summary.id = `${targetId}-summary`;
             summary.textContent = targetNamesObject[targetId];
             summary.classList.add('target-summary');
@@ -807,7 +809,6 @@ const initTargets = () => {
             renameButton.classList.add('target-button');
 
             controlsDiv.appendChild(renameButton);
-
             renameEvent = scrawl.addNativeListener('click', (e) => {
 
               e.stopPropagation();
@@ -841,6 +842,22 @@ const initTargets = () => {
 
             }, removeButton);
 
+            summaryEvent = scrawl.addNativeListener('keydown', (e) => {
+
+              if (e.target.tagName.toLowerCase() !== 'summary') return;
+
+              if (e.shiftKey && e.key === 'ArrowUp') {
+
+                e.preventDefault();
+                moveTargetUp(details);
+              }
+              else if (e.shiftKey && e.key === 'ArrowDown') {
+
+                e.preventDefault();
+                moveTargetDown(details);
+              }
+            }, summary);
+
             detailsEvent = scrawl.addNativeListener('toggle', () => {
 
               if (details.open) {
@@ -852,7 +869,7 @@ const initTargets = () => {
             }, details);
 
             details.appendChild(controlsDiv);
-            targetsHold.appendChild(details);
+            targetsHold.insertAdjacentElement('afterbegin', details);
 
             updateGroup.clearArtefacts();
             updateGroup.addArtefacts(targetPicture);
@@ -888,6 +905,7 @@ const initTargets = () => {
           renameEvent();
           centerEvent();
           removeEvent();
+          summaryEvent();
           detailsEvent();
 
           details.remove();
@@ -915,8 +933,41 @@ const initTargets = () => {
         if (mycamera.mediaStreamTrack != null) mycamera.mediaStreamTrack.stop();
         cleanup();
       };
+
+      const moveTargetUp = (detailsEl) => {
+
+        const prev = detailsEl.previousElementSibling;
+        if (!prev) return;
+
+        targetsHold.insertBefore(detailsEl, prev);
+        setTimeout(updateTargetOrderValues, 0);
+      };
+
+      const moveTargetDown = (detailsEl) => {
+
+        const next = detailsEl.nextElementSibling;
+        if (!next) return;
+
+        targetsHold.insertBefore(next, detailsEl);
+        setTimeout(updateTargetOrderValues, 0);
+      };
     }).catch(err => console.log('err', err));
   };
+
+  const updateTargetOrderValues = () => {
+
+    const targets = [...targetsHold.querySelectorAll('details')];
+
+    const len = targets.length;
+
+    targets.forEach((t, index) => {
+
+      const pic = scrawl.findEntity(t.id);
+
+      if (pic) pic.set({ order: len - index });
+    });
+  };
+
 
   const cleanupAction = () => { 
 
