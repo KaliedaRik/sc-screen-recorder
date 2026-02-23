@@ -451,20 +451,12 @@ dialog {
     }
   }
 
-  & .border-parameters {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    row-gap: 0.5rem;
-    align-items: center;
-    margin: 0.5rem 0;
-
-    & #target-border-color {
-      width: 100%;
-    }
-  }
-
   & h2, h3 {
     margin: 0.5rem 0;
+  }
+
+  & p {
+    font-size: 80%;
   }
 }
 

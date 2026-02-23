@@ -712,10 +712,6 @@ const initTargets = () => {
         start: ['50%', '50%'],
         handle: ['50%', '50%'],
 
-        strokeStyle: targetBorderColor.value,
-        lineWidth: parseInt(targetBorderWidth.value, 10),
-        lineDash: JSON.parse(targetBorderStyle.value),
-        lineJoin: 'round',
         method: 'fill',
 
         bringToFrontOnDrag: false,
@@ -731,14 +727,6 @@ const initTargets = () => {
 
             else {
 
-              targetPicture.set({
-                method: 'fillThenDraw',
-              });
-
-              updateGroup.setArtefacts({
-                method: 'fill',
-              });
-
               updateGroup.clearArtefacts();
               updateGroup.addArtefacts(targetPicture);
 
@@ -747,20 +735,6 @@ const initTargets = () => {
               entityBeingEdited.textContent = targetPicture.name;
             }
           },
-        },
-
-        onEnter: function () {
-
-          targetPicture.set({
-            method: 'fillThenDraw',
-          });
-        },
-
-        onLeave: function () {
-
-          targetPicture.set({
-            method: 'fill',
-          });
         },
       });
 
@@ -871,10 +845,6 @@ const initTargets = () => {
 
   const cleanupAction = () => {
 
-    updateGroup.setArtefacts({
-      method: 'fill',
-    });
-
     updateGroup.clearArtefacts();
 
     entityBeingEdited.textContent = 'no target selected';
@@ -901,23 +871,6 @@ const initTargets = () => {
       });
     }
   }
-
-  scrawl.makeUpdater({
-
-    event: ['input', 'change'],
-    origin: '.target-border-controls',
-
-    target: dragGroup,
-
-    useNativeListener: true,
-    preventDefault: true,
-
-    updates: {
-      ['target-border-width']: ['lineWidth', 'int'],
-      ['target-border-style']: ['lineDash', 'parse'],
-      ['target-border-color']: ['strokeStyle', 'raw'],
-    },
-  });
 
   return { 
     updateTargetScales,
@@ -1898,9 +1851,6 @@ const dom = scrawl.initializeDomInputs([
   // Capture handles to the targets-related HTML elements
   ['button', 'target-request-button', 'Request screen capture'],
   ['by-id', 'current-targets-hold'],
-  ['input', 'target-border-width', '3'],
-  ['select', 'target-border-style', 0],
-  ['input', 'target-border-color', '#ff0000'],
 
   // Capture handles to the background-related HTML elements
   ['input', 'background-upload', ''],
@@ -1962,9 +1912,6 @@ const entityBeingEdited = dom['entity-being-edited'],
 
   targetRequestButton = dom['target-request-button'],
   targetsHold = dom['current-targets-hold'],
-  targetBorderWidth = dom['target-border-width'],
-  targetBorderStyle = dom['target-border-style'],
-  targetBorderColor = dom['target-border-color'],
 
   backgroundUpload = dom['background-upload'],
   backgroundUploadButton = dom['background-upload-button'],
