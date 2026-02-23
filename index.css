@@ -435,24 +435,29 @@ dialog {
     border-radius: 5px;
     padding: 0.25rem;
     margin: 0.5rem 0;
+    cursor: pointer;
   }
 
-  & .target-list-row {
+  & .targets-container {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background-color: transparent;
     display: flex;
     justify-content: space-between;
-    border-top: 1px solid var(--dialog-row-separator);
-    padding: 0.3rem 0;
-
-    & button {
-      font-size: 80%;
-      background-color: var(--dialog-button-background);
-      border-radius: 5px;
-      padding: 0.25rem;
-    }
   }
 
-  & h2, h3 {
-    margin: 0.5rem 0;
+  & .target-summary {
+    cursor: pointer;
+  }
+
+  & .target-button {
+    margin: 0.5rem 0 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid ;
+    font-size: 80%;
+    cursor: pointer;
+    border-radius: 5px;
   }
 
   & p {
