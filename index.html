@@ -20,7 +20,7 @@
       <h1>SC Screen Recorder</h1>
 
       <!-- Instructions -->
-      <a href="https://github.com/KaliedaRik/sc-screen-recorder" target="_BLANK">Instructions</a>
+      <button id="instructions-modal-button">Instructions</button>
 
       <!-- logo -->
       <details id="logo-panel">
@@ -306,6 +306,131 @@
       </div>
       <input type="text" id="video-output-codec" value="">
     </div>
+  </dialog>
+
+  <!-- Instructions modal -->
+  <dialog id='instructions-modal' closedby="any">
+    <button id="instructions-modal-close" autofocus class="close">Close</button>
+    <h2>Using the SC Screen Recorder tool</h2>
+    <p>The following instructions offer basic details about how to use the SC Screen capture tool. The concept behind the tool is simple:</p>
+    <ul>
+      <li>Set the dimensions of the video you want to record</li>
+      <li>Add a background color or image &ndash; multiple images can be added, allowing them to be swapped in as the video recording progresses.</li>
+      <li>Add one or more screen captures &ndash; these can be windows, browser tabs, or an entire screen. Position them as required.</li>
+      <li>Include a talking head video stream, if desired &ndash; the background behind the talking head can be removed. Position it as required.</li>
+      <li>Start recording.</li>
+      <li>As the recording progresses, targets (and the head) can be moved, scaled and faded in/out as needed. Actions taken in each target's tab/window will be captured.</li>
+      <li>As the recording progresses, draw lines over the canvas to highlight particular areas of interest in the targets.</li>
+      <li>When recording stops, the video will download to your local machine.</li>
+    </ul>
+    <p>These instructions include the following sections:</p>
+    <ul>
+      <li>An illustrated step-by-step guide.</li>
+      <li>Keyboard controls &ndash; the tool aims to be as keyboard accessible as possible.</li>
+      <li>Some tool metadata (for interest).</li>
+    </ul>
+    <h3>Step-by-step guide</h3>
+    <div class="how-to-grid">
+      <img src="assets/instructions-01.png" alt="Screenshot - initial page load" />
+      <div>Initial page load. Most of the control buttons are kept in the accordion on the left hand side. Additional control buttons across the top will open dialog modals. The controls across the bottom of the screen are currently disabled. The recording area is in white, fitted into the responsive canvas.</div>
+      <img src="assets/instructions-02.png" alt="Screenshot - request to use devices" />
+      <div>You will be asked to share your camera and microphone with the tool when the page loads. These are optional &ndash; you can still record a video even without a talking head visual (camera) or a voiceover (microphone).</div>
+      <img src="assets/instructions-03.png" alt="Screenshot - the dimensions modal" />
+      <div>To set the recording area's dimensions, click on the <b>Dimensions</b> button in the top bar. When changing dimensions, targets and background images will automatically update to accommodate the change (though the talking head, which has fixed dimensions, will not). Landscape, square and portrait dimensions are supported.</div>
+      <img src="assets/instructions-04.png" alt="Screenshot - the Targets panel" />
+      <div>Targets are areas of the user's display screen(s) to be real-time captured in the recording area. To aquire and manage targets, open the <b>Targets</b> panel in the accordion.</div>
+      <img src="assets/instructions-05.png" alt="Screenshot - screen capture request panel (Chrome on MacBook Pro)" />
+      <div>Click on the <b>Request screen capture</b> button to launch the browser's native screen-capture sharing modal. Select the desired target and press the <b>Share</b> (or equivalent) button.</div>
+      <img src="assets/instructions-06.png" alt="Screenshot - targets panel with list of targets" />
+      <div>Once a target has been selected an entry for it will appear in the Targets panel. Each screen capture can be halted by the user at any time, either by clicking on the target's Remove button, or by clicking on any other button the user's browser or operating system may supply.</div>
+      <img src="assets/instructions-07.png" alt="Screenshot - renaming a target" />
+      <div>Targets can be renamed, to help you more easily navigate between them as you record. There's also a <b>Center</b> button to quickly bring a target into view while recording.</div>
+      <img src="assets/instructions-08.png" alt="Screenshot - targets in canvas area" />
+      <div>You can drag-and-drop each target into the desired position on the recording area. Clicking on a target will enable the bottom controls for the target. Horizontal and vertical position ranges have been included for accessibility.</div>
+      <img src="assets/instructions-09.png" alt="Screenshot - scaled and rotated target" />
+      <div>The target display in the recording area can be scaled and rotated as required. Targets can be faded in and out using the opacity control. Filters can be applied to target displays at any time.</div>
+      <img src="assets/instructions-10.png" alt="Screenshot - target ordering" />
+      <div>Targets display in the canvas in the order they are shown in the targets panel. To change the order in which they display, click on a target in the panel then use the <b>shift+arrow keys</b> to move it up/down the list.</div>
+      <img src="assets/instructions-11.png" alt="Screenshot - background color selection" />
+      <div>The recording area's background defaults to white. Click on the <b>Background</b> panel in the accordion, and then the <b>Change background color</b> button to update the color.</div>
+      <img src="assets/instructions-12.png" alt="Screenshot - uploading images" />
+      <div>The recording area can also display a background image. To add an image, drag it into the web page &ndash; multiple images can be added using this method. Alternatively, click on the <b>Browse for image files</b> button to open a file selection modal.</div>
+      <img src="assets/instructions-13.png" alt="Screenshot - updating background image" />
+      <div>Only one background image can be displayed at any time. To remove the current background image click on the <b>Hide background image</b> button. If multiple images have been uploaded, then the background image can be easily updated by clicking on the desired image's thumbnail in the panel.</div>
+      <img src="assets/instructions-14.png" alt="Screenshot - talking head panel" />
+      <div>By default the "talking head" functionality is disabled. To add a talking head, click on the <b>Head</b> panel in the accordion, select the desired camera in the drop-down selection box, then click on the <b>Use talking head</b> checkbox.</div>
+      <img src="assets/instructions-15.png" alt="Screenshot - talking head display options" />
+      <div>Once the talking head appears, it can be positioned, scaled and rotated using the controls in the panel (note that it cannot be repositioned using drag-and-drop). The head can be hidden by unchecking the <b>Show talking head</b> checkbox. The video stream capturing the talking head can be halted at any time by unchecking the <b>Use talking head</b> checkbox, or stopping it using any other facility your browser or operating system may supply.</div>
+      <img src="assets/instructions-16.png" alt="Screenshot - recording a video" />
+      <div>To record, click on the Record button, then select a microphone to use for audio capture. Note that resulting video's format (currently "webm" or "mp4") needs to be set before recording starts. Then click on the <b>Start recording</b> button.</div>
+      <img src="assets/instructions-17.png" alt="Screenshot - drawing lines" />
+      <div>While recording, you can draw lines (circles, underlines, arrows, etc) directly on the canvas to highlight points of interest in the target displays. Click on the <b>Scribbles</b> panel in the accordion and tick the <b>Use scribbles</b> checkbox. Line color and width can also be set/updated in this panel at any time.</div>
+      <img src="assets/instructions-18.png" alt="Screenshot - undo and redo lines" />
+      <div>After drawing a line, you can undo it, or restore an undone line, by clicking on the appropriate button in the panel. All lines can be permanently removed using the <b>Clear lines</b> button.</div>
+      <img src="assets/instructions-19.png" alt="Screenshot - stop recording" />
+      <div>While recording, the Record button changes to a red <b>Stop recording</b> button. Click it to, well, stop recording. The recorded video will automatically download to the device where the web page is running.</div>
+      <img src="assets/instructions-20.png" alt="Screenshot - logo panel" />
+      <div>Logo control &ndash; the tool, if forked or set up locally, can support one or more branding logos. Position the logo as required. If more than one logo is included in the build, they can be swapped and repositioned as recording continues.</div>
+    </div>
+    <h3>Keyboard controls</h3>
+    <p>The web page supports the following (hopefully cross-browser standard) keyboard controls and shortcuts.</p>
+
+    <p><b>Keyboard Navigation:</b></p>
+    <ul>
+      <li>`TAB` to navigate forwards</li>
+      <li>`SHIFT+TAB` to navigate backwards</li>
+      <li>`ENTER` to select</li>
+    </ul>
+     
+    <p><b>Additional input controls:</b></p>
+    <ul>
+      <li>For "select" inputs &ndash; `UP-ARROW`, `DOWN-ARROW`</li>
+      <li>For "range" inputs &ndash;  `RIGHT-ARROW`, `LEFT-ARROW` </li>
+      <li>For "color" inputs &ndash; `UP-ARROW`, `RIGHT-ARROW`, `DOWN-ARROW`, `LEFT-ARROW`</li>
+      <li>For checkbox toggling &ndash; `SPACE`</li>
+    </ul>
+
+    <p><b>Targets ordering:</b></p>
+    <p>In the Targets panel, focus on the target listing you want to move, then `SHIFT + UP-ARROW` to move up; `SHIFT + DOWN-ARROW` to move down.</p>
+
+    <p>Note that targets will display over those below them in the listing list; under those above them in the list.</p>
+
+    <p><b>Scribble line undo/restore:</b></p>
+    <ul>
+      <li>`CMD + z` to undo last line</li>
+      <li>`CMD + y` to restore last undone line</li>
+      <li>`CMD + x` to delete all lines</li>
+    </ul>
+
+    <h3>Tool metadata</h3>
+
+    <p>This screen recording tool is a Proof of Concept, released under the MIT licence. More details about the tool, alongside its code, can be found in its <a href="https://github.com/KaliedaRik/sc-screen-recorder">repository on GitHub</a>.</p>
+
+    <p>This tool has been designed to be hackable. Feel free to use the tool as-is on its github.io page, or fork the repository to coustomise and host your own version. The tool can also be downloaded and run locally &ndash; it has no backend or toolchain.</p>
+
+    <p><b>MIT Licence</b></p>
+
+    <p>Copyright (c) 2026 Rik Roots
+
+    <p>Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:</p>
+
+    <ul>
+      <li>The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.</li>
+    </ul>
+ 
+    <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.</p>
   </dialog>
 
   <script type="module" src="index.js"></script>

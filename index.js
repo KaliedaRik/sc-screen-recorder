@@ -226,6 +226,21 @@ const initDimensions = () => {
 
 
 // ------------------------------------------------------------------------
+// Instructions modal
+// - Offers users instructions for using the tool
+// ------------------------------------------------------------------------
+const initInstructions = () => {
+
+  // Initialize DOM instructions button and associated modal
+  scrawl.addNativeListener('click', () => openModal(instructionsModal), instructionsButton);
+  scrawl.addNativeListener('click', closeModal, instructionsCloseButton);
+  scrawl.addNativeListener('close', closeModal, instructionsModal);
+
+  return {};
+};
+
+
+// ------------------------------------------------------------------------
 // Head management controls
 // - generates a talking head - with the help of a Google MediaPipe solution
 // - https://ai.google.dev/edge/mediapipe/solutions/guide
@@ -2009,6 +2024,11 @@ const dom = scrawl.initializeDomInputs([
   // Capture handles to the logo positioning selector
   ['select', 'logo-choice', 0],
   ['select', 'logo-position', 0],
+
+  // Capture handles for the instructions modal
+  ['button', 'instructions-modal-button', 'Instructions'],
+  ['button', 'instructions-modal-close', 'Close'],
+  ['by-id', 'instructions-modal'],
 ]);
 
 const entityBeingEdited = dom['entity-being-edited'],
@@ -2064,7 +2084,12 @@ const entityBeingEdited = dom['entity-being-edited'],
   scribblesLineClear = dom['scribbles-line-clear'],
 
   logoChoice = dom['logo-choice'],
-  logoPosition = dom['logo-position'];
+  logoPosition = dom['logo-position'],
+
+  instructionsModal = dom['instructions-modal'],
+  instructionsButton = dom['instructions-modal-button'],
+  instructionsCloseButton = dom['instructions-modal-close'];
+
 
 
 // ------------------------------------------------------------------------
@@ -2111,11 +2136,6 @@ scrawl.makeFilter({
 // - Be wary of including function calls defined in other invocations in an invocation function
 // ------------------------------------------------------------------------
 
-// Keyboard accessibility
-canvas.set({
-  includeInTabNavigation: true,
-});
-
 const {
   setScribblesFlag,
   updateAllScribbles,
@@ -2153,6 +2173,8 @@ const {
 } = initBackground();
 
 initVideoRecording();
+
+initInstructions();
 
 
 // ------------------------------------------------------------------------
