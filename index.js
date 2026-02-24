@@ -15,89 +15,96 @@ import * as MediaPipe from './js/mediapipe-vision-bundle.js';
 // ------------------------------------------------------------------------
 // Camera and Audio device discovery
 // ------------------------------------------------------------------------
-const canWeEnumerateDevices = !!navigator.mediaDevices?.enumerateDevices;
+const DeviceManager = {
 
-const availableMicrophoneInputs = [],
-  availableMicrophoneIds = [],
-  availableCameraInputs = [],
-  availableCameraIds = [];
+  microphones: [],
+  cameras: [],
+  permissionGranted: false,
+  onChangeCallbacks: [],
+
+  // Subscribe listeners (UI rebuilds, etc.)
+  onChange(fn) {
+
+    if (typeof fn === 'function') this.onChangeCallbacks.push(fn);
+  },
+
+  // Trigger callbacks
+  triggerChange() {
+
+    const payload = {
+      microphones: this.microphones,
+      cameras: this.cameras,
+      permissionGranted: this.permissionGranted,
+    };
+    this.onChangeCallbacks.forEach(fn => fn(payload));
+  },
+
+  // Request permission without async/await
+  // (Runs only once, then resolved permanently)
+  ensurePermission() {
+
+    const self = this;
+
+    if (self.permissionGranted) {
+      return Promise.resolve('permission-already-granted');
+    }
+
+    return navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+      .then(stream => {
+
+        // Stop tracks immediately — we only needed the permission
+        stream.getTracks().forEach(t => t.stop());
+
+        self.permissionGranted = true;
+        return 'permission-granted';
+      })
+      .catch(err => {
+        return 'permission-denied';
+      });
+  },
+
+  // Main enumeration function
+  refreshDevices() {
+
+    const self = this;
+
+    // Step 1: ensure permission (optional)
+    return self.ensurePermission()
+
+      // Step 2: enumerate devices
+      .then(() => navigator.mediaDevices.enumerateDevices())
+
+      // Step 3: normalise lists
+      .then(devices => {
+
+        self.microphones = devices
+          .filter(d => d.kind === 'audioinput')
+          .map(d => ({
+            id: d.deviceId,
+            label: d.label || 'Microphone',
+          }));
+
+        self.cameras = devices
+          .filter(d => d.kind === 'videoinput')
+          .map(d => ({
+            id: d.deviceId,
+            label: d.label || 'Camera',
+          }));
+
+        self.triggerChange();
+        return 'refreshed';
+      });
+  }
+};
+
+// Hot-plug support
+navigator.mediaDevices.addEventListener(
+  'devicechange',
+  () => DeviceManager.refreshDevices()
+);
 
 let selectedMicrophone = 'none',
   selectedCamera = 'none';
-
-const findMicrophoneDevices = () => {
-
-  availableMicrophoneInputs.length = 0;
-  availableMicrophoneIds.length = 0;
-
-  return new Promise ((resolve, reject) => {
-
-    if (canWeEnumerateDevices) {
-
-      navigator.mediaDevices.enumerateDevices()
-      .then((devices) => {
-
-        devices.forEach((device) => {
-
-          if (device.kind === 'audioinput') {
-
-            availableMicrophoneInputs.push([
-              device.deviceId, 
-              device.label, 
-              device.label.toLowerCase().includes('default') ? true : false,
-            ]);
-
-            availableMicrophoneIds.push(device.deviceId);
-          }
-        });
-
-        if (!availableMicrophoneIds.includes(selectedMicrophone)) selectedMicrophone = 'none';
-
-        resolve('Audio input devices discovered');
-      })
-      .catch(err => reject(`${err.name}: ${err.message}`));
-    }
-    
-    else reject('Unable to find audio input devices');
-  });
-};
-
-const findCameraInputDevices = async () => {
-
-  availableCameraInputs.length = 0;
-  availableCameraIds.length = 0;
-
-  return new Promise ((resolve, reject) => {
-
-    if (canWeEnumerateDevices) {
-
-      navigator.mediaDevices.enumerateDevices()
-      .then((devices) => {
-
-        devices.forEach((device) => {
-
-          if (device.kind === 'videoinput') {
-
-            availableCameraInputs.push([
-              device.deviceId, 
-              device.label, 
-              device.label.toLowerCase().includes('default') ? true : false,
-            ]);
-
-            availableCameraIds.push(device.deviceId);
-          }
-        });
-
-        if (!availableCameraIds.includes(selectedCamera)) selectedCamera = 'none';
-
-        resolve('Camera input devices discovered');
-      })
-      .catch(err => reject(`${err.name}: ${err.message}`));
-    }
-    
-    else reject('Unable to find camera input devices');
-  });
-};
 
 
 // ------------------------------------------------------------------------
@@ -226,63 +233,27 @@ const initDimensions = () => {
 const initTalkingHead = () => {
 
   // Camera discovery
-  // - Runs every time the modal opens, to capture any changes in available cameras
-  // - Discovers cameras, then lists them in the 'Selected camera' dropdown
-  const cameraDiscovery = () => {
+  DeviceManager.onChange(({ cameras }) => {
 
-    findCameraInputDevices()
-    .then(() => {
+    const frag = document.createDocumentFragment();
 
-      const frag = document.createDocumentFragment();
-
-      // Have we found any cameras?
-      if (availableCameraInputs.length) {
-
-        // We've found only one camera
-        if (availableCameraInputs.length === 1) {
-
-          const [id, label, def] = availableCameraInputs[0];
-
-          selectedCamera = id;
-
-          const opt = document.createElement('option');
-          opt.value = id
-          opt.textContent = label;
-          opt.setAttribute('selected', '');
-          frag.appendChild(opt);
-        }
-
-        // We have more than one camera
-        else {
-
-          availableCameraInputs.forEach(item => {
-
-            const opt = document.createElement('option');
-            opt.value = id
-            opt.textContent = label;
-
-            if (id === selectedCamera) opt.setAttribute('selected', '');
-
-            frag.appendChild(opt);
-          });
-        }
-      }
-
-      // No cameras found
-      else {
-
-        selectedCamera = 'none';
-
+    if (cameras.length) {
+      cameras.forEach(cam => {
         const opt = document.createElement('option');
-        opt.value = 'none'
-        opt.textContent = 'No cameras currently available';
+        opt.value = cam.id;
+        opt.textContent = cam.label;
         frag.appendChild(opt);
-      }
+      });
+    }
+    else {
+      const opt = document.createElement('option');
+      opt.value = 'none';
+      opt.textContent = 'No cameras found';
+      frag.appendChild(opt);
+    }
 
-      headCamera.replaceChildren(...frag.querySelectorAll('option'));
-    })
-    .catch(err => console.log('talkingHead camera listing error', err));
-  };
+    headCamera.replaceChildren(...frag.querySelectorAll('option'));
+  });
 
   // Initialize DOM head button and associated modal
   scrawl.addNativeListener('change', () => selectedCamera = headCamera.value, headCamera);
@@ -427,7 +398,7 @@ const initTalkingHead = () => {
     globalCompositeOperation: 'source-in',
   });
 
-  const overlayPicture = scrawl.makePicture({
+  scrawl.makePicture({
 
     name: name('talking-head-overlay-picture'),
     group: talkingHeadOutput,
@@ -723,9 +694,6 @@ const initTargets = () => {
 
         bringToFrontOnDrag: false,
 
-        // Don't need a button anymore?
-        // - given that users will be able to navigate the targets list in the left-hand bar?
-        // - clickAction could be part of the dragZone functionality?
         button: {
 
           name: `${targetId}-button`,
@@ -1023,66 +991,36 @@ const initVideoRecording = () => {
   let selectedFiletype = 'mp4';
 
   // Microphone discovery
-  // - Runs every time the modal opens, to capture any changes in available microphones
-  const microphoneDiscovery = () => {
+  DeviceManager.onChange(({ microphones }) => {
 
-    findMicrophoneDevices()
-    .then(() => {
+    const frag = document.createDocumentFragment();
 
-      const frag = document.createDocumentFragment();
-
-      if (availableMicrophoneInputs.length) {
-
-        if (availableMicrophoneInputs.length === 1) {
-
-          const [id, label] = availableMicrophoneInputs[0];
-
-          selectedMicrophone = id;
-
-          const opt = document.createElement('option');
-          opt.value = id
-          opt.textContent = label;
-          opt.setAttribute('selected', '');
-          frag.appendChild(opt);
-        }
-
-        else {
-
-          availableMicrophoneInputs.forEach((item, index) => {
-
-            const [id, label] = item;
-
-            const opt = document.createElement('option');
-            opt.value = id
-            opt.textContent = label;
-
-            if (id === selectedMicrophone) {
-
-              opt.setAttribute('selected', '');
-            }
-
-            frag.appendChild(opt);
-          });
-        }
-      }
-      else {
-
-        selectedMicrophone = 'none';
-
+    if (microphones.length) {
+      microphones.forEach(m => {
         const opt = document.createElement('option');
-        opt.value = 'none'
-        opt.textContent = 'No microphones currently available';
+        opt.value = m.id;
+        opt.textContent = m.label;
         frag.appendChild(opt);
-      }
+      });
+    }
+    else {
+      const opt = document.createElement('option');
+      opt.value = 'none';
+      opt.textContent = 'No microphones found';
+      frag.appendChild(opt);
+    }
 
-      recordingMicrophone.replaceChildren(...frag.querySelectorAll('option'));
-    })
-    .catch(err => console.log('recording microphone listing error', err));
-  };
+    recordingMicrophone.replaceChildren(...frag.querySelectorAll('option'));
+  });
 
   // Initialize DOM recording button and associated modal
   recordingButton.removeAttribute('disabled');
-  scrawl.addNativeListener('click', () => openModal(recordingModal, microphoneDiscovery), recordingButton);
+  scrawl.addNativeListener(
+    'click',
+    () => openModal(recordingModal, () => DeviceManager.refreshDevices()),
+    recordingButton
+  );
+
   scrawl.addNativeListener('click', closeModal, recordingCloseButton);
   scrawl.addNativeListener('close', closeModal, recordingModal)
 
@@ -1093,33 +1031,83 @@ const initVideoRecording = () => {
   // Capture and release the microphone feed
   let myMicrophone;
 
-  // Get the microphone media stream
   const startMicrophone = () => {
 
-    return new Promise ((resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
-      if (!myMicrophone) {
+      if (myMicrophone) {
 
-        scrawl.importMediaStream({
+        const realTrack = myMicrophone.mediaStream.getAudioTracks()[0];
 
-          name: name('microphone-feed'),
-          audio: {
-            deviceId: selectedMicrophone,
-          },
-          onMediaStreamEnd: () => stopMicrophone(),
-        })
-        .then(res => {
-
-          myMicrophone = res;
-
-          resolve(myMicrophone.mediaStreamTrack);
-        })
-        .catch(err => {
-
-          console.log(err.message);
-          reject('Failed to capture microphone');
-        });
+        if (realTrack) resolve(realTrack);
+        else reject('Microphone stream has no audio tracks');
+        return;
       }
+
+      scrawl.importMediaStream({
+
+        name: name('microphone-feed'),
+
+        audio: {
+
+          deviceId: selectedMicrophone === 'none'
+            ? undefined
+            : { exact: selectedMicrophone },
+
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+          channelCount: 1,
+          sampleRate: 48000,
+        },
+
+        onMediaStreamEnd: () => stopMicrophone(),
+
+      })
+      .then(res => {
+
+        myMicrophone = res;
+
+        const track = myMicrophone.mediaStream.getAudioTracks()[0];
+
+        if (!track) {
+
+          stopMicrophone();
+          reject('This microphone device provides no usable audio track.');
+          return;
+        }
+        resolve(track);
+      })
+      .catch(err => {
+
+        console.warn("Microphone error:", err);
+
+        let msg = '';
+
+        if (err.name === 'OverconstrainedError') {
+
+          msg = `The selected microphone cannot satisfy required settings.
+This is common with older USB headsets.
+
+Please:
+• unplug/re-plug the device; or
+• select another microphone.`;
+        }
+        else if (err.name === 'NotFoundError')  {
+        
+          msg = `No microphone is available.`;
+        }
+        else if (err.name === 'NotAllowedError') {
+
+          msg = `Microphone access was blocked. Allow microphone permissions to continue.`;
+        }
+        else {
+
+          msg = `Failed to access microphone: ${err.message || err}`;
+        }
+
+        reject(msg);
+      });
     });
   };
 
@@ -1145,45 +1133,52 @@ const initVideoRecording = () => {
   // Setup and start recording the canvas
   const startRecording = () => {
 
-    if (!isRecording) {
+    if (isRecording) return;
 
-      startMicrophone()
-      .then(microphoneTrack => {
+    startMicrophone()
+    .then(microphoneTrack => {
 
-        isRecording = true;
+      isRecording = true;
+      closeModal();
+      recordingStartButton.setAttribute('disabled', '');
 
-        recordingStartButton.setAttribute('disabled', '');
-        closeModal();
+      stopListener = scrawl.addNativeListener('click', stopRecording, recordingButton);
+      recordingButton.classList.add('is-recording');
+      recordingButton.textContent = 'Stop recording';
 
-        stopListener = scrawl.addNativeListener('click', stopRecording, recordingButton);
-        recordingButton.classList.add('is-recording');
-        recordingButton.textContent = 'Stop recording';
+      const stream = canvas.base.element.captureStream(25);
+      stream.addTrack(microphoneTrack);
 
-        const stream = canvas.base.element.captureStream(25);
-        stream.addTrack(microphoneTrack);
+      let mimeType = `video/${selectedFiletype}`;
+      if (recordingCodec.value) mimeType += `; codecs="${recordingCodec.value}"`;
 
-        let mimeType = `video/${selectedFiletype}`;
-        if (recordingCodec.value) mimeType += `; codecs="${recordingCodec.value}"`;
+      recorder = new MediaRecorder(stream, { mimeType });
 
-        recorder = new MediaRecorder(stream, {
-          mimeType,
-        });
+      recordedChunks.length = 0;
 
-        recordedChunks.length = 0;
+      recorder.ondataavailable = e => {
 
-        recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
 
-          if (e.data.size > 0) {
+          dataCodec = e.data.type;
+          recordedChunks.push(e.data);
+        }
+      };
 
-            dataCodec = e.data.type;
-            recordedChunks.push(e.data);
-          }
-        };
+      recorder.start(1000);
+    })
+    .catch(errMsg => {
 
-        recorder.start(1000);
-      })
-      .catch(err => console.log(err));
-    }
+      alert(errMsg);
+
+      console.warn("Recording aborted:", errMsg);
+
+      recordingStartButton.removeAttribute('disabled');
+      recordingButton.classList.remove('is-recording');
+      recordingButton.textContent = 'Record';
+
+      isRecording = false;
+    });
   };
 
   const stopRecording = () => {
@@ -2016,8 +2011,6 @@ const dom = scrawl.initializeDomInputs([
   ['select', 'logo-position', 0],
 ]);
 
-console.log(dom);
-
 const entityBeingEdited = dom['entity-being-edited'],
   currentCanvasDimensions = dom['current-canvas-dimensions'],
   entityStartX = dom['startX'],
@@ -2232,5 +2225,8 @@ scrawl.makeRender({
   target: canvas,
 });
 
-console.log(scrawl.library);
+// ------------------------------------------------------------------------
+// Request permissions
+// ------------------------------------------------------------------------
+DeviceManager.refreshDevices();
 
