@@ -2073,97 +2073,37 @@ const entityBeingEdited = dom['entity-being-edited'],
 scrawl.makeFilter({
   name: 'none',
   actions: [],
-}),
+});
 
 scrawl.makeFilter({
   name: 'blur',
   method: 'gaussianBlur',
   radius: 20,
   excludeTransparentPixels: true,
-}),
+});
 
 scrawl.makeFilter({
   name: 'gray',
   method: 'grayscale',
-}),
-
-scrawl.makeFilter({
-  name: 'pixelate',
-  method: 'pixelate',
-  tileWidth: 20,
-  tileHeight: 20,
-}),
+});
 
 scrawl.makeFilter({
   name: 'monochrome',
   method: 'reducePalette',
   noiseType: 'bluenoise',
-}),
+});
 
 scrawl.makeFilter({
   name: 'sharpen',
   method: 'sharpen',
-}),
-
-scrawl.makeFilter({
-  name: 'outline',
-  method: 'flood',
-  reference: 'gray',
-  opacity: 0.95,
 });
 
 scrawl.makeFilter({
-  name: 'cartoon',
-  actions: [
-    {
-      action: 'grayscale',
-      lineOut: 'top-filter-1',
-    },{
-      lineIn: 'top-filter-1',
-      action: 'gaussian-blur',
-      radius: 1,
-      lineOut: 'top-filter-1',
-    },{
-      lineIn: 'top-filter-1',
-      action: 'matrix',
-      weights: [1, 1, 1, 1, -8, 1, 1, 1, 1],
-      lineOut: 'top-filter-2',
-    },{
-      lineIn: 'top-filter-2',
-      action: 'channels-to-alpha',
-      lineOut: 'top-filter-2',
-    },{
-      lineIn: 'top-filter-2',
-      action: 'threshold',
-      low: [0, 0, 0, 0],
-      high: [0, 0, 0, 255],
-      includeAlpha: true,
-      level: 20,
-      lineOut: 'top-filter-2',
-    },{
-      lineIn: 'source',
-      action: 'step-channels',
-      red: 15,
-      green: 60,
-      blue: 60,
-      lineOut: 'bottom-filter',
-    },{
-      lineIn: 'bottom-filter',
-      action: 'modulate-channels',
-      red: 2,
-      green: 2,
-      blue: 2,
-      alpha: 0.5,
-      lineOut: 'bottom-filter',
-    },{
-      lineIn: 'top-filter-2',
-      lineMix: 'bottom-filter',
-      action: 'compose',
-      compose: 'source-over',
-    }
-  ],
+  name: 'nowhite',
+  method: 'chroma',
+  ranges: [[250, 250, 250, 255, 255, 255]],
+  feather: 40,
 });
-
 
 // ------------------------------------------------------------------------
 // Start the page running
@@ -2177,7 +2117,6 @@ canvas.set({
 });
 
 const {
-  getScribblesFlag,
   setScribblesFlag,
   updateAllScribbles,
 } = initScribble();
@@ -2230,3 +2169,4 @@ scrawl.makeRender({
 // ------------------------------------------------------------------------
 DeviceManager.refreshDevices();
 
+console.log(scrawl.library);
