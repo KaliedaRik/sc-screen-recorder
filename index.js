@@ -1138,7 +1138,8 @@ Please:
   };
 
   // Local variables used by both startRecording and stopRecording functions
-  let recorder, stopListener, dataCodec;
+  let recorder, stopListener, dataCodec,
+    recordingTimerIntervalValue, recordingStartedAt;
 
   const recordedChunks = [];
 
@@ -1181,6 +1182,13 @@ Please:
       };
 
       recorder.start(1000);
+
+      // Time elapsed
+      recordingTimer.removeAttribute('aria-hidden');
+      recordingTimer.style.display = 'block';
+      recordingTimer.textContent = '00:00';
+      recordingTimer.setAttribute('aria-label', 'Recording started');
+      startRecordingTimer();
     })
     .catch(errMsg => {
 
@@ -1196,6 +1204,26 @@ Please:
     });
   };
 
+  const startRecordingTimer = () => {
+
+    recordingStartedAt = Date.now();
+    recordingTimerIntervalValue = setInterval(recordingTimerFunction, 500);
+  };
+
+  const recordingTimerFunction = () => {
+
+    const elapsed = parseInt((Date.now() - recordingStartedAt) / 1000, 10);
+
+    const mins = String(Math.floor(elapsed / 60)).padStart(2, '0'),
+      secs = String(elapsed % 60).padStart(2, '0');
+
+    recordingTimer.textContent = `${mins}:${secs}`;
+
+    if (elapsed > 0 && elapsed % 15 === 0) recordingTimer.setAttribute('aria-label', `${elapsed} seconds`);
+  };
+
+  const stopRecordingTimer = () => clearInterval(recordingTimerIntervalValue);
+
   const stopRecording = () => {
 
     if (isRecording) {
@@ -1207,6 +1235,11 @@ Please:
 
       recorder.stop();
       recorder = null;
+
+      stopRecordingTimer();
+      recordingTimer.style.display = 'none';
+      recordingTimer.setAttribute('aria-hidden', 'true');
+      recordingTimer.removeAttribute('aria-label');
 
       setTimeout(() => {
 
@@ -1994,6 +2027,9 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'video-output-codec', ''],
   ['button', 'recording-start-button', 'Start recording'],
 
+  // Capture handles to the recording visual display elements
+  ['by-id', 'recording-timer'],
+
   // Capture handles to the targets-related HTML elements
   ['button', 'target-request-button', 'Request screen capture'],
   ['by-id', 'current-targets-hold'],
@@ -2059,6 +2095,8 @@ const entityBeingEdited = dom['entity-being-edited'],
   recordingFiletype = dom['video-output-filetype'],
   recordingCodec = dom['video-output-codec'],
   recordingStartButton = dom['recording-start-button'],
+
+  recordingTimer = dom['recording-timer'],
 
   targetRequestButton = dom['target-request-button'],
   targetsHold = dom['current-targets-hold'],

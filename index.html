@@ -213,9 +213,15 @@
       </div>
 
       <!-- User control bar buttons - these will open up modals -->
-      <div id="control-buttons">
-        <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
-        <button id="recording-modal-button" disabled>Cannot record video</button>
+      <div id="top-bar">
+        <div id="control-buttons">
+          <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
+          <button id="recording-modal-button" disabled>Cannot record video</button>
+        </div>
+        <div id="top-right-feedback">
+          <div id="recording-timer" role="timer" aria-live="off" aria-atomic="true" aria-hidden="true">00:00</div>
+          <div id="microphone-level">Mic level</div>
+        </div>
       </div>
 
       <!-- User target entity controls -->

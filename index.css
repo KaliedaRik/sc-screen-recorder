@@ -213,7 +213,7 @@ main {
   background-color: var(--canvas-color);
 }
 
-#control-buttons {
+#top-bar {
   position: absolute;
   top: 0;
   left: var(--control-panel-width);
@@ -223,27 +223,47 @@ main {
   margin: 0;
   border: 0;
   padding: 0;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   background-color: var(--control-bar-background);
 
-  & button {
-    font-size: 100%;
-    display: inline-block;
-    margin: 0.5rem;
-    border: 1px solid var(--control-button-border);
-    padding: 0.25rem 0.5rem;
-    border-radius: 5px;
-    background-color: var(--control-button-background);
+  & #control-buttons {
+    display: flex;
+    justify-content: center;
 
-    &:hover {
-      cursor: pointer;
+    & button {
+      font-size: 100%;
+      display: inline-block;
+      margin: 0.5rem;
+      border: 1px solid var(--control-button-border);
+      padding: 0.25rem 0.5rem;
+      border-radius: 5px;
+      background-color: var(--control-button-background);
+
+      &:hover {
+        cursor: pointer;
+      }
+
+      &.is-recording {
+        background-color: var(--is-recording-background);
+        color: var(--is-recording-text);
+      }
+    }
+  }
+
+  & #top-right-feedback {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    & div {
+      margin: 0 0.5rem;
     }
 
-    &.is-recording {
-      background-color: var(--is-recording-background);
-      color: var(--is-recording-text);
+    & #recording-timer, #microphone-level {
+      display: none;
+      border: 1px solid black;
+      padding: 0.3rem;
     }
   }
 }
