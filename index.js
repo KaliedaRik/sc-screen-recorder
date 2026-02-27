@@ -1005,6 +1005,89 @@ const initVideoRecording = () => {
 
   let selectedFiletype = 'mp4';
 
+  // Microphone level meter state
+  let audioContext,
+    analyserNode,
+    analyserSource,
+    analyserData,
+    meterAnimationId;
+
+  const meterColorFactory = scrawl.makeColor({
+    name: name('microphone-meter'),
+    minimumColor: 'rgb(80 255 80)',
+    maximumColor: 'rgb(255 80 80)',
+    colorSpace: 'OKLAB',
+  });
+
+  const initMicrophoneAnalyser = () => {
+
+    if (!myMicrophone || !myMicrophone.mediaStream) return;
+
+    if (!audioContext) {
+
+      const Ctor = window.AudioContext || window.webkitAudioContext;
+      if (!Ctor) return;
+
+      audioContext = new Ctor();
+    }
+
+    if (audioContext.state === 'suspended') {
+      audioContext.resume();
+    }
+
+    analyserNode = audioContext.createAnalyser();
+    analyserNode.fftSize = 2048;
+    analyserData = new Uint8Array(analyserNode.frequencyBinCount);
+
+    analyserSource = audioContext.createMediaStreamSource(myMicrophone.mediaStream);
+    analyserSource.connect(analyserNode);
+  };
+
+  const updateMicrophoneMeter = () => {
+
+    if (!analyserNode || !analyserData) {
+      meterAnimationId = requestAnimationFrame(updateMicrophoneMeter);
+      return;
+    }
+
+    analyserNode.getByteTimeDomainData(analyserData);
+
+    let sumSquares = 0;
+    for (let i = 0; i < analyserData.length; i++) {
+      const v = analyserData[i] - 128;
+      sumSquares += v * v;
+    }
+
+    const rms = Math.sqrt(sumSquares / analyserData.length) / 128;
+    const level = Math.min(Math.max(rms, 0), 1);
+
+    meterBar.style.width = `${(level * 100).toFixed(0)}%`;
+    meterBar.style.background = meterColorFactory.getRangeColor(level);
+
+    meterAnimationId = requestAnimationFrame(updateMicrophoneMeter);
+  };
+
+  const startMicrophoneMeter = () => {
+
+    if (!analyserNode) initMicrophoneAnalyser();
+
+    if (!meterAnimationId && analyserNode) {
+      meterAnimationId = requestAnimationFrame(updateMicrophoneMeter);
+    }
+  };
+
+  const stopMicrophoneMeter = () => {
+
+    if (meterAnimationId) {
+      cancelAnimationFrame(meterAnimationId);
+      meterAnimationId = null;
+    }
+
+    if (meterBar) {
+      meterBar.style.width = '0%';
+    }
+  };
+
   // Microphone discovery
   DeviceManager.onChange(({ microphones }) => {
 
@@ -1091,6 +1174,10 @@ const initVideoRecording = () => {
           reject('This microphone device provides no usable audio track.');
           return;
         }
+
+        // Prepare Web Audio analyser for level meter
+        initMicrophoneAnalyser();
+
         resolve(track);
       })
       .catch(err => {
@@ -1129,6 +1216,27 @@ Please:
   // Kill the camera media stream and all associated SC objects
   const stopMicrophone = () => {
 
+    // Stop the visual meter first
+    stopMicrophoneMeter();
+
+    // Tear down Web Audio graph
+    if (analyserSource) {
+      analyserSource.disconnect();
+      analyserSource = null;
+    }
+
+    if (analyserNode) {
+      analyserNode.disconnect();
+      analyserNode = null;
+    }
+
+    if (audioContext) {
+      audioContext.close();
+      audioContext = null;
+    }
+
+    if (!myMicrophone) return;
+
     myMicrophone.source.srcObject = null;
 
     if (myMicrophone.mediaStreamTrack != null) myMicrophone.mediaStreamTrack.stop();
@@ -1138,7 +1246,8 @@ Please:
   };
 
   // Local variables used by both startRecording and stopRecording functions
-  let recorder, stopListener, dataCodec;
+  let recorder, stopListener, dataCodec,
+    recordingTimerIntervalValue, recordingStartedAt;
 
   const recordedChunks = [];
 
@@ -1181,6 +1290,19 @@ Please:
       };
 
       recorder.start(1000);
+
+      // Time elapsed
+      recordingTimer.removeAttribute('aria-hidden');
+      recordingTimer.style.display = 'block';
+      recordingTimer.textContent = '00:00';
+      recordingTimer.setAttribute('aria-label', 'Recording started');
+      startRecordingTimer();
+
+
+      // Microphone level meter
+      microphoneLevel.removeAttribute('aria-hidden');
+      microphoneLevel.style.display = 'block';
+      startMicrophoneMeter();
     })
     .catch(errMsg => {
 
@@ -1196,6 +1318,26 @@ Please:
     });
   };
 
+  const startRecordingTimer = () => {
+
+    recordingStartedAt = Date.now();
+    recordingTimerIntervalValue = setInterval(recordingTimerFunction, 500);
+  };
+
+  const recordingTimerFunction = () => {
+
+    const elapsed = parseInt((Date.now() - recordingStartedAt) / 1000, 10);
+
+    const mins = String(Math.floor(elapsed / 60)).padStart(2, '0'),
+      secs = String(elapsed % 60).padStart(2, '0');
+
+    recordingTimer.textContent = `${mins}:${secs}`;
+
+    if (elapsed > 0 && elapsed % 15 === 0) recordingTimer.setAttribute('aria-label', `${elapsed} seconds`);
+  };
+
+  const stopRecordingTimer = () => clearInterval(recordingTimerIntervalValue);
+
   const stopRecording = () => {
 
     if (isRecording) {
@@ -1207,6 +1349,16 @@ Please:
 
       recorder.stop();
       recorder = null;
+
+      stopRecordingTimer();
+      recordingTimer.style.display = 'none';
+      recordingTimer.setAttribute('aria-hidden', 'true');
+      recordingTimer.removeAttribute('aria-label');
+
+
+      microphoneLevel.style.display = 'none';
+      microphoneLevel.setAttribute('aria-hidden', 'true');
+      stopMicrophoneMeter();
 
       setTimeout(() => {
 
@@ -1994,6 +2146,11 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'video-output-codec', ''],
   ['button', 'recording-start-button', 'Start recording'],
 
+  // Capture handles to the recording visual display elements
+  ['by-id', 'recording-timer'],
+  ['by-id', 'microphone-level'],
+  ['by-id', 'meter-bar'],
+
   // Capture handles to the targets-related HTML elements
   ['button', 'target-request-button', 'Request screen capture'],
   ['by-id', 'current-targets-hold'],
@@ -2059,6 +2216,10 @@ const entityBeingEdited = dom['entity-being-edited'],
   recordingFiletype = dom['video-output-filetype'],
   recordingCodec = dom['video-output-codec'],
   recordingStartButton = dom['recording-start-button'],
+
+  recordingTimer = dom['recording-timer'],
+  microphoneLevel = dom['microphone-level'],
+  meterBar = dom['meter-bar'],
 
   targetRequestButton = dom['target-request-button'],
   targetsHold = dom['current-targets-hold'],
