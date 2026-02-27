@@ -260,10 +260,29 @@ main {
       margin: 0 0.5rem;
     }
 
-    & #recording-timer, #microphone-level {
+    & #recording-timer {
       display: none;
       border: 1px solid black;
       padding: 0.3rem;
+    }
+
+    & #microphone-level {
+      display: none;
+      width: 120px;
+      height: 1.2rem;
+      background: rgb(0 0 0 / 0.2);
+      border: 1px solid black;
+      padding: 0;
+      overflow: hidden;
+
+      & #meter-bar {
+        display: block;
+        width: 0%;
+        height: 100%;
+        margin: 0;
+        background: rgb(80 255 80);
+        transition: width 50ms linear;
+      }
     }
   }
 }
