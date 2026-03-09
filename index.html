@@ -22,6 +22,9 @@
       <!-- Instructions -->
       <button id="instructions-modal-button">Instructions</button>
 
+      <!-- Teleprompter toggle -->
+      <button id="teleprompt-area-button">Use teleprompter</button>
+
       <!-- logo -->
       <details id="logo-panel">
         <summary>Logo control</summary>
@@ -184,6 +187,24 @@
 
     <div id="app-panel">
       
+      <!-- Teleprompter area -->
+      <div id="teleprompter-panel">
+
+        <div id="teleprompter-controls">
+          <button id="teleprompt-editor-modal-button">Edit text</button>
+          <button id="teleprompt-test-button">Run test</button>
+        </div>
+
+        <div id="teleprompter-reading">
+          <p>Teleprompter text</p>
+        </div>
+
+        <div id="teleprompter-stage">
+          <p>Stage directions</p>
+        </div>
+
+      </div>
+
       <!-- Canvas app -->
       <div id="my-canvas-container">
         <canvas 
@@ -314,6 +335,15 @@
       </div>
       <input type="text" id="video-output-codec" value="">
     </div>
+  </dialog>
+
+  <!-- Teleprompter editor modal -->
+  <dialog id="teleprompt-editor-modal" closedby="closerequest">
+    <button id="teleprompt-editor-modal-close" autofocus class="close">Close</button>
+    <h2>Edit teleprompter script</h2>
+    <p>Use short paragraphs of text for each teleprompt instance.</p>
+    <p>~ Start stage directions with a tilde character.</p>
+    <textarea id="teleprompt-editor" aria-label="Teleprompter script editor" placeholder="Type teleprompter paragraphs here..."></textarea>
   </dialog>
 
   <!-- Instructions modal -->

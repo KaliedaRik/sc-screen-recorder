@@ -106,6 +106,10 @@ navigator.mediaDevices.addEventListener(
 let selectedMicrophone = 'none',
   selectedCamera = 'none';
 
+// Teleprompter state
+let teleprompterIsVisible = false;
+let teleprompterIsRunning = false;
+
 
 // ------------------------------------------------------------------------
 // Modal management
@@ -235,6 +239,92 @@ const initInstructions = () => {
   scrawl.addNativeListener('click', () => openModal(instructionsModal), instructionsButton);
   scrawl.addNativeListener('click', closeModal, instructionsCloseButton);
   scrawl.addNativeListener('close', closeModal, instructionsModal);
+
+  return {};
+};
+
+
+// ------------------------------------------------------------------------
+// Teleprompter functionality
+// ------------------------------------------------------------------------
+const initTeleprompter = () => {
+
+  // Initialize DOM teleprompter edit button and associated modal
+  scrawl.addNativeListener('click', () => openTelepromptModal(), telepromptButton);
+  scrawl.addNativeListener('click', closeModal, telepromptCloseButton);
+  scrawl.addNativeListener('close', closeModal, telepromptModal);
+
+  // Setup teleprompter reveal/hide functionality
+  const toggleTeleprompterArea = () => {
+
+    if (teleprompterIsRunning) return;
+
+    teleprompterIsVisible = !teleprompterIsVisible;
+
+    if (teleprompterIsVisible) {
+
+      appPanel.classList.add('teleprompter-active');
+      telepromptAreaButton.textContent = 'Close teleprompter';
+    }
+    else {
+
+      appPanel.classList.remove('teleprompter-active');
+      telepromptAreaButton.textContent = 'Use teleprompter';
+    }
+  };
+  scrawl.addNativeListener('click', toggleTeleprompterArea, telepromptAreaButton);
+
+  // Specific instructions when opening the teleprompter modal
+  const openTelepromptModal = () => {
+
+    openModal(telepromptModal);
+    setTimeout(() => telepromptEditor.focus(), 120);
+  };
+
+  // Test button functionality
+  const startTeleprompterTest = () => {
+
+    teleprompterIsRunning = true;
+
+    closeModal();
+    disableTeleprompterButtons();
+
+    telepromptTestButton.textContent = 'Stop test';
+    telepromptTestButton.classList.add('teleprompter-test-running');
+  };
+
+  const stopTeleprompterTest = () => {
+
+    teleprompterIsRunning = false;
+
+    enableTeleprompterButtons();
+
+    telepromptTestButton.textContent = 'Run test';
+    telepromptTestButton.classList.remove('teleprompter-test-running');
+  };
+
+  // Buttons that should be disabled during test runs
+  const teleprompterLockedButtons = [
+    telepromptButton,
+    recordingButton,
+    telepromptAreaButton,
+    dimensionsButton,
+  ];
+
+  const disableTeleprompterButtons = () => {
+    teleprompterLockedButtons.forEach(btn => btn.setAttribute('disabled', ''));
+  };
+
+  const enableTeleprompterButtons = () => {
+    teleprompterLockedButtons.forEach(btn => btn.removeAttribute('disabled'));
+  };
+
+  scrawl.addNativeListener('click', () => {
+
+    if (!teleprompterIsRunning) startTeleprompterTest();
+    else stopTeleprompterTest();
+
+  }, telepromptTestButton);
 
   return {};
 };
@@ -2186,6 +2276,15 @@ const dom = scrawl.initializeDomInputs([
   ['button', 'instructions-modal-button', 'Instructions'],
   ['button', 'instructions-modal-close', 'Close'],
   ['by-id', 'instructions-modal'],
+
+  // Capture handles for the teleprompter modal and controls
+  ['button', 'teleprompt-area-button', 'Use teleprompter'],
+  ['button', 'teleprompt-editor-modal-button', 'Edit text'],
+  ['button', 'teleprompt-editor-modal-close', 'Close'],
+  ['button', 'teleprompt-test-button', 'Run test'],
+  ['by-id', 'teleprompt-editor-modal'],
+  ['by-id', 'teleprompt-editor'],
+  ['by-id', 'app-panel'],
 ]);
 
 const entityBeingEdited = dom['entity-being-edited'],
@@ -2246,6 +2345,14 @@ const entityBeingEdited = dom['entity-being-edited'],
 
   logoChoice = dom['logo-choice'],
   logoPosition = dom['logo-position'],
+
+  telepromptAreaButton = dom['teleprompt-area-button'],
+  telepromptModal = dom['teleprompt-editor-modal'],
+  telepromptButton = dom['teleprompt-editor-modal-button'],
+  telepromptCloseButton = dom['teleprompt-editor-modal-close'],
+  telepromptTestButton = dom['teleprompt-test-button'],
+  telepromptEditor = dom['teleprompt-editor'],
+  appPanel = dom['app-panel'],
 
   instructionsModal = dom['instructions-modal'],
   instructionsButton = dom['instructions-modal-button'],
@@ -2334,6 +2441,8 @@ const {
 } = initBackground();
 
 initVideoRecording();
+
+initTeleprompter();
 
 initInstructions();
 
