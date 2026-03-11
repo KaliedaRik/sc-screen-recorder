@@ -1,30 +1,64 @@
 :root {
+  /* Root font size (rem) */
   font: 16px Arial, sans-serif;
 
-  --control-panel-width: 320px;
-
-  --control-bar-background: rgb(255 255 0 / 1);
-  --control-button-background: rgb(220 220 220 / 1);
-  --control-button-border: rgb(60 60 60 / 1);
-  --control-button-panel-background: rgb(240 240 240 / 1);
-
+  /* Accessibility variables */
   --outline-width: 3px;
   --outline-color: rgb(0 215 255 / 1);
 
-  --canvas-color: rgb(255 255 0 / 1);
+  /* Tool logo variables */
+  --tool-logo-color: white;
+  --tool-logo-background: darkslateblue;
 
-  --is-recording-text: rgb(255 255 200 / 1);
-  --is-recording-background: rgb(220 0 0 / 1);
-  --start-recording-background: rgb(80 255 80 / 1);
+  /* Left bar control variables */
+  --left-bar-width: 320px;
+  --left-bar-right-border: rgb(60 60 60 / 1);
 
-  --editing-bar-border: rgb(60 60 60 / 1);
+  --left-bar-section-background: rgb(220 220 220 / 1);
+  --left-bar-section-border: rgb(60 60 60 / 1);
+  --left-bar-controls-background: rgb(240 240 240 / 1);
+  --left-bar-controls-border: rgb(60 60 60 / 1);
+  --control-button-panel-background: rgb(240 240 240 / 1);
+
+  /* Canvas controls bar */
+  --canvas-controls-bar-background: rgb(255 255 0 / 1);
+  --canvas-controls-bar-border: rgb(60 60 60 / 1);
+  --canvas-controls-button-background: rgb(220 220 220 / 1);
+  --canvas-controls-button-border: rgb(60 60 60 / 1);
+
+  /* Target editing bar */
   --editing-bar-background: rgb(255 255 0 / 1);
+  --editing-bar-border: rgb(60 60 60 / 1);
 
+  /* Canvas */
+  --canvas-surround-color: rgb(255 255 0 / 1);
+
+  /* Teleprompter area */
+  --teleprompt-panel-background: rgb(40 40 40 / 1);
+  --teleprompt-main-background: rgb(40 40 40 / 1);
+  --teleprompt-main-text: white;
+  --teleprompt-stage-background: rgb(40 40 40 / 1);
+  --teleprompt-stage-text: white;
+  --teleprompt-button-background: rgb(220 220 220 / 1);
+  --teleprompt-button-border: rgb(90 90 90 / 1);
+  --teleprompt-button-text: black;
+
+  /* Teleprompt editor */
+  --teleprompt-editor-background: rgb(240 240 240 / 1);
+  --teleprompt-editor-text: black;
+
+  /* Feedback area */
+  --feedback-border: black;
+  --feedback-microphone-background: rgb(40 40 40 / 1);
+  --feedback-microphone-bar: rgb(80 255 80);
+
+  /* Dialogues */
   --dialog-border: rgb(60 60 60 / 1);
   --dialog-button-background: rgb(220 220 220 / 1);
   --dialog-button-border: rgb(60 60 60 / 1);
   --dialog-row-separator: rgb(60 60 60 / 1);
 
+  /* Range input control variables */
   --range-track: rgb(100 100 100 / 1);
   --range-pin-background: rgb(200 200 200 / 1);
   --range-pin-border: rgb(100 100 100 / 1);
@@ -33,7 +67,12 @@
   --range-pin-background-disabled: rgb(240 240 240 / 1);
   --range-pin-border-disabled: rgb(220 220 220 / 1);
 
-  --warning-color: rgb(160 0 0 / 1);
+  --advice-color: rgb(220 0 0 / 1);
+
+  /* Button variations (record, test teleprompter) */
+  --is-active-text: rgb(255 255 200 / 1);
+  --is-active-background: rgb(220 0 0 / 1);
+  --start-recording-background: rgb(80 255 80 / 1);
 }
 
 *:focus {
@@ -117,32 +156,28 @@ body {
   padding: 0;
 }
 
-/* 
-  Use a 2 panel approach, 
-  - main controls in the left panel
-  - canvas app in the right panel
-*/
+
 main {
   width: 100vw;
   min-width: 720px;
   height: 100vh;
 
   display: grid;
-  grid-template-columns: var(--control-panel-width) 1fr;
+  grid-template-columns: var(--left-bar-width) 1fr;
 }
 
 #controls-panel {
   width: 100%;
   overflow-y: auto;
   box-sizing: border-box;
-  border-right: 1px solid var(--editing-bar-border);
+  border-right: 1px solid var(--left-bar-right-border);
   padding: 0 0.5rem;
 
   & h1 {
     font-size: 150%;
     margin: 0.5rem 0 0;
-    color: white;
-    background-color: darkslateblue;
+    color: var(--tool-logo-color);
+    background-color: var(--tool-logo-background);
     padding: 0.5rem;
     text-align: center;
     border-radius: 5px;
@@ -154,11 +189,11 @@ main {
     text-align: left;
     font-size: 100%;
     margin: 0.5rem 0;
-    border: 1px solid var(--control-button-border);
+    border: 1px solid var(--left-bar-section-border);
     padding: 0.25rem 0.5rem;
     border-radius: 5px;
-    background-color: rgb(200 200 200);
-    color: rgb(240 20 20);
+    background-color: var(--left-bar-section-background);
+    color: var(--advice-color);
     font-weight: bold;
 
     &:hover {
@@ -168,10 +203,10 @@ main {
 
   & details {
     margin: 0.5rem 0;
-    border: 1px solid var(--control-button-border);
+    border: 1px solid var(--left-bar-section-border);
     padding: 0.25rem 0.5rem;
     border-radius: 5px;
-    background-color: var(--control-button-background);
+    background-color: var(--left-bar-section-background);
 
     &:hover {
       cursor: pointer;
@@ -184,8 +219,8 @@ main {
     & > div {
       margin-top: 0.5rem;
       border-radius: 5px;
-      background-color: var(--control-button-panel-background);
-      border: 1px solid var(--control-button-border);
+      background-color: var(--left-bar-controls-background);
+      border: 1px solid var(--left-bar-controls-border);
       padding: 0.25rem 0.5rem;
 
       & h2 {
@@ -223,14 +258,15 @@ main {
   gap: 1rem;
   padding: 0.5rem 1rem;
   border-bottom: 1px solid var(--editing-bar-border);
-  background: rgb(0 0 0 / 0.85);
-  color: white;
+  background: var(--teleprompt-panel-background);
 
   & #teleprompter-reading {
     text-align: center;
     font-size: 2rem;
     line-height: 1.3;
     min-height: 3rem;
+    background: var(--teleprompt-main-background);
+    color: var(--teleprompt-main-text);
   }
 
   & #teleprompter-stage {
@@ -238,6 +274,8 @@ main {
     opacity: 0.8;
     text-align: right;
     align-self: flex-start;
+    background: var(--teleprompt-stage-background);
+    color: var(--teleprompt-stage-text);
   }
 
   & #teleprompter-controls {
@@ -246,11 +284,14 @@ main {
     align-items: flex-start;
     justify-content: flex-start;
     gap: 0.4rem;
+    background: var(--teleprompt-controls-background);
+    color: var(--teleprompt-controls-text);
   }
 
   & #teleprompter-controls button {
-    border: 1px solid var(--control-button-border);
-    background: var(--control-button-background);
+    border: 1px solid var(--teleprompt-button-border);
+    background: var(--teleprompt-button-background);
+    color: var(--teleprompt-button-text);
     border-radius: 4px;
     padding: 0.25rem 0.5rem;
     font-size: 100%;
@@ -260,8 +301,8 @@ main {
     }
 
     &.teleprompter-test-running {
-      background: rgb(220 0 0);
-      color: white;
+      background: var(--is-active-background);
+      color: var(--is-active-text);
     }
   }
 }
@@ -269,7 +310,6 @@ main {
 .teleprompter-active #teleprompter-panel {
   display: grid;
 }
-
 
 #my-canvas-container {
   grid-row: 3;
@@ -279,7 +319,7 @@ main {
 }
 
 #my-canvas {
-  background-color: var(--canvas-color);
+  background-color: var(--canvas-surround-color);
 }
 
 #top-bar {
@@ -292,7 +332,8 @@ main {
   min-width: 360px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background-color: var(--control-bar-background);
+  background-color: var(--canvas-controls-bar-background);
+  border-bottom: 1px solid var(--canvas-controls-bar-border);
 
   & #control-buttons {
     display: flex;
@@ -302,18 +343,18 @@ main {
       font-size: 100%;
       display: inline-block;
       margin: 0.5rem;
-      border: 1px solid var(--control-button-border);
+      border: 1px solid var(--canvas-controls-button-border);
       padding: 0.25rem 0.5rem;
       border-radius: 5px;
-      background-color: var(--control-button-background);
+      background-color: var(--canvas-controls-button-background);
 
       &:hover {
         cursor: pointer;
       }
 
       &.is-recording {
-        background-color: var(--is-recording-background);
-        color: var(--is-recording-text);
+        background-color: var(--is-active-background);
+        color: var(--is-active-text);
       }
     }
   }
@@ -329,7 +370,7 @@ main {
 
     & #recording-timer {
       display: none;
-      border: 1px solid black;
+      border: 1px solid var(--feedback-border);
       padding: 0.3rem;
     }
 
@@ -337,8 +378,8 @@ main {
       display: none;
       width: 120px;
       height: 1.2rem;
-      background: rgb(0 0 0 / 0.2);
-      border: 1px solid black;
+      background: var(--feedback-microphone-background);
+      border: 1px solid var(--feedback-border);
       padding: 0;
       overflow: hidden;
 
@@ -347,7 +388,7 @@ main {
         width: 0%;
         height: 100%;
         margin: 0;
-        background: rgb(80 255 80);
+        background: var(--feedback-microphone-bar);
         transition: width 50ms linear;
       }
     }
@@ -622,7 +663,7 @@ dialog {
     & .warning-message {
       font-size: 90%;
       margin-right: 2rem;
-      color: var(--warning-color);
+      color: var(--advice-color);
     }
   }
 
@@ -656,8 +697,8 @@ dialog {
 
     padding: 1rem;
 
-    background: #f8f8f8;
-    color: black;
+    background: var(--teleprompt-editor-background);
+    color: var(--teleprompt-editor-text);
 
     font: inherit;
     font-size: 1.1rem;
@@ -689,13 +730,13 @@ dialog {
   & h2 {
     font-size: 130%;
     padding-bottom: 0.1rem;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid var(--dialog-border);
   } 
 
   & h3 {
     font-size: 115%;
     padding-bottom: 0.1rem;
-    border-bottom: 1px dashed black;
+    border-bottom: 1px dashed var(--dialog-border);
   }
 
   & .how-to-grid {
@@ -704,3 +745,10 @@ dialog {
     gap: 2rem;
   }
 }
+
+.advice-text {
+  font-size: 90%;
+  color: var(--advice-color);
+}
+
+
