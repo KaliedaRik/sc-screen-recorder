@@ -20,10 +20,10 @@
       <h1>SC Screen Recorder</h1>
 
       <!-- Instructions -->
-      <button id="instructions-modal-button">Instructions</button>
+      <button type="button" id="instructions-modal-button">Instructions</button>
 
       <!-- Teleprompter toggle -->
-      <button id="teleprompt-area-button">Use teleprompter</button>
+      <button type="button" id="teleprompt-area-button">Use teleprompter</button>
 
       <!-- logo -->
       <details id="logo-panel">
@@ -65,7 +65,7 @@
           </p>
 
           <p>
-            <button id='background-image-hide'>Hide background image</button>
+            <button type="button" id='background-image-hide'>Hide background image</button>
           </p>
 
           <h3>Recent uploads</h3>
@@ -142,7 +142,7 @@
           <h2>Targets management</h2>
 
           <div>
-            <button id="target-request-button">Request screen capture</button>
+            <button type="button" id="target-request-button">Request screen capture</button>
           </div>
 
           <h3>Acquired targets</h3>
@@ -177,9 +177,9 @@
           <hr />
 
           <div class="scribble-line-buttons">
-            <button id="scribbles-line-undo">Undo line</button>
-            <button id="scribbles-line-redo">Restore line</button>
-            <button id="scribbles-line-clear">Clear lines</button>
+            <button type="button" id="scribbles-line-undo">Undo line</button>
+            <button type="button" id="scribbles-line-redo">Restore line</button>
+            <button type="button" id="scribbles-line-clear">Clear lines</button>
           </div>
         </div>
       </details>
@@ -191,8 +191,8 @@
       <div id="teleprompter-panel">
 
         <div id="teleprompter-controls">
-          <button id="teleprompt-editor-modal-button">Edit text</button>
-          <button id="teleprompt-test-button">Run test</button>
+          <button type="button" id="teleprompt-editor-modal-button">Edit text</button>
+          <button type="button" id="teleprompt-test-button">Run test</button>
         </div>
 
         <div id="teleprompter-reading">
@@ -236,8 +236,8 @@
       <!-- User control bar buttons - these will open up modals -->
       <div id="top-bar">
         <div id="control-buttons">
-          <button id="dimensions-modal-button" disabled>Cannot change dimensions</button>
-          <button id="recording-modal-button" disabled>Cannot record video</button>
+          <button type="button" id="dimensions-modal-button" disabled>Cannot change dimensions</button>
+          <button type="button" id="recording-modal-button" disabled>Cannot record video</button>
         </div>
         <div id="top-right-feedback">
           <div id="recording-timer" role="timer" aria-live="off" aria-atomic="true" aria-hidden="true">00:00</div>
@@ -292,7 +292,7 @@
 
   <!-- Canvas dimensions modal -->
   <dialog id='dimensions-modal' closedby="any">
-    <button id="dimensions-modal-close" autofocus class="close">Close</button>
+    <button type="button" id="dimensions-modal-close" autofocus class="close">Close</button>
     <h2>Canvas dimensions</h2>
     <div class="selector">
       <label for="video-dimensions">Dimensions:</label>
@@ -312,9 +312,9 @@
 
   <!-- Video capture modal -->
   <dialog id='recording-modal' closedby="any">
-    <button id="recording-modal-close" autofocus class="close">Close</button>
+    <button type="button" id="recording-modal-close" autofocus class="close">Close</button>
     <h2>Record screen</h2>
-    <button id="recording-start-button">Start recording</button>
+    <button type="button" id="recording-start-button">Start recording</button>
     <h3>Video settings</h3>
     <div class="recording-parameters">
       <div>
@@ -335,7 +335,7 @@
       </select>
       <div>
         <label for="video-output-codec">Video output codec</label>
-        <div class="warning-message">(Only use this field if you <strong><em>really</em></strong> know what you're doing! See the MDN <a href="https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/codecs_parameter" target="_BLANK">codecs in common media types</a> page for more clues).</div>
+        <div class="warning-message">(Only use this field if you <strong><em>really</em></strong> know what you're doing! See the MDN <a rel="noopener noreferrer" href="https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/codecs_parameter" target="_BLANK">codecs in common media types</a> page for more clues).</div>
       </div>
       <input type="text" id="video-output-codec" value="">
     </div>
@@ -343,7 +343,7 @@
 
   <!-- Teleprompter editor modal -->
   <dialog id="teleprompt-editor-modal" closedby="closerequest">
-    <button id="teleprompt-editor-modal-close" autofocus class="close">Close</button>
+    <button type="button" id="teleprompt-editor-modal-close" autofocus class="close">Close</button>
     <h2>Edit teleprompter script</h2>
     <p>Use short paragraphs of text for each teleprompt instance.</p>
     <p>~ Start stage directions with a tilde character.</p>
@@ -352,7 +352,7 @@
 
   <!-- Instructions modal -->
   <dialog id='instructions-modal' closedby="any">
-    <button id="instructions-modal-close" autofocus class="close">Close</button>
+    <button type="button" id="instructions-modal-close" autofocus class="close">Close</button>
     <h2>Using the SC Screen Recorder tool</h2>
     <p>The following instructions offer basic details about how to use the SC Screen capture tool. The concept behind the tool is simple:</p>
     <ul>
@@ -447,9 +447,9 @@
 
     <p><b>Scribble line undo/restore:</b></p>
     <ul>
-      <li>`CMD + z` to undo last line</li>
-      <li>`CMD + y` to restore last undone line</li>
-      <li>`CMD + x` to delete all lines</li>
+      <li>`ALT + z` to undo last line</li>
+      <li>`ALT + y` to restore last undone line</li>
+      <li>`ALT + x` to delete all lines</li>
     </ul>
 
     <p><b>Advancing the teleprompter script</b> - this shortcut is only available when testing the teleprompt script, or recording a video:</p>
@@ -459,33 +459,35 @@
 
     <h3>Tool metadata</h3>
 
-    <p>This screen recording tool is a Proof of Concept, released under the MIT licence. More details about the tool, alongside its code, can be found in its <a href="https://github.com/KaliedaRik/sc-screen-recorder">repository on GitHub</a>.</p>
+    <p>This screen recording tool is a Proof of Concept, released under the MIT licence. More details about the tool, alongside its code, can be found in its <a rel="noopener noreferrer"href="https://github.com/KaliedaRik/sc-screen-recorder" target="_blank">repository on GitHub</a>.</p>
 
     <p>This tool has been designed to be hackable. Feel free to use the tool as-is on its github.io page, or fork the repository to coustomise and host your own version. The tool can also be downloaded and run locally &ndash; it has no backend or toolchain.</p>
 
-    <p><b>MIT Licence</b></p>
+    <div aria-label="MIT Licence notice">
+      <p><b>MIT Licence</b></p>
 
-    <p>Copyright (c) 2026 Rik Roots
+      <p>Copyright (c) 2026 Rik Roots</p>
 
-    <p>Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:</p>
+      <p>Permission is hereby granted, free of charge, to any person obtaining a copy
+      of this software and associated documentation files (the "Software"), to deal
+      in the Software without restriction, including without limitation the rights
+      to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+      copies of the Software, and to permit persons to whom the Software is
+      furnished to do so, subject to the following conditions:</p>
 
-    <ul>
-      <li>The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.</li>
-    </ul>
- 
-    <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE.</p>
+      <ul>
+        <li>The above copyright notice and this permission notice shall be included in all
+      copies or substantial portions of the Software.</li>
+      </ul>
+   
+      <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+      IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+      FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+      AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+      LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+      SOFTWARE.</p>
+    </div>
   </dialog>
 
   <script type="module" src="index.js"></script>

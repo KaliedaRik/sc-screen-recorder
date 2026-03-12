@@ -1624,6 +1624,8 @@ Please:
           a.download = `${filename}_${nowString}.${selectedFiletype}`;
           a.click();
           a.remove();
+
+          URL.revokeObjectURL(url);
         }
         else {
 
@@ -1655,6 +1657,8 @@ Please:
             a.download = `${filename}_${nowString}.zip`;
             a.click();
             a.remove();
+
+            URL.revokeObjectURL(url);
           });
         }
 
@@ -2169,10 +2173,10 @@ const initScribble = () => {
   // - The main "Scribbles" button opens an associated modal - all defined in HTML
   // - Users can use the modal to set the color and width of the scribble pen
 
-  scrawl.addNativeListener('focus', () => scribblesColorInput.classList.add('is-focussed'), backgroundUpload);
-  scrawl.addNativeListener('blur', () => scribblesColorInput.classList.remove('is-focussed'), backgroundUpload);
-  scrawl.addNativeListener('focus', () => scribblesWidth.classList.add('is-focussed'), backgroundColorInput);
-  scrawl.addNativeListener('blur', () => scribblesWidth.classList.remove('is-focussed'), backgroundColorInput);
+  scrawl.addNativeListener('focus', () => scribblesColorInput.classList.add('is-focussed'), scribblesColorInput);
+  scrawl.addNativeListener('blur', () => scribblesColorInput.classList.remove('is-focussed'), scribblesColorInput);
+  scrawl.addNativeListener('focus', () => scribblesWidth.classList.add('is-focussed'), scribblesWidth);
+  scrawl.addNativeListener('blur', () => scribblesWidth.classList.remove('is-focussed'), scribblesWidth);
 
   // Flag to indicate whether the user wants to scribble on the canvas, or not
   // - Required because user may also want to drag Targets around the canvas
