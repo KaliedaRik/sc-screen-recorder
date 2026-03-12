@@ -7,9 +7,10 @@ const canvas = scrawl.findCanvas('my-canvas');
 
 
 // ------------------------------------------------------------------------
-// MediaPipe imports
+// MediaPipe and client-zip imports
 // ------------------------------------------------------------------------
 import * as MediaPipe from './js/mediapipe-vision-bundle.js';
+import { downloadZip } from './js/client-zip.js';
 
 
 // ------------------------------------------------------------------------
@@ -105,6 +106,10 @@ navigator.mediaDevices.addEventListener(
 
 let selectedMicrophone = 'none',
   selectedCamera = 'none';
+
+// Teleprompter state
+let teleprompterIsVisible = false;
+let teleprompterIsRunning = false;
 
 
 // ------------------------------------------------------------------------
@@ -237,6 +242,202 @@ const initInstructions = () => {
   scrawl.addNativeListener('close', closeModal, instructionsModal);
 
   return {};
+};
+
+
+// ------------------------------------------------------------------------
+// Teleprompter functionality
+// ------------------------------------------------------------------------
+const initTeleprompter = () => {
+
+  // Initialize DOM teleprompter edit button and associated modal
+  scrawl.addNativeListener('click', () => openTelepromptModal(), telepromptButton);
+  scrawl.addNativeListener('click', closeModal, telepromptCloseButton);
+  scrawl.addNativeListener('close', closeModal, telepromptModal);
+
+  // Local state variables management
+  let telepromptIndex = -1;  
+
+  const telepromptLines = [],
+    telepromptTimestamps = [],
+    initialReadingText = 'Press space bar to advance text',
+    initialStageText = 'Stage prompts will appear here',
+    endOfFileText = '[Ends]';
+
+  telepromptReading.textContent = initialReadingText;
+  telepromptStage.textContent = initialStageText;
+
+  const resetTelepromptRuntime = () => {
+
+    telepromptLines.length = 0;
+    telepromptIndex = -1;
+    telepromptTimestamps.length = 0;
+
+    telepromptReading.textContent = initialReadingText;
+    telepromptStage.textContent = initialStageText;
+  };
+
+
+  // Setup teleprompter reveal/hide functionality
+  const toggleTeleprompterArea = () => {
+
+    if (teleprompterIsRunning) return;
+
+    teleprompterIsVisible = !teleprompterIsVisible;
+
+    if (teleprompterIsVisible) {
+
+      appPanel.classList.add('teleprompter-active');
+      telepromptAreaButton.textContent = 'Close teleprompter';
+    }
+    else {
+
+      appPanel.classList.remove('teleprompter-active');
+      telepromptAreaButton.textContent = 'Use teleprompter';
+    }
+  };
+  scrawl.addNativeListener('click', toggleTeleprompterArea, telepromptAreaButton);
+
+  // Specific instructions when opening the teleprompter modal
+  const openTelepromptModal = () => {
+
+    openModal(telepromptModal);
+    setTimeout(() => telepromptEditor.focus(), 120);
+  };
+
+  // Build state from teleprompt editor contents
+  const parseTelepromptScript = () => {
+
+    const raw = telepromptEditor.value.trim();
+
+    if (!raw) return [];
+
+    return raw
+      .split(/\n/)
+      .map(t => t.trim())
+      .filter(Boolean)
+      .map(text => {
+
+        if (text.startsWith('~')) {
+          return {
+            type: 'stage',
+            text: text.slice(1).trim(),
+          };
+        }
+
+        return {
+          type: 'read',
+          text,
+        };
+      });
+  };
+
+  // Buttons that should be disabled during test runs
+  const teleprompterLockedButtons = [
+    telepromptButton,
+    recordingButton,
+    telepromptAreaButton,
+    dimensionsButton,
+  ];
+
+  const disableTeleprompterButtons = () => {
+
+    teleprompterLockedButtons.forEach(btn => btn.setAttribute('disabled', ''));
+  };
+
+  const enableTeleprompterButtons = () => {
+
+    teleprompterLockedButtons.forEach(btn => btn.removeAttribute('disabled'));
+  };
+
+  scrawl.addNativeListener('click', () => {
+
+    if (!teleprompterIsRunning) startTeleprompterTest();
+    else stopTeleprompterTest();
+
+  }, telepromptTestButton);
+
+  const displayNextTelepromptLine = () => {
+
+    telepromptIndex++;
+
+    if (telepromptIndex >= telepromptLines.length) {
+
+      telepromptStage.textContent = '';
+      telepromptReading.textContent = endOfFileText;
+      return;
+    }
+
+    const line = telepromptLines[telepromptIndex];
+
+    if (line.type === 'stage') {
+      telepromptStage.textContent = line.text;
+    }
+    else {
+      telepromptReading.textContent = line.text;
+
+      telepromptTimestamps.push({
+        text: line.text,
+        time: recordingTimer.textContent,
+      });
+    }
+  };
+
+  const populateTelepromptState = () => {
+
+    resetTelepromptRuntime();
+    telepromptLines.push(...parseTelepromptScript());
+  };
+
+  const startTeleprompterTest = () => {
+
+    populateTelepromptState();
+
+    if (!telepromptLines.length) return;
+
+    teleprompterIsRunning = true;
+
+    closeModal();
+    disableTeleprompterButtons();
+
+    telepromptTestButton.textContent = 'Stop test';
+    telepromptTestButton.classList.add('teleprompter-test-running');
+
+    startRecordingTimer();
+  };
+
+  const stopTeleprompterTest = () => {
+
+    teleprompterIsRunning = false;
+
+    stopRecordingTimer();
+
+    enableTeleprompterButtons();
+
+    telepromptTestButton.textContent = 'Run test';
+    telepromptTestButton.classList.remove('teleprompter-test-running');
+  };
+
+  scrawl.addNativeListener('keydown', (e) => {
+
+    if (e.code !== 'Space') return;
+    if (!teleprompterIsVisible) return;
+    if (!teleprompterIsRunning) return;
+
+    e.preventDefault();
+
+    displayNextTelepromptLine();
+
+  }, document);
+
+  const telepromptHasScript = () => telepromptLines.length > 0;
+
+  return {
+    telepromptTimestamps,
+    displayNextTelepromptLine,
+    populateTelepromptState,
+    telepromptHasScript,
+  };
 };
 
 
@@ -716,11 +917,7 @@ const initTargets = () => {
 
           clickAction: function () {
 
-            if (updateGroup.get('artefacts').includes(targetPicture.name)) {
-
-              console.log('HELLO');
-              cleanupAction();
-            }
+            if (updateGroup.get('artefacts').includes(targetPicture.name)) cleanupAction();
             else {
 
               updateGroup.clearArtefacts();
@@ -1255,6 +1452,21 @@ Please:
   let isRecording = false;
 
   // Setup and start recording the canvas
+  const recordingLockedButtons = [
+    telepromptButton,
+    telepromptTestButton,
+    telepromptAreaButton,
+    dimensionsButton,
+  ];
+
+  const disableRecordingTeleprompterButtons = () => {
+    recordingLockedButtons.forEach(btn => btn.setAttribute('disabled', ''));
+  };
+
+  const enableRecordingTeleprompterButtons = () => {
+    recordingLockedButtons.forEach(btn => btn.removeAttribute('disabled'));
+  };
+
   const startRecording = () => {
 
     if (isRecording) return;
@@ -1291,13 +1503,21 @@ Please:
 
       recorder.start(1000);
 
-      // Time elapsed
-      recordingTimer.removeAttribute('aria-hidden');
-      recordingTimer.style.display = 'block';
-      recordingTimer.textContent = '00:00';
-      recordingTimer.setAttribute('aria-label', 'Recording started');
-      startRecordingTimer();
+      // Teleprompter
+      if (teleprompterIsVisible) {
 
+        populateTelepromptState();
+
+        if (telepromptHasScript()) {
+
+          teleprompterIsRunning = true;
+
+          disableRecordingTeleprompterButtons();
+        }
+      }
+
+      // Time elapsed
+      startRecordingTimer();
 
       // Microphone level meter
       microphoneLevel.removeAttribute('aria-hidden');
@@ -1320,6 +1540,11 @@ Please:
 
   const startRecordingTimer = () => {
 
+    recordingTimer.removeAttribute('aria-hidden');
+    recordingTimer.style.display = 'block';
+    recordingTimer.textContent = '00:00:00';
+    recordingTimer.setAttribute('aria-label', 'Recording started');
+
     recordingStartedAt = Date.now();
     recordingTimerIntervalValue = setInterval(recordingTimerFunction, 500);
   };
@@ -1328,15 +1553,23 @@ Please:
 
     const elapsed = parseInt((Date.now() - recordingStartedAt) / 1000, 10);
 
-    const mins = String(Math.floor(elapsed / 60)).padStart(2, '0'),
+    const hrs = String(Math.floor(elapsed / 3600)).padStart(2, '0'),
+      mins = String(Math.floor(elapsed / 60)).padStart(2, '0'),
       secs = String(elapsed % 60).padStart(2, '0');
 
-    recordingTimer.textContent = `${mins}:${secs}`;
+    recordingTimer.textContent = `${hrs}:${mins}:${secs}`;
 
     if (elapsed > 0 && elapsed % 15 === 0) recordingTimer.setAttribute('aria-label', `${elapsed} seconds`);
   };
 
-  const stopRecordingTimer = () => clearInterval(recordingTimerIntervalValue);
+  const stopRecordingTimer = () => {
+
+    clearInterval(recordingTimerIntervalValue);
+
+    recordingTimer.style.display = 'none';
+    recordingTimer.setAttribute('aria-hidden', 'true');
+    recordingTimer.removeAttribute('aria-label');
+  };
 
   const stopRecording = () => {
 
@@ -1350,27 +1583,80 @@ Please:
       recorder.stop();
       recorder = null;
 
+      const lastTime = recordingTimer.textContent;
       stopRecordingTimer();
-      recordingTimer.style.display = 'none';
-      recordingTimer.setAttribute('aria-hidden', 'true');
-      recordingTimer.removeAttribute('aria-label');
-
 
       microphoneLevel.style.display = 'none';
       microphoneLevel.setAttribute('aria-hidden', 'true');
       stopMicrophoneMeter();
 
+      let txtString = '',
+        srtString = '';
+
+      if (teleprompterIsRunning) {
+
+        txtString = telepromptTimestamps.map(item => item.text).join('\n');
+
+        srtString = telepromptTimestamps.map((item, index) => {
+
+          if (index < telepromptTimestamps.length - 1) return `${index + 1}\n${item.time},000 --> ${telepromptTimestamps[index + 1].time},000\n${item.text}\n\n`;
+          else return `${index + 1}\n${item.time},000 --> ${lastTime},000\n${item.text}\n\n`;
+        }).join('');
+      }
+
       setTimeout(() => {
 
-        const blob = new Blob(recordedChunks, { type: dataCodec });
-        const url = URL.createObjectURL(blob);
+        const now = new Date();
 
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `SC-screen-recording_${Date().slice(4, 24)}.${selectedFiletype}`;
-        a.click();
+        const pad = (n) => String(n).padStart(2, '0');
 
-        URL.revokeObjectURL(url);
+        const nowString = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+
+        const filename = recordingFilename.value;
+
+        if (!teleprompterIsRunning) {
+
+          const blob = new Blob(recordedChunks, { type: dataCodec });
+          const url = URL.createObjectURL(blob);
+
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${filename}_${nowString}.${selectedFiletype}`;
+          a.click();
+          a.remove();
+        }
+        else {
+
+          enableRecordingTeleprompterButtons();
+          teleprompterIsRunning = false;
+
+          const videoBlob = new Blob(recordedChunks, { type: dataCodec });
+
+          downloadZip([{
+            name: `${filename}_${nowString}.txt`,
+            lastModified: now,
+            input: txtString
+          },{
+            name: `${filename}_${nowString}.srt`,
+            lastModified: now,
+            input: srtString
+          },{
+            name: `${filename}_${nowString}.${selectedFiletype}`,
+            lastModified: now,
+            input: videoBlob
+          }])
+          .blob()
+          .then(blob => {
+
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${filename}_${nowString}.zip`;
+            a.click();
+            a.remove();
+          });
+        }
 
         recordingButton.classList.remove('is-recording');
         recordingButton.textContent = 'Record';
@@ -1383,6 +1669,11 @@ Please:
   };
 
   scrawl.addNativeListener('click', startRecording, recordingStartButton);
+
+  return {
+    startRecordingTimer,
+    stopRecordingTimer,
+  };
 };
 
 
@@ -2019,8 +2310,6 @@ scrawl.makeKeyboardZone({
 
       if (here.active) {
 
-        console.log('startLine', JSON.stringify(here));
-
         currentPins.push(getRelPos(here));
 
         currentLine = scrawl.makePolyline({
@@ -2064,8 +2353,6 @@ scrawl.makeKeyboardZone({
     if (scribblesAreActive) {
 
       const here = canvas.getBaseHere();
-
-      console.log('checkLine', JSON.stringify(here));
 
       if (currentLine && here.active) {
 
@@ -2142,6 +2429,7 @@ const dom = scrawl.initializeDomInputs([
   ['button', 'recording-modal-close', 'Close'],
   ['by-id', 'recording-modal'],
   ['select', 'recording-microphone', 0],
+  ['input', 'file-name', 'SC-screen-recording'],
   ['select', 'video-output-filetype', 0],
   ['input', 'video-output-codec', ''],
   ['button', 'recording-start-button', 'Start recording'],
@@ -2186,6 +2474,17 @@ const dom = scrawl.initializeDomInputs([
   ['button', 'instructions-modal-button', 'Instructions'],
   ['button', 'instructions-modal-close', 'Close'],
   ['by-id', 'instructions-modal'],
+
+  // Capture handles for the teleprompter modal and controls
+  ['button', 'teleprompt-area-button', 'Use teleprompter'],
+  ['button', 'teleprompt-editor-modal-button', 'Edit text'],
+  ['button', 'teleprompt-editor-modal-close', 'Close'],
+  ['button', 'teleprompt-test-button', 'Run test'],
+  ['by-id', 'teleprompt-editor-modal'],
+  ['by-id', 'teleprompt-editor'],
+  ['by-id', 'teleprompter-reading'],
+  ['by-id', 'teleprompter-stage'],
+  ['by-id', 'app-panel'],
 ]);
 
 const entityBeingEdited = dom['entity-being-edited'],
@@ -2213,6 +2512,7 @@ const entityBeingEdited = dom['entity-being-edited'],
   recordingButton = dom['recording-modal-button'],
   recordingCloseButton = dom['recording-modal-close'],
   recordingMicrophone = dom['recording-microphone'],
+  recordingFilename = dom['file-name'],
   recordingFiletype = dom['video-output-filetype'],
   recordingCodec = dom['video-output-codec'],
   recordingStartButton = dom['recording-start-button'],
@@ -2246,6 +2546,16 @@ const entityBeingEdited = dom['entity-being-edited'],
 
   logoChoice = dom['logo-choice'],
   logoPosition = dom['logo-position'],
+
+  telepromptAreaButton = dom['teleprompt-area-button'],
+  telepromptModal = dom['teleprompt-editor-modal'],
+  telepromptButton = dom['teleprompt-editor-modal-button'],
+  telepromptCloseButton = dom['teleprompt-editor-modal-close'],
+  telepromptTestButton = dom['teleprompt-test-button'],
+  telepromptEditor = dom['teleprompt-editor'],
+  telepromptReading = dom['teleprompter-reading'],
+  telepromptStage = dom['teleprompter-stage'],
+  appPanel = dom['app-panel'],
 
   instructionsModal = dom['instructions-modal'],
   instructionsButton = dom['instructions-modal-button'],
@@ -2333,7 +2643,17 @@ const {
   updateBackgroundPicture,
 } = initBackground();
 
-initVideoRecording();
+const {
+  startRecordingTimer,
+  stopRecordingTimer,
+} = initVideoRecording();
+
+const {
+  telepromptTimestamps,
+  displayNextTelepromptLine,
+  populateTelepromptState,
+  telepromptHasScript,
+} = initTeleprompter();
 
 initInstructions();
 
@@ -2351,5 +2671,3 @@ scrawl.makeRender({
 // Request permissions
 // ------------------------------------------------------------------------
 DeviceManager.refreshDevices();
-
-console.log(scrawl.library);

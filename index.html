@@ -22,6 +22,9 @@
       <!-- Instructions -->
       <button id="instructions-modal-button">Instructions</button>
 
+      <!-- Teleprompter toggle -->
+      <button id="teleprompt-area-button">Use teleprompter</button>
+
       <!-- logo -->
       <details id="logo-panel">
         <summary>Logo control</summary>
@@ -54,7 +57,7 @@
           </p>
 
           <h2>Background images</h2>
-          <p>Add a background image by dragging it onto the browser window.</p>
+          <p class="advice-text">Add a background image by dragging it onto the browser window.</p>
 
           <p>
             <label id="background-upload-button" for="background-upload">Browse for image files</label>
@@ -66,7 +69,7 @@
           </p>
 
           <h3>Recent uploads</h3>
-          <p>Click on an image to use it:</p>
+          <p class="advice-text">Click on an image to use it:</p>
 
           <div id="background-image-hold"></div>
         </div>
@@ -144,13 +147,13 @@
 
           <h3>Acquired targets</h3>
 
-          <p>Click on target to select it for editing. Reorder target display by reordering the list - targets at the top display over targets lower in the list.</p>
+          <p class="advice-text">Click on target to select it for editing. Reorder target display by reordering the list - targets at the top display over targets lower in the list.</p>
 
           <div id="current-targets-hold"></div>
 
           <hr>
 
-          <p>To rearrange target order, click on a target listing (above) then use the <b>Shift + ↑</b> / <b>Shift + ↓</b> keys (together) to move it up/down the list.</p>
+          <p class="advice-text">To rearrange target order, click on a target listing (above) then use the <b>Shift + ↑</b> / <b>Shift + ↓</b> keys (together) to move it up/down the list.</p>
         </div>
       </details>
 
@@ -184,6 +187,24 @@
 
     <div id="app-panel">
       
+      <!-- Teleprompter area -->
+      <div id="teleprompter-panel">
+
+        <div id="teleprompter-controls">
+          <button id="teleprompt-editor-modal-button">Edit text</button>
+          <button id="teleprompt-test-button">Run test</button>
+        </div>
+
+        <div id="teleprompter-reading">
+          <p>Teleprompter text</p>
+        </div>
+
+        <div id="teleprompter-stage">
+          <p>Stage directions</p>
+        </div>
+
+      </div>
+
       <!-- Canvas app -->
       <div id="my-canvas-container">
         <canvas 
@@ -303,6 +324,10 @@
       <select id="recording-microphone">
         <option value="none">None</option>
       </select>
+      <div>
+        <label for="file-name">Save file as</label>
+      </div>
+      <input type="text" id="file-name" value="SC-screen-recording">
       <label for="video-output-filetype">Video output format</label>
       <select id="video-output-filetype">
         <option value="mp4">mp4 (not supported on Firefox)</option>
@@ -314,6 +339,15 @@
       </div>
       <input type="text" id="video-output-codec" value="">
     </div>
+  </dialog>
+
+  <!-- Teleprompter editor modal -->
+  <dialog id="teleprompt-editor-modal" closedby="closerequest">
+    <button id="teleprompt-editor-modal-close" autofocus class="close">Close</button>
+    <h2>Edit teleprompter script</h2>
+    <p>Use short paragraphs of text for each teleprompt instance.</p>
+    <p>~ Start stage directions with a tilde character.</p>
+    <textarea id="teleprompt-editor" aria-label="Teleprompter script editor" placeholder="Type teleprompter paragraphs here..."></textarea>
   </dialog>
 
   <!-- Instructions modal -->
@@ -379,6 +413,14 @@
       <div>While recording, the Record button changes to a red <b>Stop recording</b> button. Click it to, well, stop recording. The recorded video will automatically download to the device where the web page is running.</div>
       <img src="assets/instructions-20.png" alt="Screenshot - logo panel" />
       <div>Logo control &ndash; the tool, if forked or set up locally, can support one or more branding logos. Position the logo as required. If more than one logo is included in the build, they can be swapped and repositioned as recording continues.</div>
+      <img src="assets/instructions-21.png" alt="Screenshot - teleprompter" />
+      <div>Teleprompter &ndash; the tool comes with a built-in teleprompter. To enable it, click on the <b>Use teleprompter</b> button in the left hand panel. Clicking on the button again will close the teleprompter.</div>
+      <img src="assets/instructions-22.png" alt="Screenshot - teleprompter editor" />
+      <div>Teleprompter editor &ndash; click on the <b>Edit text</b> button to add, update or delete text while developing the video script. Additional screen prompts can be added by starting a line with a ~tilde.</div>
+      <img src="assets/instructions-23.png" alt="Screenshot - teleprompter test" />
+      <div>Testing the teleprompter script &ndash; click on the <b>Run test</b> button to test the teleprompter script. Advance to the next line by pressing the keyboard spacebar. Screen prompt reminders will appear to the right of the main script.</div>
+      <img src="assets/instructions-24.png" alt="Screenshot - teleprompter downloads" />
+      <div>When a recording is completed the tool will download the video to your local machine. If the teleprompter has been used during recording, the download will include <b>subtitle</b> files in formats that can be used when uploading the video to social media.</div>
     </div>
     <h3>Keyboard controls</h3>
     <p>The web page supports the following (hopefully cross-browser standard) keyboard controls and shortcuts.</p>
@@ -408,6 +450,11 @@
       <li>`CMD + z` to undo last line</li>
       <li>`CMD + y` to restore last undone line</li>
       <li>`CMD + x` to delete all lines</li>
+    </ul>
+
+    <p><b>Advancing the teleprompter script</b> - this shortcut is only available when testing the teleprompt script, or recording a video:</p>
+    <ul>
+      <li>`SPACE` to advance to the next line</li>
     </ul>
 
     <h3>Tool metadata</h3>
