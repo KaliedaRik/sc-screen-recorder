@@ -1612,6 +1612,8 @@ Please:
 
         const nowString = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
 
+        const filename = recordingFilename.value;
+
         if (!teleprompterIsRunning) {
 
           const blob = new Blob(recordedChunks, { type: dataCodec });
@@ -1619,7 +1621,7 @@ Please:
 
           const a = document.createElement('a');
           a.href = url;
-          a.download = `SC-screen-recording_${nowString}.${selectedFiletype}`;
+          a.download = `${filename}_${nowString}.${selectedFiletype}`;
           a.click();
           a.remove();
         }
@@ -1631,15 +1633,15 @@ Please:
           const videoBlob = new Blob(recordedChunks, { type: dataCodec });
 
           downloadZip([{
-            name: `SC-screen-recording_${nowString}.txt`,
+            name: `${filename}_${nowString}.txt`,
             lastModified: now,
             input: txtString
           },{
-            name: `SC-screen-recording_${nowString}.srt`,
+            name: `${filename}_${nowString}.srt`,
             lastModified: now,
             input: srtString
           },{
-            name: `SC-screen-recording_${nowString}.${selectedFiletype}`,
+            name: `${filename}_${nowString}.${selectedFiletype}`,
             lastModified: now,
             input: videoBlob
           }])
@@ -1650,7 +1652,7 @@ Please:
 
             const a = document.createElement('a');
             a.href = url;
-            a.download = `SC-screen-recording_${nowString}.zip`;
+            a.download = `${filename}_${nowString}.zip`;
             a.click();
             a.remove();
           });
@@ -2427,6 +2429,7 @@ const dom = scrawl.initializeDomInputs([
   ['button', 'recording-modal-close', 'Close'],
   ['by-id', 'recording-modal'],
   ['select', 'recording-microphone', 0],
+  ['input', 'file-name', 'SC-screen-recording'],
   ['select', 'video-output-filetype', 0],
   ['input', 'video-output-codec', ''],
   ['button', 'recording-start-button', 'Start recording'],
@@ -2509,6 +2512,7 @@ const entityBeingEdited = dom['entity-being-edited'],
   recordingButton = dom['recording-modal-button'],
   recordingCloseButton = dom['recording-modal-close'],
   recordingMicrophone = dom['recording-microphone'],
+  recordingFilename = dom['file-name'],
   recordingFiletype = dom['video-output-filetype'],
   recordingCodec = dom['video-output-codec'],
   recordingStartButton = dom['recording-start-button'],
