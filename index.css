@@ -616,6 +616,10 @@ dialog {
   & p {
     font-size: 80%;
   }
+
+  & details:not([open]) button {
+    display: none;
+  }
 }
 
 #dimensions-modal {
