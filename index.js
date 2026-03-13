@@ -23,6 +23,10 @@ const DeviceManager = {
   permissionGranted: false,
   onChangeCallbacks: [],
 
+  // User selection history
+  preferredMicrophone: 'none',
+  preferredCamera: 'none',
+
   // Subscribe listeners (UI rebuilds, etc.)
   onChange(fn) {
 
@@ -103,9 +107,6 @@ navigator.mediaDevices.addEventListener(
   'devicechange',
   () => DeviceManager.refreshDevices()
 );
-
-let selectedMicrophone = 'none',
-  selectedCamera = 'none';
 
 // Teleprompter state
 let teleprompterIsVisible = false;
@@ -472,10 +473,12 @@ const initTalkingHead = () => {
     }
 
     headCamera.replaceChildren(...frag.querySelectorAll('option'));
+
+    setTimeout(() => headCamera.value = DeviceManager.preferredCamera);
   });
 
   // Initialize DOM head button and associated modal
-  scrawl.addNativeListener('change', () => selectedCamera = headCamera.value, headCamera);
+  scrawl.addNativeListener('change', () => DeviceManager.preferredCamera = headCamera.value, headCamera);
 
   // Google MediaPipe ML model code
   let imageSegmenter,
@@ -665,7 +668,7 @@ const initTalkingHead = () => {
       video: {
         width: { ideal: 768 },
         height: { ideal: 768 },
-        deviceId: selectedCamera,
+        deviceId: DeviceManager.preferredCamera,
       },
       onMediaStreamEnd: () => stopCamera(),
 
@@ -1312,6 +1315,8 @@ const initVideoRecording = () => {
     }
 
     recordingMicrophone.replaceChildren(...frag.querySelectorAll('option'));
+
+    setTimeout(() => recordingMicrophone.value = DeviceManager.preferredMicrophone, 0);
   });
 
   // Initialize DOM recording button and associated modal
@@ -1325,7 +1330,7 @@ const initVideoRecording = () => {
   scrawl.addNativeListener('click', closeModal, recordingCloseButton);
   scrawl.addNativeListener('close', closeModal, recordingModal)
 
-  scrawl.addNativeListener('change', () => selectedMicrophone = recordingMicrophone.value, recordingMicrophone);
+  scrawl.addNativeListener('change', () => DeviceManager.preferredMicrophone = recordingMicrophone.value, recordingMicrophone);
 
   scrawl.addNativeListener('change', () => selectedFiletype = recordingFiletype.value, recordingFiletype);
 
@@ -1351,9 +1356,9 @@ const initVideoRecording = () => {
 
         audio: {
 
-          deviceId: selectedMicrophone === 'none'
+          deviceId: DeviceManager.preferredMicrophone === 'none'
             ? undefined
-            : { exact: selectedMicrophone },
+            : { exact: DeviceManager.preferredMicrophone },
 
           echoCancellation: false,
           noiseSuppression: false,
