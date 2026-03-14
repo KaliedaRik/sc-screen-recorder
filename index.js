@@ -419,7 +419,7 @@ const initTeleprompter = () => {
     telepromptTestButton.classList.remove('teleprompter-test-running');
   };
 
-  const spaceBarEventIgnoredElements = ['INPUT', 'BUTTON', 'TEXTAREA'];
+  const spaceBarEventIgnoredElements = ['INPUT', 'TEXTAREA'];
 
   scrawl.addNativeListener('keydown', (e) => {
 
@@ -1579,17 +1579,34 @@ Please:
       stopMicrophoneMeter();
 
       let txtString = '',
-        srtString = '';
+        srtString = '',
+        vttString = 'WEBVTT\n\n';
 
       if (teleprompterIsRunning) {
 
         txtString = telepromptTimestamps.map(item => item.text).join('\n');
 
-        srtString = telepromptTimestamps.map((item, index) => {
+        const len = telepromptTimestamps.length - 1;
 
-          if (index < telepromptTimestamps.length - 1) return `${index + 1}\n${item.time},000 --> ${telepromptTimestamps[index + 1].time},000\n${item.text}\n\n`;
-          else return `${index + 1}\n${item.time},000 --> ${lastTime},000\n${item.text}\n\n`;
-        }).join('');
+        const generateSubtitleCue = (item, index, isVtt = false) => {
+
+          const divider = isVtt ? '.' : ',';
+
+          const seqNo = isVtt ? '' : `${index + 1}\n`;
+
+          if (index < len) {
+
+            return `${seqNo}${item.time}${divider}000 --> ${telepromptTimestamps[index + 1].time}${divider}000\n${item.text}\n\n`;
+          }
+          else {
+
+            return `${seqNo}${item.time}${divider}000 --> ${lastTime}${divider}000\n${item.text}\n`;
+          }
+        };
+
+        srtString = telepromptTimestamps.map((vals, idx) => generateSubtitleCue(vals, idx, false)).join('');
+
+        vttString += telepromptTimestamps.map((vals, idx) => generateSubtitleCue(vals, idx, true)).join('');
       }
 
       setTimeout(() => {
@@ -1625,15 +1642,19 @@ Please:
           downloadZip([{
             name: `${filename}_${nowString}.txt`,
             lastModified: now,
-            input: txtString
+            input: txtString,
           },{
             name: `${filename}_${nowString}.srt`,
             lastModified: now,
-            input: srtString
+            input: srtString,
+          },{
+            name: `${filename}_${nowString}.vtt`,
+            lastModified: now,
+            input: vttString,
           },{
             name: `${filename}_${nowString}.${selectedFiletype}`,
             lastModified: now,
-            input: videoBlob
+            input: videoBlob,
           }])
           .blob()
           .then(blob => {
