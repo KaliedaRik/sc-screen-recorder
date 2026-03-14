@@ -419,14 +419,11 @@ const initTeleprompter = () => {
     telepromptTestButton.classList.remove('teleprompter-test-running');
   };
 
-  const spaceBarEventIgnoredElements = ['INPUT', 'TEXTAREA'];
-
   scrawl.addNativeListener('keydown', (e) => {
 
     if (e.code !== 'Space') return;
     if (!teleprompterIsVisible) return;
     if (!teleprompterIsRunning) return;
-    if (e.target && spaceBarEventIgnoredElements.includes(e.target.tagName)) return;
 
     e.preventDefault();
 
