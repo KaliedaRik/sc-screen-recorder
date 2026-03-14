@@ -18,6 +18,7 @@ import { downloadZip } from './js/client-zip.js';
 // ------------------------------------------------------------------------
 const DeviceManager = {
 
+  // Device data
   microphones: [],
   cameras: [],
   permissionGranted: false,
@@ -44,8 +45,7 @@ const DeviceManager = {
     this.onChangeCallbacks.forEach(fn => fn(payload));
   },
 
-  // Request permission without async/await
-  // (Runs only once, then resolved permanently)
+  // Request permission
   ensurePermission() {
 
     const self = this;
@@ -915,29 +915,6 @@ const initTargets = () => {
         method: 'fill',
 
         bringToFrontOnDrag: false,
-
-        button: {
-
-          name: `${targetId}-button`,
-          description: `Press enter to edit ${targetId}`,
-
-          clickAction: function () {
-
-            if (updateGroup.get('artefacts').includes(targetPicture.name)) cleanupAction();
-            else {
-
-              updateGroup.clearArtefacts();
-              updateGroup.addArtefacts(targetPicture);
-
-              updateEntityControls(targetPicture, targetNamesObject[targetId]);
-
-              entityBeingEdited.textContent = targetPicture.name;
-
-              // Move keyboard focus into editing controls
-              setTimeout(() => entityStartX.focus(), 0);
-            }
-          },
-        },
       });
 
       // Target acquisition is asynchronous, given the need to manipulate the DOM
