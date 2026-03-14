@@ -40,6 +40,8 @@
   --teleprompt-main-text: white;
   --teleprompt-stage-background: rgb(40 40 40 / 1);
   --teleprompt-stage-text: rgb(255 255 100 / 1);
+  --teleprompt-controls-background: rgb(40 40 40 / 1);
+  --teleprompt-controls-text: white;
   --teleprompt-button-background: rgb(220 220 220 / 1);
   --teleprompt-button-border: rgb(90 90 90 / 1);
   --teleprompt-button-text: black;
@@ -606,7 +608,6 @@ dialog {
   & .target-button {
     margin: 0.5rem 0 0.25rem;
     padding: 0.25rem 0.5rem;
-    border: 1px solid ;
     font-size: 80%;
     cursor: pointer;
     border-radius: 5px;
@@ -614,6 +615,10 @@ dialog {
 
   & p {
     font-size: 80%;
+  }
+
+  & details:not([open]) button {
+    display: none;
   }
 }
 

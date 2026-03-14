@@ -18,10 +18,15 @@ import { downloadZip } from './js/client-zip.js';
 // ------------------------------------------------------------------------
 const DeviceManager = {
 
+  // Device data
   microphones: [],
   cameras: [],
   permissionGranted: false,
   onChangeCallbacks: [],
+
+  // User selection history
+  preferredMicrophone: 'none',
+  preferredCamera: 'none',
 
   // Subscribe listeners (UI rebuilds, etc.)
   onChange(fn) {
@@ -40,8 +45,7 @@ const DeviceManager = {
     this.onChangeCallbacks.forEach(fn => fn(payload));
   },
 
-  // Request permission without async/await
-  // (Runs only once, then resolved permanently)
+  // Request permission
   ensurePermission() {
 
     const self = this;
@@ -103,9 +107,6 @@ navigator.mediaDevices.addEventListener(
   'devicechange',
   () => DeviceManager.refreshDevices()
 );
-
-let selectedMicrophone = 'none',
-  selectedCamera = 'none';
 
 // Teleprompter state
 let teleprompterIsVisible = false;
@@ -469,10 +470,12 @@ const initTalkingHead = () => {
     }
 
     headCamera.replaceChildren(...frag.querySelectorAll('option'));
+
+    setTimeout(() => headCamera.value = DeviceManager.preferredCamera);
   });
 
   // Initialize DOM head button and associated modal
-  scrawl.addNativeListener('change', () => selectedCamera = headCamera.value, headCamera);
+  scrawl.addNativeListener('change', () => DeviceManager.preferredCamera = headCamera.value, headCamera);
 
   // Google MediaPipe ML model code
   let imageSegmenter,
@@ -662,7 +665,7 @@ const initTalkingHead = () => {
       video: {
         width: { ideal: 768 },
         height: { ideal: 768 },
-        deviceId: selectedCamera,
+        deviceId: DeviceManager.preferredCamera,
       },
       onMediaStreamEnd: () => stopCamera(),
 
@@ -909,26 +912,6 @@ const initTargets = () => {
         method: 'fill',
 
         bringToFrontOnDrag: false,
-
-        button: {
-
-          name: `${targetId}-button`,
-          description: `Press enter to edit ${targetId}`,
-
-          clickAction: function () {
-
-            if (updateGroup.get('artefacts').includes(targetPicture.name)) cleanupAction();
-            else {
-
-              updateGroup.clearArtefacts();
-              updateGroup.addArtefacts(targetPicture);
-
-              updateEntityControls(targetPicture, targetNamesObject[targetId]);
-
-              entityBeingEdited.textContent = targetPicture.name;
-            }
-          },
-        },
       });
 
       // Target acquisition is asynchronous, given the need to manipulate the DOM
@@ -1164,7 +1147,7 @@ const initTargets = () => {
       if (t.open) t.removeAttribute('open');
     });
 
-    targetsPanelSummary.focus();
+    setTimeout(() => targetsPanelSummary.focus(), 0);
   };
 
   const updateTargetScales = (oldScaler, newScaler) => {
@@ -1306,6 +1289,8 @@ const initVideoRecording = () => {
     }
 
     recordingMicrophone.replaceChildren(...frag.querySelectorAll('option'));
+
+    setTimeout(() => recordingMicrophone.value = DeviceManager.preferredMicrophone, 0);
   });
 
   // Initialize DOM recording button and associated modal
@@ -1319,7 +1304,7 @@ const initVideoRecording = () => {
   scrawl.addNativeListener('click', closeModal, recordingCloseButton);
   scrawl.addNativeListener('close', closeModal, recordingModal)
 
-  scrawl.addNativeListener('change', () => selectedMicrophone = recordingMicrophone.value, recordingMicrophone);
+  scrawl.addNativeListener('change', () => DeviceManager.preferredMicrophone = recordingMicrophone.value, recordingMicrophone);
 
   scrawl.addNativeListener('change', () => selectedFiletype = recordingFiletype.value, recordingFiletype);
 
@@ -1345,9 +1330,9 @@ const initVideoRecording = () => {
 
         audio: {
 
-          deviceId: selectedMicrophone === 'none'
+          deviceId: DeviceManager.preferredMicrophone === 'none'
             ? undefined
-            : { exact: selectedMicrophone },
+            : { exact: DeviceManager.preferredMicrophone },
 
           echoCancellation: false,
           noiseSuppression: false,
@@ -1591,17 +1576,34 @@ Please:
       stopMicrophoneMeter();
 
       let txtString = '',
-        srtString = '';
+        srtString = '',
+        vttString = 'WEBVTT\n\n';
 
       if (teleprompterIsRunning) {
 
         txtString = telepromptTimestamps.map(item => item.text).join('\n');
 
-        srtString = telepromptTimestamps.map((item, index) => {
+        const len = telepromptTimestamps.length - 1;
 
-          if (index < telepromptTimestamps.length - 1) return `${index + 1}\n${item.time},000 --> ${telepromptTimestamps[index + 1].time},000\n${item.text}\n\n`;
-          else return `${index + 1}\n${item.time},000 --> ${lastTime},000\n${item.text}\n\n`;
-        }).join('');
+        const generateSubtitleCue = (item, index, isVtt = false) => {
+
+          const divider = isVtt ? '.' : ',';
+
+          const seqNo = isVtt ? '' : `${index + 1}\n`;
+
+          if (index < len) {
+
+            return `${seqNo}${item.time}${divider}000 --> ${telepromptTimestamps[index + 1].time}${divider}000\n${item.text}\n\n`;
+          }
+          else {
+
+            return `${seqNo}${item.time}${divider}000 --> ${lastTime}${divider}000\n${item.text}\n`;
+          }
+        };
+
+        srtString = telepromptTimestamps.map((vals, idx) => generateSubtitleCue(vals, idx, false)).join('');
+
+        vttString += telepromptTimestamps.map((vals, idx) => generateSubtitleCue(vals, idx, true)).join('');
       }
 
       setTimeout(() => {
@@ -1624,6 +1626,8 @@ Please:
           a.download = `${filename}_${nowString}.${selectedFiletype}`;
           a.click();
           a.remove();
+
+          URL.revokeObjectURL(url);
         }
         else {
 
@@ -1635,15 +1639,19 @@ Please:
           downloadZip([{
             name: `${filename}_${nowString}.txt`,
             lastModified: now,
-            input: txtString
+            input: txtString,
           },{
             name: `${filename}_${nowString}.srt`,
             lastModified: now,
-            input: srtString
+            input: srtString,
+          },{
+            name: `${filename}_${nowString}.vtt`,
+            lastModified: now,
+            input: vttString,
           },{
             name: `${filename}_${nowString}.${selectedFiletype}`,
             lastModified: now,
-            input: videoBlob
+            input: videoBlob,
           }])
           .blob()
           .then(blob => {
@@ -1655,6 +1663,8 @@ Please:
             a.download = `${filename}_${nowString}.zip`;
             a.click();
             a.remove();
+
+            URL.revokeObjectURL(url);
           });
         }
 
@@ -1954,7 +1964,12 @@ const initUpdates = () => {
 
         updateGroup.addArtefacts(entity);
 
-        if (!controlsEnabled) enableControls();
+        if (!controlsEnabled) {
+
+          enableControls();
+          setTimeout(() => entityStartX.focus(), 0);
+        }
+        else entityStartX.focus();
 
       }, 0);
     }
@@ -2169,10 +2184,10 @@ const initScribble = () => {
   // - The main "Scribbles" button opens an associated modal - all defined in HTML
   // - Users can use the modal to set the color and width of the scribble pen
 
-  scrawl.addNativeListener('focus', () => scribblesColorInput.classList.add('is-focussed'), backgroundUpload);
-  scrawl.addNativeListener('blur', () => scribblesColorInput.classList.remove('is-focussed'), backgroundUpload);
-  scrawl.addNativeListener('focus', () => scribblesWidth.classList.add('is-focussed'), backgroundColorInput);
-  scrawl.addNativeListener('blur', () => scribblesWidth.classList.remove('is-focussed'), backgroundColorInput);
+  scrawl.addNativeListener('focus', () => scribblesColorInput.classList.add('is-focussed'), scribblesColorInput);
+  scrawl.addNativeListener('blur', () => scribblesColorInput.classList.remove('is-focussed'), scribblesColorInput);
+  scrawl.addNativeListener('focus', () => scribblesWidth.classList.add('is-focussed'), scribblesWidth);
+  scrawl.addNativeListener('blur', () => scribblesWidth.classList.remove('is-focussed'), scribblesWidth);
 
   // Flag to indicate whether the user wants to scribble on the canvas, or not
   // - Required because user may also want to drag Targets around the canvas
