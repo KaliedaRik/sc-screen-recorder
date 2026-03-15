@@ -316,7 +316,8 @@ const initTeleprompter = () => {
     return raw
       .split(/\n/)
       .map(t => t.trim())
-      .filter(Boolean)
+      .filter(t => t.length)
+      .filter(t => !t.startsWith('/'))
       .map(text => {
 
         if (text.startsWith('~')) {
@@ -1637,19 +1638,23 @@ Please:
           const videoBlob = new Blob(recordedChunks, { type: dataCodec });
 
           downloadZip([{
-            name: `${filename}_${nowString}.txt`,
+            name: `${filename}_${nowString}.subtitles.txt`,
             lastModified: now,
             input: txtString,
           },{
-            name: `${filename}_${nowString}.srt`,
+            name: `${filename}_${nowString}.subtitles.srt`,
             lastModified: now,
             input: srtString,
           },{
-            name: `${filename}_${nowString}.vtt`,
+            name: `${filename}_${nowString}.subtitles.vtt`,
             lastModified: now,
             input: vttString,
           },{
-            name: `${filename}_${nowString}.${selectedFiletype}`,
+            name: `${filename}_${nowString}.teleprompt.txt`,
+            lastModified: now,
+            input: telepromptEditor.value,
+          },{
+            name: `${filename}_${nowString}.video.${selectedFiletype}`,
             lastModified: now,
             input: videoBlob,
           }])
