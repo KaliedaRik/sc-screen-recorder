@@ -551,11 +551,26 @@ const initTalkingHead = () => {
   // - imageSegmenter doesn't start its work until it has something to segment
   const processModelData = (results) => {
 
+    // Magic numbers warning
+    const threshold = 32,
+      softness = 32;
+
+    let inv, alpha;
+
     const data = results.categoryMask.containers[0];
 
     if (data && data.length) {
 
-      data.forEach((val, index) => pixels[index].alpha = 255 - val);
+      data.forEach((val, index) => {
+
+        inv = 255 - val;
+
+        if (inv <= threshold) alpha = 0;
+        else if (inv >= threshold + softness) alpha = 255;
+        else alpha = ((inv - threshold) / softness) * 255;
+
+        pixels[index].alpha = alpha;
+      });
 
       talkingHeadMask.paintCellData(maskData);
 
@@ -600,11 +615,23 @@ const initTalkingHead = () => {
     visibility: false,
   })
 
+  const rectShape = scrawl.makeRectangle({
+
+    name: name('talking-head-rectangle'),
+    group: talkingHeadOutput,
+    start: ['center', 'center'],
+    handle: ['center', 'center'],
+    rectangleWidth: '100%',
+    rectangleHeight: '100%',
+    radius: '20%',
+    visibility: false,
+  })
+
   scrawl.makeFilter({
 
     name: name('mask-blur'),
     method: 'gaussianBlur',
-    radius: 3,
+    radius: 1.5,
   })
 
   const maskPicture = scrawl.makePicture({
@@ -826,16 +853,24 @@ const initTalkingHead = () => {
   // Show a round or square head (keyboard: ARROWS, RETURN)
   scrawl.addNativeListener('change', () => {
 
-    const res = parseInt(headShape.value, 10);
+    const res = headShape.value;
 
-    if (res) {
+    if (res === 'round') {
 
       squareShape.set({ visibility: false });
+      rectShape.set({ visibility: false });
       roundShape.set({ visibility: true });
+    }
+    else if (res === 'rectangle') {
+
+      squareShape.set({ visibility: false });
+      rectShape.set({ visibility: true });
+      roundShape.set({ visibility: false });
     }
     else {
 
       squareShape.set({ visibility: true });
+      rectShape.set({ visibility: false });
       roundShape.set({ visibility: false });
     }
 
