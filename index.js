@@ -768,7 +768,7 @@ const initTalkingHead = () => {
         headScale.setAttribute('disabled', '');
         headOpacity.setAttribute('disabled', '');
         headRotation.setAttribute('disabled', '');
-        headShape.setAttribute('disabled');
+        headShape.setAttribute('disabled', '');
 
         headIsDisplayed = false;
       }
@@ -782,7 +782,7 @@ const initTalkingHead = () => {
       headScale.setAttribute('disabled', '');
       headOpacity.setAttribute('disabled', '');
       headRotation.setAttribute('disabled', '');
-      headShape.setAttribute('disabled');
+      headShape.setAttribute('disabled', '');
 
       headIsDisplayed = false;
     }
