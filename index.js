@@ -551,11 +551,26 @@ const initTalkingHead = () => {
   // - imageSegmenter doesn't start its work until it has something to segment
   const processModelData = (results) => {
 
+    // Magic numbers warning
+    const threshold = 32,
+      softness = 32;
+
+    let inv, alpha;
+
     const data = results.categoryMask.containers[0];
 
     if (data && data.length) {
 
-      data.forEach((val, index) => pixels[index].alpha = 255 - val);
+      data.forEach((val, index) => {
+
+        inv = 255 - val;
+
+        if (inv <= threshold) alpha = 0;
+        else if (inv >= threshold + softness) alpha = 255;
+        else alpha = ((inv - threshold) / softness) * 255;
+
+        pixels[index].alpha = alpha;
+      });
 
       talkingHeadMask.paintCellData(maskData);
 
@@ -583,28 +598,22 @@ const initTalkingHead = () => {
     copyDimensions: ['100%', '100%'],
   });
 
-  const squareShape = scrawl.makeBlock({
+  const rectShape = scrawl.makeRectangle({
 
-    name: name('talking-head-square'),
-    group: talkingHeadOutput,
-    dimensions: ['100%', '100%'],
-  });
-
-  const roundShape = scrawl.makeWheel({
-
-    name: name('talking-head-round'),
+    name: name('talking-head-rectangle'),
     group: talkingHeadOutput,
     start: ['center', 'center'],
     handle: ['center', 'center'],
-    radius: '50%',
-    visibility: false,
+    rectangleWidth: '100%',
+    rectangleHeight: '100%',
+    radius: '15%',
   })
 
   scrawl.makeFilter({
 
     name: name('mask-blur'),
     method: 'gaussianBlur',
-    radius: 3,
+    radius: 1.5,
   })
 
   const maskPicture = scrawl.makePicture({
@@ -746,6 +755,7 @@ const initTalkingHead = () => {
         headScale.removeAttribute('disabled');
         headOpacity.removeAttribute('disabled');
         headRotation.removeAttribute('disabled');
+        headShape.removeAttribute('disabled');
 
         headIsDisplayed = true;
       }
@@ -758,6 +768,7 @@ const initTalkingHead = () => {
         headScale.setAttribute('disabled', '');
         headOpacity.setAttribute('disabled', '');
         headRotation.setAttribute('disabled', '');
+        headShape.setAttribute('disabled');
 
         headIsDisplayed = false;
       }
@@ -771,6 +782,7 @@ const initTalkingHead = () => {
       headScale.setAttribute('disabled', '');
       headOpacity.setAttribute('disabled', '');
       headRotation.setAttribute('disabled', '');
+      headShape.setAttribute('disabled');
 
       headIsDisplayed = false;
     }
@@ -823,21 +835,11 @@ const initTalkingHead = () => {
     },
   });
 
-  // Show a round or square head (keyboard: ARROWS, RETURN)
-  scrawl.addNativeListener('change', () => {
+  // Change the corner radius of the background behind the head
+  scrawl.addNativeListener(['input', 'change'], () => {
 
-    const res = parseInt(headShape.value, 10);
-
-    if (res) {
-
-      squareShape.set({ visibility: false });
-      roundShape.set({ visibility: true });
-    }
-    else {
-
-      squareShape.set({ visibility: true });
-      roundShape.set({ visibility: false });
-    }
+    const radius = headShape.value;
+    rectShape.set({ radius: `${radius}%` });
 
   }, headShape);
 
@@ -2440,7 +2442,7 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'head-scale', '0.5'],
   ['input', 'head-opacity', '1'],
   ['input', 'head-rotation', '0'],
-  ['select', 'head-shape', 0],
+  ['input', 'head-shape', '15'],
   ['select', 'head-background', 1],
   ['select', 'head-filter', 0],
 
