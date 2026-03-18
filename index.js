@@ -598,23 +598,6 @@ const initTalkingHead = () => {
     copyDimensions: ['100%', '100%'],
   });
 
-  const squareShape = scrawl.makeBlock({
-
-    name: name('talking-head-square'),
-    group: talkingHeadOutput,
-    dimensions: ['100%', '100%'],
-  });
-
-  const roundShape = scrawl.makeWheel({
-
-    name: name('talking-head-round'),
-    group: talkingHeadOutput,
-    start: ['center', 'center'],
-    handle: ['center', 'center'],
-    radius: '50%',
-    visibility: false,
-  })
-
   const rectShape = scrawl.makeRectangle({
 
     name: name('talking-head-rectangle'),
@@ -623,8 +606,7 @@ const initTalkingHead = () => {
     handle: ['center', 'center'],
     rectangleWidth: '100%',
     rectangleHeight: '100%',
-    radius: '20%',
-    visibility: false,
+    radius: '15%',
   })
 
   scrawl.makeFilter({
@@ -773,6 +755,7 @@ const initTalkingHead = () => {
         headScale.removeAttribute('disabled');
         headOpacity.removeAttribute('disabled');
         headRotation.removeAttribute('disabled');
+        headShape.removeAttribute('disabled');
 
         headIsDisplayed = true;
       }
@@ -785,6 +768,7 @@ const initTalkingHead = () => {
         headScale.setAttribute('disabled', '');
         headOpacity.setAttribute('disabled', '');
         headRotation.setAttribute('disabled', '');
+        headShape.setAttribute('disabled');
 
         headIsDisplayed = false;
       }
@@ -798,6 +782,7 @@ const initTalkingHead = () => {
       headScale.setAttribute('disabled', '');
       headOpacity.setAttribute('disabled', '');
       headRotation.setAttribute('disabled', '');
+      headShape.setAttribute('disabled');
 
       headIsDisplayed = false;
     }
@@ -850,29 +835,11 @@ const initTalkingHead = () => {
     },
   });
 
-  // Show a round or square head (keyboard: ARROWS, RETURN)
-  scrawl.addNativeListener('change', () => {
+  // Change the corner radius of the background behind the head
+  scrawl.addNativeListener(['input', 'change'], () => {
 
-    const res = headShape.value;
-
-    if (res === 'round') {
-
-      squareShape.set({ visibility: false });
-      rectShape.set({ visibility: false });
-      roundShape.set({ visibility: true });
-    }
-    else if (res === 'rectangle') {
-
-      squareShape.set({ visibility: false });
-      rectShape.set({ visibility: true });
-      roundShape.set({ visibility: false });
-    }
-    else {
-
-      squareShape.set({ visibility: true });
-      rectShape.set({ visibility: false });
-      roundShape.set({ visibility: false });
-    }
+    const radius = headShape.value;
+    rectShape.set({ radius: `${radius}%` });
 
   }, headShape);
 
@@ -2475,7 +2442,7 @@ const dom = scrawl.initializeDomInputs([
   ['input', 'head-scale', '0.5'],
   ['input', 'head-opacity', '1'],
   ['input', 'head-rotation', '0'],
-  ['select', 'head-shape', 0],
+  ['input', 'head-shape', '15'],
   ['select', 'head-background', 1],
   ['select', 'head-filter', 0],
 
